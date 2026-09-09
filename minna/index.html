@@ -1,0 +1,601 @@
+<!doctype html>
+
+<html lang="ja">
+
+<head>
+
+<meta charset="utf-8">
+
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+
+<title>みんなへ</title>
+
+<style>
+
+:root{--bg:#f5f7f8;--card:#fff;--line:#dfe4e8;--text:#202428;--muted:#6c737a;--accent:#2f6e49;--soft:#eaf5ee;--oral:#fff2df;--danger:#a34f43;--blue:#edf4ff}
+
+*{box-sizing:border-box}body{margin:0;background:var(--bg);font-family:-apple-system,BlinkMacSystemFont,"Hiragino Kaku Gothic ProN","Yu Gothic",sans-serif;color:var(--text)}
+
+.wrap{max-width:900px;margin:auto;padding:12px 12px 40px}.head{display:flex;justify-content:space-between;gap:10px;align-items:end}.panel{background:#fff;border:1px solid var(--line);border-radius:15px;padding:12px;margin:10px 0}
+
+h1{font-size:24px;margin:3px 0}.title{font-weight:900;margin-bottom:8px}.field{display:grid;grid-template-columns:110px 1fr;gap:8px;margin:8px 0}.field input,.field textarea{width:100%;padding:10px;border:1px solid var(--line);border-radius:10px;font-size:15px}.field textarea{min-height:105px}
+
+.modes,.filters,.ops{display:flex;gap:6px;flex-wrap:wrap}.mode,.filter,.btn{border:1px solid var(--line);border-radius:999px;padding:8px 11px;background:#fff;font-weight:800;font-size:12px}.filter.active{background:var(--soft)}.reg{width:100%;padding:11px;border:0;border-radius:10px;background:var(--accent);color:#fff;font-size:15px;font-weight:900}
+
+.item{border-top:1px solid var(--line);padding:12px 0}.item:first-child{border-top:0}.itemtop{display:flex;justify-content:space-between;gap:8px}.itemtitle{font-size:16px;font-weight:900}.body{white-space:pre-wrap;margin:7px 0;line-height:1.55}.badge{display:inline-block;padding:4px 8px;border-radius:999px;font-size:11px;font-weight:850;background:#f0f2f4;margin-right:4px}.read{background:var(--blue)}.oral{background:var(--oral)}.done{background:var(--soft);color:#245737}.meta{font-size:11px;color:var(--muted)}.danger{color:var(--danger)}.toast{position:fixed;left:50%;bottom:22px;transform:translateX(-50%);background:#222;color:#fff;padding:9px 13px;border-radius:999px;display:none}.toast.show{display:block}
+
+@media(max-width:650px){.field{grid-template-columns:1fr}.itemtop,.head{flex-direction:column;align-items:flex-start}}
+
+</style>
+
+</head>
+
+<body>
+
+<div class="wrap">
+
+  <div class="head">
+
+    <h1>みんなへ</h1>
+
+    <div class="meta" id="syncState">共有版</div>
+
+  </div>
+
+  <section class="panel">
+
+    <div class="title">登録</div>
+
+    <div class="field">
+
+      <label>タイトル</label>
+
+      <input id="itemTitle">
+
+    </div>
+
+    <div class="field">
+
+      <label>内容</label>
+
+      <textarea id="content"></textarea>
+
+    </div>
+
+    <div class="field">
+
+      <label>伝え方</label>
+
+      <div class="modes">
+
+        <label class="mode">
+
+          <input id="readMode" type="checkbox">読んでおいて
+
+        </label>
+
+        <label class="mode">
+
+          <input id="oralMode" type="checkbox">口頭説明
+
+        </label>
+
+      </div>
+
+    </div>
+
+    <div class="field">
+
+      <label>資料添付</label>
+
+      <input id="attachment" type="file" multiple>
+
+    </div>
+
+    <button class="reg" id="saveBtn">登録</button>
+
+    <button class="btn" id="cancelBtn" style="display:none;margin-top:7px">修正をやめる</button>
+
+  </section>
+
+  <section class="panel">
+
+    <div class="title">一覧</div>
+
+    <div class="filters">
+
+      <button class="filter active" data-f="all">すべて</button>
+
+      <button class="filter" data-f="unchecked">未確認</button>
+
+      <button class="filter" data-f="checked">確認済み</button>
+
+      <button class="filter" data-f="read">読んでおいて</button>
+
+      <button class="filter" data-f="oral">口頭説明</button>
+
+    </div>
+
+    <div id="summary" class="meta" style="margin-top:8px"></div>
+
+    <div id="list"></div>
+
+  </section>
+
+</div>
+
+<div id="toast" class="toast"></div>
+
+<script>
+
+const API_URL='https://script.google.com/macros/s/AKfycbxcnsJ0BlXzV2ZkwXGKG-cw4zvNzjx0IalRHlEWTrC2l8RZLqTE1SpYxPVuR3YzRMJk/exec';
+
+const $=id=>document.getElementById(id);
+
+let rows=[];
+
+let editId=null;
+
+let filter='all';
+
+function esc(v){
+
+  return String(v??'').replace(/[&<>"']/g,c=>({
+
+    '&':'&amp;',
+
+    '<':'&lt;',
+
+    '>':'&gt;',
+
+    '"':'&quot;',
+
+    "'":'&#39;'
+
+  }[c]));
+
+}
+
+function toast(t){
+
+  const e=$('toast');
+
+  e.textContent=t;
+
+  e.classList.add('show');
+
+  setTimeout(()=>e.classList.remove('show'),1600);
+
+}
+
+async function apiGet(){
+
+  const r=await fetch(API_URL+'?action=list');
+
+  return await r.json();
+
+}
+
+async function apiPost(obj){
+
+  const r=await fetch(API_URL,{
+
+    method:'POST',
+
+    headers:{
+
+      'Content-Type':'text/plain;charset=utf-8'
+
+    },
+
+    body:JSON.stringify(obj)
+
+  });
+
+  return await r.json();
+
+}
+
+function reset(){
+
+  editId=null;
+
+  $('itemTitle').value='';
+
+  $('content').value='';
+
+  $('readMode').checked=false;
+
+  $('oralMode').checked=false;
+
+  $('attachment').value='';
+
+  $('saveBtn').textContent='登録';
+
+  $('cancelBtn').style.display='none';
+
+}
+
+$('cancelBtn').onclick=reset;
+
+async function filesToBase64(){
+
+  const out=[];
+
+  for(const f of [...$('attachment').files]){
+
+    const b64=await new Promise((res,rej)=>{
+
+      const fr=new FileReader();
+
+      fr.onload=()=>res(String(fr.result).split(',')[1]||'');
+
+      fr.onerror=rej;
+
+      fr.readAsDataURL(f);
+
+    });
+
+    out.push({
+
+      name:f.name,
+
+      mimeType:f.type,
+
+      base64:b64
+
+    });
+
+  }
+
+  return out;
+
+}
+
+$('saveBtn').onclick=async()=>{
+
+  const title=$('itemTitle').value.trim();
+
+  const content=$('content').value.trim();
+
+  const read=$('readMode').checked;
+
+  const oral=$('oralMode').checked;
+
+  if(!title){
+
+    toast('タイトルを入力');
+
+    return;
+
+  }
+
+  if(!content){
+
+    toast('内容を入力');
+
+    return;
+
+  }
+
+  if(!read&&!oral){
+
+    toast('伝え方を選択');
+
+    return;
+
+  }
+
+  $('saveBtn').disabled=true;
+
+  try{
+
+    const at=await filesToBase64();
+
+    const old=rows.find(r=>r.id===editId);
+
+    const res=await apiPost({
+
+      action:'save',
+
+      id:editId,
+
+      title,
+
+      content,
+
+      read,
+
+      oral,
+
+      attachments:at,
+
+      confirmed:old?old.confirmed:false,
+
+      confirmedAt:old?old.confirmedAt:''
+
+    });
+
+    if(!res.ok){
+
+      throw new Error(res.error||'保存失敗');
+
+    }
+
+    reset();
+
+    toast('保存しました');
+
+    await load();
+
+  }catch(e){
+
+    alert(e.message);
+
+  }finally{
+
+    $('saveBtn').disabled=false;
+
+  }
+
+};
+
+async function load(){
+
+  try{
+
+    $('syncState').textContent='読み込み中…';
+
+    const res=await apiGet();
+
+    rows=res.records||[];
+
+    $('syncState').textContent='共有版・同期済み';
+
+    render();
+
+  }catch(e){
+
+    $('syncState').textContent='読み込み失敗';
+
+  }
+
+}
+
+function editRow(id){
+
+  const r=rows.find(x=>x.id===id);
+
+  if(!r)return;
+
+  editId=id;
+
+  $('itemTitle').value=r.title||'';
+
+  $('content').value=r.content||'';
+
+  $('readMode').checked=!!r.read;
+
+  $('oralMode').checked=!!r.oral;
+
+  $('saveBtn').textContent='修正を保存';
+
+  $('cancelBtn').style.display='inline-block';
+
+  scrollTo({
+
+    top:0,
+
+    behavior:'smooth'
+
+  });
+
+}
+
+async function delRow(id){
+
+  if(!confirm('削除しますか？'))return;
+
+  await apiPost({
+
+    action:'delete',
+
+    id
+
+  });
+
+  toast('削除しました');
+
+  load();
+
+}
+
+async function confRow(id){
+
+  const r=rows.find(x=>x.id===id);
+
+  if(!r)return;
+
+  await apiPost({
+
+    action:'confirm',
+
+    id,
+
+    confirmed:!r.confirmed
+
+  });
+
+  load();
+
+}
+
+function visible(){
+
+  if(filter==='unchecked'){
+
+    return rows.filter(r=>!r.confirmed);
+
+  }
+
+  if(filter==='checked'){
+
+    return rows.filter(r=>r.confirmed);
+
+  }
+
+  if(filter==='read'){
+
+    return rows.filter(r=>r.read);
+
+  }
+
+  if(filter==='oral'){
+
+    return rows.filter(r=>r.oral);
+
+  }
+
+  return rows;
+
+}
+
+function render(){
+
+  const v=visible();
+
+  $('summary').textContent=
+
+    '全 '+rows.length+
+
+    '件 ／ 未確認 '+
+
+    rows.filter(r=>!r.confirmed).length+
+
+    '件 ／ 確認済 '+
+
+    rows.filter(r=>r.confirmed).length+
+
+    '件';
+
+  $('list').innerHTML=v.length
+
+  ? v.map(r=>{
+
+      const links=(r.attachmentUrls||[])
+
+      .map((u,i)=>
+
+        '<div>'+
+
+        '<a target="_blank" href="'+esc(u)+'">'+
+
+        '📎 '+
+
+        esc((r.attachmentNames||[])[i]||'資料')+
+
+        '</a>'+
+
+        '</div>'
+
+      ).join('');
+
+      return `
+
+      <div class="item">
+
+        <div class="itemtop">
+
+          <div class="itemtitle">
+
+            ${esc(r.title)}
+
+          </div>
+
+          <span class="badge ${r.confirmed?'done':''}">
+
+            ${r.confirmed?'確認済み':'未確認'}
+
+          </span>
+
+        </div>
+
+        <div class="body">
+
+          ${esc(r.content)}
+
+        </div>
+
+        <div>
+
+          ${r.read?'<span class="badge read">読んでおいて</span>':''}
+
+          ${r.oral?'<span class="badge oral">口頭説明</span>':''}
+
+        </div>
+
+        ${links}
+
+        <div class="ops" style="margin-top:8px">
+
+          <button class="btn"
+
+            onclick="editRow('${r.id}')">
+
+            修正
+
+          </button>
+
+          <button class="btn danger"
+
+            onclick="delRow('${r.id}')">
+
+            削除
+
+          </button>
+
+          <button class="btn"
+
+            onclick="confRow('${r.id}')">
+
+            ${r.confirmed?'確認を戻す':'確認'}
+
+          </button>
+
+        </div>
+
+      </div>
+
+      `;
+
+    }).join('')
+
+  :'<div class="meta" style="padding:10px 0">該当する内容はありません。</div>';
+
+}
+
+document.querySelectorAll('.filter').forEach(b=>{
+
+  b.onclick=()=>{
+
+    document.querySelectorAll('.filter')
+
+    .forEach(x=>x.classList.remove('active'));
+
+    b.classList.add('active');
+
+    filter=b.dataset.f;
+
+    render();
+
+  };
+
+});
+
+load();
+
+</script>
+
+</body>
+
+</html>
