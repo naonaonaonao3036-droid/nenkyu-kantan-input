@@ -1,0 +1,622 @@
+<!doctype html><html lang="ja"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+<title>休暇・出張・予定 かんたん入力</title>
+<style>
+:root{--bg:#fffaf7;--line:#e7ddd8;--ink:#3e3532;--muted:#84756f;--sel:#fde9e2;--ok:#eaf6ec;--warn:#fff7db}
+*{box-sizing:border-box}body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif;background:var(--bg);color:var(--ink)}
+.wrap{max-width:1180px;margin:auto;padding:8px}.top{display:flex;align-items:center;gap:10px;flex-wrap:wrap}.top h1{font-size:20px;margin:0}
+.panel{background:#fff;border:1px solid var(--line);border-radius:12px;padding:7px;margin-top:6px}.title{font-weight:800;font-size:13px;margin-bottom:5px}
+.namegrid{display:grid;grid-template-columns:repeat(11,minmax(0,1fr));gap:3px}.pick{position:absolute;opacity:0;pointer-events:none}
+.btnlabel,.timebtn,.optionbtn{display:flex;align-items:center;justify-content:center;border:1px solid var(--line);background:#fff;border-radius:8px;min-height:34px;font-weight:700;font-size:12px;cursor:pointer;user-select:none;-webkit-user-select:none;padding:4px}
+.namepick:checked+.btnlabel,.pick:checked+.timebtn,.leavepick:checked+.optionbtn{background:var(--sel);border-color:#d9a697}
+.sub{display:block;font-size:9px;color:var(--muted);margin-left:3px}.row{display:grid;grid-template-columns:1.25fr 1fr;gap:6px;margin-top:6px}
+.timeblock{display:grid;grid-template-columns:1fr 1fr;gap:8px}.timegrid{display:grid;grid-template-columns:repeat(10,1fr);gap:3px}.mingrid{display:grid;grid-template-columns:repeat(12,1fr);gap:3px;margin-top:3px}
+.leavegrid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:3px}.field label{font-size:11px;color:var(--muted);font-weight:800;display:block;margin:5px 0 3px}
+.field input{width:100%;height:40px;border:1px solid var(--line);border-radius:9px;padding:0 9px;font-size:15px}
+.topbtn,.reg{border:1px solid var(--line);background:#fff;border-radius:9px;font-weight:800;height:40px;padding:0 12px}.reg{width:100%;background:var(--sel);border-color:#d9a697;margin-top:6px}
+.status{font-size:11px;color:var(--muted);margin-top:4px}.done{display:none;background:var(--ok);border:1px solid #b9d7be;border-radius:10px;padding:12px;margin-top:6px;font-weight:800;font-size:16px}
+.done.show{display:block}.actions{margin-left:auto;display:flex;gap:6px;flex-wrap:wrap}.choicecols{display:grid;grid-template-columns:1.05fr .95fr;gap:6px}
+.tripbox{background:#fffdf5}.listitem{border:1px solid var(--line);border-radius:9px;padding:7px;margin-top:5px}.listitem strong{display:block}.itemrow{display:grid;grid-template-columns:1fr auto;gap:8px;align-items:center}.miniops{display:flex;gap:4px}.minibtn{height:34px;border:1px solid var(--line);background:#fff;border-radius:8px;padding:0 10px;font-weight:800}.editingbar{display:none;background:#fff3cc;border:1px solid #d6b85e;border-radius:9px;padding:8px;margin-top:6px;font-weight:800}.editingbar.show{display:block}
+@media(max-width:900px){.namegrid{grid-template-columns:repeat(8,1fr)}.row,.choicecols,.timeblock{grid-template-columns:1fr}.leavegrid{grid-template-columns:repeat(4,1fr)}.actions{margin-left:0}}
+.specialleave{margin-top:8px;padding:8px;border:1px solid #d9e0e6;border-radius:9px;background:#fbfcfd}.specialleave label{display:block;font-size:12px;font-weight:900;margin-bottom:4px}.specialleave input{width:100%;padding:9px;border:1px solid #d9e0e6;border-radius:8px;font:inherit}
+.scheduleTargets{display:flex;gap:6px;flex-wrap:wrap;margin:7px 0}
+.scheduleTargets label{border:1px solid #d9dfe5;border-radius:999px;padding:6px 9px;font-size:12px;font-weight:800;background:#fff}
+.scheduleTargets input{margin-right:4px}
+
+.checktabs{display:flex;gap:5px;flex-wrap:wrap;margin:6px 0}
+.checktab.active{background:#fde9e2;border-color:#d9a697}
+.checkrow{display:grid;grid-template-columns:42px 105px 90px 1fr;gap:7px;align-items:center;border:1px solid var(--line);border-radius:9px;padding:7px;margin-top:5px;background:#fff}
+.checkrow.donecheck{background:#eef8f1}
+.checkbtn{width:34px;height:34px;border:2px solid #aeb8c0;border-radius:8px;background:#fff;font-size:21px;font-weight:900}
+.donecheck .checkbtn{color:#3f7a54;border-color:#3f7a54;background:#fff}
+.checkmeta{font-size:11px;color:var(--muted)}
+@media(max-width:700px){.checkrow{grid-template-columns:40px 95px 1fr}.checkrow .checkkind{grid-column:2}.checkrow .checkmain{grid-column:2/-1}}
+</style>
+<script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
+</head><body><div class="wrap">
+<div class="top"><h1>休暇・出張・予定 かんたん入力</h1><strong>日付</strong><input id="date" type="date" style="height:40px;border:2px solid #d9a697;border-radius:10px;padding:0 9px;font-size:18px;font-weight:800">
+<div class="actions"><button id="listBtn" class="topbtn" type="button">登録一覧</button><button id="excelBtn" class="topbtn" type="button">Excel</button></div></div>
+
+<section class="panel"><div class="title">① 名前（複数選択できます）</div>
+<div class="namegrid"><input class="pick namepick" type="checkbox" id="n0" data-i="0"><label class="btnlabel" for="n0">和田<span class="sub">亘</span></label><input class="pick namepick" type="checkbox" id="n1" data-i="1"><label class="btnlabel" for="n1">瀬尾</label><input class="pick namepick" type="checkbox" id="n2" data-i="2"><label class="btnlabel" for="n2">佐藤<span class="sub">かおり</span></label><input class="pick namepick" type="checkbox" id="n3" data-i="3"><label class="btnlabel" for="n3">岡田</label><input class="pick namepick" type="checkbox" id="n4" data-i="4"><label class="btnlabel" for="n4">兼藤</label><input class="pick namepick" type="checkbox" id="n5" data-i="5"><label class="btnlabel" for="n5">向井</label><input class="pick namepick" type="checkbox" id="n6" data-i="6"><label class="btnlabel" for="n6">井上<span class="sub">真維</span></label><input class="pick namepick" type="checkbox" id="n7" data-i="7"><label class="btnlabel" for="n7">池田</label><input class="pick namepick" type="checkbox" id="n8" data-i="8"><label class="btnlabel" for="n8">出口</label><input class="pick namepick" type="checkbox" id="n9" data-i="9"><label class="btnlabel" for="n9">千葉</label><input class="pick namepick" type="checkbox" id="n10" data-i="10"><label class="btnlabel" for="n10">萩原</label><input class="pick namepick" type="checkbox" id="n11" data-i="11"><label class="btnlabel" for="n11">傍田</label><input class="pick namepick" type="checkbox" id="n12" data-i="12"><label class="btnlabel" for="n12">井上<span class="sub">日向子</span></label><input class="pick namepick" type="checkbox" id="n13" data-i="13"><label class="btnlabel" for="n13">播本</label><input class="pick namepick" type="checkbox" id="n14" data-i="14"><label class="btnlabel" for="n14">石原</label><input class="pick namepick" type="checkbox" id="n15" data-i="15"><label class="btnlabel" for="n15">緒方</label><input class="pick namepick" type="checkbox" id="n16" data-i="16"><label class="btnlabel" for="n16">清水</label><input class="pick namepick" type="checkbox" id="n17" data-i="17"><label class="btnlabel" for="n17">阿部野</label><input class="pick namepick" type="checkbox" id="n18" data-i="18"><label class="btnlabel" for="n18">浦上</label><input class="pick namepick" type="checkbox" id="n19" data-i="19"><label class="btnlabel" for="n19">藤江</label><input class="pick namepick" type="checkbox" id="n20" data-i="20"><label class="btnlabel" for="n20">藤田</label><input class="pick namepick" type="checkbox" id="n21" data-i="21"><label class="btnlabel" for="n21">丹田</label><input class="pick namepick" type="checkbox" id="n22" data-i="22"><label class="btnlabel" for="n22">矢羽々</label><input class="pick namepick" type="checkbox" id="n23" data-i="23"><label class="btnlabel" for="n23">芳賀</label><input class="pick namepick" type="checkbox" id="n24" data-i="24"><label class="btnlabel" for="n24">柳田</label><input class="pick namepick" type="checkbox" id="n25" data-i="25"><label class="btnlabel" for="n25">小田</label><input class="pick namepick" type="checkbox" id="n26" data-i="26"><label class="btnlabel" for="n26">和田<span class="sub">亜弥乃</span></label><input class="pick namepick" type="checkbox" id="n27" data-i="27"><label class="btnlabel" for="n27">村上</label><input class="pick namepick" type="checkbox" id="n28" data-i="28"><label class="btnlabel" for="n28">藤本</label><input class="pick namepick" type="checkbox" id="n29" data-i="29"><label class="btnlabel" for="n29">足立</label><input class="pick namepick" type="checkbox" id="n30" data-i="30"><label class="btnlabel" for="n30">原井</label><input class="pick namepick" type="checkbox" id="n31" data-i="31"><label class="btnlabel" for="n31">大下</label><input class="pick namepick" type="checkbox" id="n32" data-i="32"><label class="btnlabel" for="n32">早瀬</label><input class="pick namepick" type="checkbox" id="n33" data-i="33"><label class="btnlabel" for="n33">西川</label><input class="pick namepick" type="checkbox" id="n34" data-i="34"><label class="btnlabel" for="n34">皿谷</label><input class="pick namepick" type="checkbox" id="n35" data-i="35"><label class="btnlabel" for="n35">岸本</label><input class="pick namepick" type="checkbox" id="n36" data-i="36"><label class="btnlabel" for="n36">山本</label><input class="pick namepick" type="checkbox" id="n37" data-i="37"><label class="btnlabel" for="n37">藤井</label><input class="pick namepick" type="checkbox" id="n38" data-i="38"><label class="btnlabel" for="n38">笠原</label><input class="pick namepick" type="checkbox" id="n39" data-i="39"><label class="btnlabel" for="n39">佐藤<span class="sub">裕子</span></label><input class="pick namepick" type="checkbox" id="n40" data-i="40"><label class="btnlabel" for="n40">羽原</label><input class="pick namepick" type="checkbox" id="n41" data-i="41"><label class="btnlabel" for="n41">谷</label><input class="pick namepick" type="checkbox" id="n42" data-i="42"><label class="btnlabel" for="n42">金森</label></div>
+<div style="display:flex;gap:6px;margin-top:5px"><button id="all" class="topbtn" type="button">全員選択</button><button id="clear" class="topbtn" type="button">選択解除</button></div></section>
+
+<section class="panel"><div class="title">② 時刻（開始と終了を別々に選択）</div>
+<div class="timeblock">
+<div><strong>開始</strong><div class="timegrid"><input class="pick" type="radio" name="startHour" id="sh8" value="8" checked><label class="timebtn" for="sh8">08</label><input class="pick" type="radio" name="startHour" id="sh9" value="9"><label class="timebtn" for="sh9">09</label><input class="pick" type="radio" name="startHour" id="sh10" value="10"><label class="timebtn" for="sh10">10</label><input class="pick" type="radio" name="startHour" id="sh11" value="11"><label class="timebtn" for="sh11">11</label><input class="pick" type="radio" name="startHour" id="sh12" value="12"><label class="timebtn" for="sh12">12</label><input class="pick" type="radio" name="startHour" id="sh13" value="13"><label class="timebtn" for="sh13">13</label><input class="pick" type="radio" name="startHour" id="sh14" value="14"><label class="timebtn" for="sh14">14</label><input class="pick" type="radio" name="startHour" id="sh15" value="15"><label class="timebtn" for="sh15">15</label><input class="pick" type="radio" name="startHour" id="sh16" value="16"><label class="timebtn" for="sh16">16</label><input class="pick" type="radio" name="startHour" id="sh17" value="17"><label class="timebtn" for="sh17">17</label></div><div class="mingrid"><input class="pick" type="radio" name="startMinute" id="sm0" value="0"><label class="timebtn" for="sm0">00</label><input class="pick" type="radio" name="startMinute" id="sm5" value="5"><label class="timebtn" for="sm5">05</label><input class="pick" type="radio" name="startMinute" id="sm10" value="10"><label class="timebtn" for="sm10">10</label><input class="pick" type="radio" name="startMinute" id="sm15" value="15"><label class="timebtn" for="sm15">15</label><input class="pick" type="radio" name="startMinute" id="sm20" value="20" checked><label class="timebtn" for="sm20">20</label><input class="pick" type="radio" name="startMinute" id="sm25" value="25"><label class="timebtn" for="sm25">25</label><input class="pick" type="radio" name="startMinute" id="sm30" value="30"><label class="timebtn" for="sm30">30</label><input class="pick" type="radio" name="startMinute" id="sm35" value="35"><label class="timebtn" for="sm35">35</label><input class="pick" type="radio" name="startMinute" id="sm40" value="40"><label class="timebtn" for="sm40">40</label><input class="pick" type="radio" name="startMinute" id="sm45" value="45"><label class="timebtn" for="sm45">45</label><input class="pick" type="radio" name="startMinute" id="sm50" value="50"><label class="timebtn" for="sm50">50</label><input class="pick" type="radio" name="startMinute" id="sm55" value="55"><label class="timebtn" for="sm55">55</label></div></div>
+<div><strong>終了</strong><div class="timegrid"><input class="pick" type="radio" name="endHour" id="eh8" value="8"><label class="timebtn" for="eh8">08</label><input class="pick" type="radio" name="endHour" id="eh9" value="9"><label class="timebtn" for="eh9">09</label><input class="pick" type="radio" name="endHour" id="eh10" value="10"><label class="timebtn" for="eh10">10</label><input class="pick" type="radio" name="endHour" id="eh11" value="11"><label class="timebtn" for="eh11">11</label><input class="pick" type="radio" name="endHour" id="eh12" value="12"><label class="timebtn" for="eh12">12</label><input class="pick" type="radio" name="endHour" id="eh13" value="13"><label class="timebtn" for="eh13">13</label><input class="pick" type="radio" name="endHour" id="eh14" value="14"><label class="timebtn" for="eh14">14</label><input class="pick" type="radio" name="endHour" id="eh15" value="15"><label class="timebtn" for="eh15">15</label><input class="pick" type="radio" name="endHour" id="eh16" value="16" checked><label class="timebtn" for="eh16">16</label><input class="pick" type="radio" name="endHour" id="eh17" value="17"><label class="timebtn" for="eh17">17</label></div><div class="mingrid"><input class="pick" type="radio" name="endMinute" id="em0" value="0"><label class="timebtn" for="em0">00</label><input class="pick" type="radio" name="endMinute" id="em5" value="5"><label class="timebtn" for="em5">05</label><input class="pick" type="radio" name="endMinute" id="em10" value="10"><label class="timebtn" for="em10">10</label><input class="pick" type="radio" name="endMinute" id="em15" value="15"><label class="timebtn" for="em15">15</label><input class="pick" type="radio" name="endMinute" id="em20" value="20"><label class="timebtn" for="em20">20</label><input class="pick" type="radio" name="endMinute" id="em25" value="25"><label class="timebtn" for="em25">25</label><input class="pick" type="radio" name="endMinute" id="em30" value="30"><label class="timebtn" for="em30">30</label><input class="pick" type="radio" name="endMinute" id="em35" value="35"><label class="timebtn" for="em35">35</label><input class="pick" type="radio" name="endMinute" id="em40" value="40"><label class="timebtn" for="em40">40</label><input class="pick" type="radio" name="endMinute" id="em45" value="45"><label class="timebtn" for="em45">45</label><input class="pick" type="radio" name="endMinute" id="em50" value="50" checked><label class="timebtn" for="em50">50</label><input class="pick" type="radio" name="endMinute" id="em55" value="55"><label class="timebtn" for="em55">55</label></div></div>
+</div><div style="margin-top:7px"><button id="timeReset" class="topbtn" type="button">時刻選択を解除</button></div></section>
+
+
+<div class="choicecols">
+<section class="panel"><div class="title">③ 年休・休暇を登録</div>
+<div class="leavegrid"><input class="pick leavepick" type="radio" name="leaveType" id="lvN" data-label="年休" data-kind="年休" data-amount="0" data-unit="hour"><label class="optionbtn" for="lvN">年休</label><input class="pick leavepick" type="radio" name="leaveType" id="lv9" data-label="夏季研修" data-kind="夏季研修" data-amount="1" data-unit="day"><label class="optionbtn" for="lv9">夏季研修</label><input class="pick leavepick" type="radio" name="leaveType" id="lv10" data-label="市内一斉研修" data-kind="市内一斉研修" data-amount="1" data-unit="day"><label class="optionbtn" for="lv10">市内一斉研修</label><input class="pick leavepick" type="radio" name="leaveType" id="lv11" data-label="健康診断" data-kind="健康診断" data-amount="1" data-unit="day"><label class="optionbtn" for="lv11">健康診断</label><input class="pick leavepick" type="radio" name="leaveType" id="lv12" data-label="職専免（厚生）" data-kind="職専免（厚生）" data-amount="1" data-unit="day"><label class="optionbtn" for="lv12">職専免（厚生）</label><input class="pick leavepick" type="radio" name="leaveType" id="lv13" data-label="職専免（普通研修）" data-kind="職専免（普通研修）" data-amount="1" data-unit="day"><label class="optionbtn" for="lv13">職専免（普通研修）</label><input class="pick leavepick" type="radio" name="leaveType" id="lv14" data-label="夏季厚生" data-kind="夏季厚生" data-amount="1" data-unit="day"><label class="optionbtn" for="lv14">夏季厚生</label><input class="pick leavepick" type="radio" name="leaveType" id="lv15" data-label="夏季休暇" data-kind="夏季休暇" data-amount="1" data-unit="day"><label class="optionbtn" for="lv15">夏季休暇</label><input class="pick leavepick" type="radio" name="leaveType" id="lv16" data-label="短期介護" data-kind="短期介護" data-amount="1" data-unit="day"><label class="optionbtn" for="lv16">短期介護</label><input class="pick leavepick" type="radio" name="leaveType" id="lv17" data-label="子看" data-kind="子看" data-amount="0" data-unit="hour"><label class="optionbtn" for="lv17">子看</label><input class="pick leavepick" type="radio" name="leaveType" id="lv18" data-label="特休" data-kind="特休" data-amount="1" data-unit="day"><label class="optionbtn" for="lv18">特休</label></div>
+
+<div id="nenkyuHoursBox" class="specialleave" style="display:block">
+<label>年休時間</label>
+<div class="leavegrid" id="nenkyuHoursGrid">
+<input class="pick nenkyuHourPick" type="radio" name="nenkyuAmount" id="nh1" data-hours="1"><label class="optionbtn" for="nh1">①</label>
+<input class="pick nenkyuHourPick" type="radio" name="nenkyuAmount" id="nh2" data-hours="2"><label class="optionbtn" for="nh2">②</label>
+<input class="pick nenkyuHourPick" type="radio" name="nenkyuAmount" id="nh3" data-hours="3"><label class="optionbtn" for="nh3">③</label>
+<input class="pick nenkyuHourPick" type="radio" name="nenkyuAmount" id="nh4" data-hours="4"><label class="optionbtn" for="nh4">④</label>
+<input class="pick nenkyuHourPick" type="radio" name="nenkyuAmount" id="nh5" data-hours="5"><label class="optionbtn" for="nh5">⑤</label>
+<input class="pick nenkyuHourPick" type="radio" name="nenkyuAmount" id="nh6" data-hours="6"><label class="optionbtn" for="nh6">⑥</label>
+<input class="pick nenkyuHourPick" type="radio" name="nenkyuAmount" id="nh7" data-hours="7"><label class="optionbtn" for="nh7">⑦</label>
+<input class="pick nenkyuHourPick" type="radio" name="nenkyuAmount" id="nh8" data-hours="8"><label class="optionbtn" for="nh8">⑧</label>
+<input class="pick nenkyuHourPick" type="radio" name="nenkyuAmount" id="nhDay" data-hours="1day"><label class="optionbtn" for="nhDay">1日</label>
+</div></div>
+
+<div id="specialLeaveBox" class="specialleave" style="display:none"><label>特休（何号）※手入力</label><input id="specialLeaveNo" type="text" inputmode="text" lang="ja" autocomplete="off" autocapitalize="off" placeholder="例：3号・育児時間・看護など"></div>
+<button id="leaveReg" class="reg" type="button">年休・休暇を登録</button>
+<div id="leaveEditing" class="editingbar"></div>
+<div class="status">同じ日に複数回ある場合は、続けて別のボタンを選んで登録できます。特休は「何号」を手入力できます。</div>
+</section>
+
+<section class="panel tripbox"><div class="title">④ 出張を登録</div>
+<div class="field"><label>用務</label><input id="purpose" placeholder="例：市内一斉研修（道徳）"></div>
+<div class="field"><label>会場名</label><input id="venue" placeholder="例：緑丘小学校"></div>
+<button id="tripReg" class="reg" type="button">出張を登録</button>
+<div id="tripEditing" class="editingbar"></div>
+<div class="status">「直近の登録」の修正を押すと、その出張を読み込んで上書きできます。</div>
+</section>
+</div>
+
+<div id="done" class="done"></div><div id="portalSync" class="status" style="margin-top:6px;font-weight:800">ポータル連携：未確認</div>
+
+
+<section class="panel schedulebox"><div class="title">⑤ 予定を登録</div>
+<div class="field"><label>予定名</label><input id="scheduleTitle" placeholder="例：読み聞かせ・職員会議・来校者"></div>
+<div class="field"><label>場所</label><input id="schedulePlace" placeholder="例：体育館・会議室・校長室"></div>
+<div style="font-size:12px;font-weight:900;margin-top:8px">対象（複数選択可）</div>
+<div id="scheduleTargets" class="scheduleTargets">
+<label><input type="checkbox" value="全員" checked>全員</label>
+<label><input type="checkbox" value="1年">1年</label>
+<label><input type="checkbox" value="2年">2年</label>
+<label><input type="checkbox" value="3年">3年</label>
+<label><input type="checkbox" value="4年">4年</label>
+<label><input type="checkbox" value="5年">5年</label>
+<label><input type="checkbox" value="6年">6年</label>
+<label><input type="checkbox" value="校長">校長</label>
+<label><input type="checkbox" value="教頭">教頭</label>
+<label><input type="checkbox" value="個人">個人</label>
+</div>
+<div class="field"><label>表示先</label>
+<select id="scheduleDisplay">
+<option>ポータル</option>
+<option>ポータル＋書類</option>
+<option>書類のみ</option>
+</select></div>
+<div class="field"><label>補足</label><input id="scheduleNote" placeholder="必要なものだけ"></div>
+<button id="scheduleReg" class="reg" type="button">予定を登録</button>
+<div id="scheduleEditing" class="editingbar"></div>
+<div class="status">予定もこの画面で確定してから、あとで新ポータルへ集約します。</div>
+</section>
+
+<section class="panel"><div class="title">⑥ 直近の登録</div><div id="recent" class="status">まだ登録はありません。</div></section>
+
+<section class="panel"><div class="title">⑦ 確認一覧</div>
+<div class="checktabs">
+<button type="button" class="topbtn checktab active" data-checktab="date">日付順</button>
+<button type="button" class="topbtn checktab" data-checktab="name">名前順</button>
+<button type="button" class="topbtn checktab" data-checktab="kind">区分順</button>
+<button type="button" class="topbtn checktab" data-checktab="unchecked">未確認だけ</button>
+<button type="button" class="topbtn checktab" data-checktab="checked">確認済みだけ</button>
+</div>
+<div id="checkSummary" class="status"></div>
+<div id="checkList"></div>
+</section>
+
+</div>
+
+<script>
+(function(){
+const staff=[["和田", "亘"], ["瀬尾", "奈緒美"], ["佐藤", "かおり"], ["岡田", "真緒"], ["兼藤", "佳奈"], ["向井", "杏奴"], ["井上", "真維"], ["池田", "真菜"], ["出口", "知子"], ["千葉", "月乃"], ["萩原", "優"], ["傍田", "美華"], ["井上", "日向子"], ["播本", "太平"], ["石原", "繭子"], ["緒方", "香織"], ["清水", "遥斗"], ["阿部野", "由佳"], ["浦上", "直輝"], ["藤江", "一雅"], ["藤田", "壮真"], ["丹田", "英里"], ["矢羽々", "由佳"], ["芳賀", "麻衣子"], ["柳田", "啓子"], ["小田", "祐希乃"], ["和田", "亜弥乃"], ["村上", "ユミ"], ["藤本", "洋平"], ["足立", "かおり"], ["原井", "さおり"], ["大下", "順子"], ["早瀬", "彩花"], ["西川", "順子"], ["皿谷", "久恵"], ["岸本", "千香子"], ["山本", "三恵子"], ["藤井", "真理子"], ["笠原", "奈都江"], ["佐藤", "裕子"], ["羽原", "和子"], ["谷", "奈津子"], ["金森", "法子"]];
+const $=id=>document.getElementById(id);
+let tripEditIndex=null;
+let scheduleEditIndex=null;
+let leaveEditIndex=null;
+const now=new Date();$('date').value=now.getFullYear()+'-'+String(now.getMonth()+1).padStart(2,'0')+'-'+String(now.getDate()).padStart(2,'0');
+
+function checkedNames(){
+ return [...document.querySelectorAll('.namepick:checked')].map(x=>({i:Number(x.dataset.i),name:staff[Number(x.dataset.i)][0],full:staff[Number(x.dataset.i)].join(' ')}));
+}
+function num(name){const x=document.querySelector('input[name="'+name+'"]:checked');return x?Number(x.value):0}
+
+function clearTimeSelection(){
+  document.querySelectorAll('input[name="startHour"],input[name="startMinute"],input[name="endHour"],input[name="endMinute"]').forEach(x=>x.checked=false);
+}
+function hasCompleteTime(){
+  return !!(document.querySelector('input[name="startHour"]:checked') &&
+            document.querySelector('input[name="startMinute"]:checked') &&
+            document.querySelector('input[name="endHour"]:checked') &&
+            document.querySelector('input[name="endMinute"]:checked'));
+}
+function durationSelection(){
+  const d=document.querySelector('.leaveDurationPick:checked');
+  if(!d) return null;
+  if(d.dataset.hours==='1day') return {label:'1日',amount:1,unit:'day',hours:null,oneDay:true};
+  const n=Number(d.dataset.hours);
+  return {label:n+'時間',amount:n,unit:'hour',hours:n,oneDay:false};
+}
+
+function timeData(){return {sh:num('startHour'),sm:num('startMinute'),eh:num('endHour'),em:num('endMinute')}}
+function resetTimeOnly(){clearTimeSelection();}
+$('timeReset').onclick=()=>{resetTimeOnly();showDone('時刻の選択を解除しました');};
+['startHour','startMinute','endHour','endMinute'].forEach(name=>{
+ document.querySelectorAll('input[name="'+name+'"]').forEach(r=>{
+  r.addEventListener('pointerdown',()=>{r.dataset.wasChecked=r.checked?'1':'0';});
+  r.addEventListener('click',()=>{if(r.dataset.wasChecked==='1'){r.checked=false;r.dataset.wasChecked='0';}});
+ });
+});
+
+function jp(h,m){return h+'：'+String(m).padStart(2,'0')}
+const STORE_PREFIX='teshiro_2026_';
+function storageAvailable(){
+  try{
+    const k='__storage_test__';
+    localStorage.setItem(k,'1');
+    localStorage.removeItem(k);
+    return true;
+  }catch(e){ return false; }
+}
+function get(key){
+  try{
+    // New key first, then legacy key for compatibility with yesterday's data.
+    let raw=localStorage.getItem(STORE_PREFIX+key);
+    if(!raw) raw=localStorage.getItem(key);
+    if(!raw) return [];
+    const v=JSON.parse(raw);
+    return Array.isArray(v)?v:[];
+  }catch(e){
+    console.error('read error',e);
+    return [];
+  }
+}
+function set(key,v){
+  try{
+    if(!storageAvailable()) throw new Error('この開き方ではブラウザ保存が使えません');
+    const raw=JSON.stringify(v);
+    localStorage.setItem(STORE_PREFIX+key,raw);
+    localStorage.setItem(key,raw); // keep yesterday's key too
+    const check=localStorage.getItem(STORE_PREFIX+key);
+    if(check!==raw) throw new Error('保存確認に失敗しました');
+    return true;
+  }catch(e){
+    $('portalSync').textContent='保存できません：'+e.message;
+    $('portalSync').style.color='#b55757';
+    console.error('write error',e);
+    return false;
+  }
+}
+function showDone(text){
+ $('done').innerHTML='✓ <strong>'+text+'</strong><br><span style="font-size:12px;font-weight:700">登録は保存済みです。画面を閉じても同じSafariで残ります。</span>';
+ $('done').classList.add('show');
+ if($('clearTimeBtn')) $('clearTimeBtn').onclick=()=>{clearTimeSelection();showDone('時刻の選択を解除しました');};
+renderRecent();
+}
+
+$('all').onclick=()=>document.querySelectorAll('.namepick').forEach(x=>x.checked=true);
+$('clear').onclick=()=>document.querySelectorAll('.namepick').forEach(x=>x.checked=false);
+
+
+function updateSpecialLeaveBox(){
+ const pick=document.querySelector('.leavepick:checked');
+ const isSpecial=pick&&pick.dataset.kind==='特休';
+ const isNenkyu=pick&&pick.dataset.kind==='年休';
+ $('specialLeaveBox').style.display=isSpecial?'block':'none';
+ $('nenkyuHoursBox').style.display='block';
+ if($('leaveDurationBox')) $('leaveDurationBox').style.display=isNenkyu?'none':'block';
+ if(!isSpecial&&leaveEditIndex===null)$('specialLeaveNo').value='';
+ 
+}
+document.querySelectorAll('.leavepick').forEach(x=>x.addEventListener('change',updateSpecialLeaveBox));
+updateSpecialLeaveBox();
+function nenkyuSelection(){
+ const h=document.querySelector('.nenkyuHourPick:checked');
+ if(!h)return null;
+ if(h.dataset.hours==='1day')return {label:'年休1日',amount:1,unit:'day',hours:null,oneDay:true};
+ const n=Number(h.dataset.hours);const c=['','①','②','③','④','⑤','⑥','⑦','⑧'];
+ return {label:'年休'+(c[n]||('('+n+'時間)')),amount:n,unit:'hour',hours:n,oneDay:false};
+}
+function specialLeaveLabel(pick){
+ if(pick.dataset.kind!=='特休') return pick.dataset.label;
+ let no=$('specialLeaveNo').value.trim();
+ if(!no) return '';
+ return '特休（'+no+'）';
+}
+
+function resetTimeAndLeave(){
+ clearTimeSelection();
+ document.querySelectorAll('.leavepick,.leaveDurationPick,.nenkyuHourPick').forEach(x=>x.checked=false);
+ if($('specialLeaveNo')) $('specialLeaveNo').value='';
+ if(typeof updateSpecialLeaveBox==='function') updateSpecialLeaveBox();
+}
+
+$('leaveReg').onclick=()=>{
+ const names=checkedNames();if(!names.length){showDone('名前を選んでください');return}
+ const pick=document.querySelector('.leavepick:checked');if(!pick){showDone('休暇の種類を選んでください');return}
+ let dur=nenkyuSelection();if(!dur){showDone('①〜⑧または1日を選んでください');return}
+ let label=pick.dataset.label;
+ if(pick.dataset.kind==='特休'){
+   const manual=$('specialLeaveNo').value.trim();
+   if(!manual){showDone('特休の内容を入力してください');return}
+   label='特休（'+manual+'）';
+ } else if(pick.dataset.kind==='子看'){
+   label='子看'+dur.label;
+ } else if(pick.dataset.kind==='年休'){
+   label=dur.label;
+ } else {
+   label=label+(dur.oneDay?'1日':' '+dur.label);
+ }
+ let t=null;
+ if(dur.oneDay){
+   // 1日は時刻なしで登録できる
+   clearTimeSelection();
+ } else {
+   if(!hasCompleteTime()){showDone('開始・終了時刻を選んでください');return}
+   t=timeData();
+   if(t.eh*60+t.em<=t.sh*60+t.sm){showDone('終了時刻を確認してください');return}
+ }
+ const rows=get('nenkyuRecords');
+ const kind=pick.dataset.kind;
+
+ if(leaveEditIndex!==null){
+   if(names.length!==1){showDone('修正時は名前を1人だけ選んでください');return}
+   const n=names[0], old=rows[leaveEditIndex]||{};
+   rows[leaveEditIndex]={...old,date:$('date').value,name:n.name,fullName:n.full,start:t?jp(t.sh,t.sm):'',end:t?jp(t.eh,t.em):'',
+      kind:pick.dataset.kind,amount:dur.amount,unit:dur.unit,hours:dur.hours,oneDay:dur.oneDay,label,
+      specialLeaveNo:kind==='特休'?$('specialLeaveNo').value.trim():'',
+      portal:n.name+'　'+(t?(jp(t.sh,t.sm)+'〜'+jp(t.eh,t.em)+'　'):'')+label,
+      diary:n.name+'　'+label,status:'active',updatedAt:new Date().toISOString()};
+   if(!set('nenkyuRecords',rows)) return;
+   leaveEditIndex=null;
+   $('leaveReg').textContent='年休・休暇を登録';
+   $('leaveEditing').classList.remove('show');
+   $('leaveEditing').textContent='';
+   showDone('休暇を修正しました：'+label);resetTimeAndLeave();
+ }else{
+   names.forEach(n=>{
+     rows.push({date:$('date').value,name:n.name,fullName:n.full,start:t?jp(t.sh,t.sm):'',end:t?jp(t.eh,t.em):'',
+        kind:pick.dataset.kind,amount:dur.amount,unit:dur.unit,hours:dur.hours,oneDay:dur.oneDay,label,
+        specialLeaveNo:kind==='特休'?$('specialLeaveNo').value.trim():'',
+        portal:n.name+'　'+(t?(jp(t.sh,t.sm)+'〜'+jp(t.eh,t.em)+'　'):'')+label,
+        diary:n.name+'　'+label,status:'active',updatedAt:new Date().toISOString()});
+   });
+   if(set('nenkyuRecords',rows)){
+    showDone(names.length+'人分の「'+label+'」を登録しました');
+    $('portalSync').textContent='保存済み：この端末のSafariに登録を保持しています。';
+    renderRecent();resetTimeAndLeave();
+   }
+ }
+};
+
+$('tripReg').onclick=()=>{
+ const names=checkedNames();if(!names.length){showDone('名前を選んでください');return}
+ const p=$('purpose').value.trim(),v=$('venue').value.trim();if(!p||!v){showDone('用務と会場名を入力してください');return}
+ const t=timeData();if(t.eh*60+t.em<=t.sh*60+t.sm){showDone('終了時刻を確認してください');return}
+ const rows=get('shucchoRecords');
+
+ if(tripEditIndex!==null){
+   if(names.length!==1){showDone('修正時は名前を1人だけ選んでください');return}
+   const n=names[0], old=rows[tripEditIndex]||{};
+   rows[tripEditIndex]={
+     ...old,
+     date:$('date').value,
+     name:n.name,
+     fullName:n.full,
+     purpose:p,
+     venue:v,
+     start:jp(t.sh,t.sm),
+     end:jp(t.eh,t.em),
+     status:'active',
+     updatedAt:new Date().toISOString()
+   };
+   if(!set('shucchoRecords',rows)) return;
+   tripEditIndex=null;
+   $('tripReg').textContent='出張を登録';
+   $('tripEditing').classList.remove('show');
+   $('tripEditing').textContent='';
+   showDone('出張を修正しました：'+p+'／'+v);
+ }else{
+   names.forEach(n=>rows.push({date:$('date').value,name:n.name,fullName:n.full,purpose:p,venue:v,start:jp(t.sh,t.sm),end:jp(t.eh,t.em),status:'active',updatedAt:new Date().toISOString()}));
+   if(!set('shucchoRecords',rows)) return;
+   showDone(names.length+'人分の出張を登録しました：'+p+'／'+v);$('portalSync').textContent='保存済み：この端末のブラウザに登録を保持しています。';
+ }
+};
+
+
+function selectedScheduleTargets(){
+  const checks=[...document.querySelectorAll('#scheduleTargets input[type="checkbox"]')];
+  return checks.filter(x=>x.checked).map(x=>x.value);
+}
+(function(){
+  const checks=[...document.querySelectorAll('#scheduleTargets input[type="checkbox"]')];
+  checks.forEach(cb=>cb.addEventListener('change',()=>{
+    if(cb.value==='全員' && cb.checked){
+      checks.forEach(x=>{if(x!==cb)x.checked=false});
+    }else if(cb.checked){
+      const all=checks.find(x=>x.value==='全員'); if(all) all.checked=false;
+    }
+    if(!checks.some(x=>x.checked)){
+      const all=checks.find(x=>x.value==='全員'); if(all) all.checked=true;
+    }
+  }));
+})();
+
+$('scheduleReg').onclick=()=>{
+  const title=$('scheduleTitle').value.trim();
+  if(!title){showDone('予定名を入力してください');return}
+  const targets=selectedScheduleTargets();
+  const individuals=targets.includes('個人') ? checkedNames() : [];
+  if(targets.includes('個人') && !individuals.length){showDone('個人を選んだ場合は、上の名前も選んでください');return}
+  const t=hasCompleteTime()?timeData():null;
+  if(t && t.eh*60+t.em<=t.sh*60+t.sm){showDone('終了時刻を確認してください');return}
+  const rows=get('yoteiRecords');
+  const rec={
+    date:$('date').value,
+    title,
+    place:$('schedulePlace').value.trim(),
+    targets,
+    people:individuals.map(x=>x.full),
+    display:$('scheduleDisplay').value,
+    note:$('scheduleNote').value.trim(),
+    start:t?jp(t.sh,t.sm):'',
+    end:t?jp(t.eh,t.em):'',
+    status:'active',
+    updatedAt:new Date().toISOString()
+  };
+  if(scheduleEditIndex!==null){
+    rows[scheduleEditIndex]={...(rows[scheduleEditIndex]||{}),...rec};
+    if(!set('yoteiRecords',rows)) return;
+    scheduleEditIndex=null;
+    $('scheduleReg').textContent='予定を登録';
+    $('scheduleEditing').textContent='';
+    $('scheduleEditing').classList.remove('show');
+    showDone('予定を修正しました：'+title);
+  }else{
+    rows.push(rec);
+    if(!set('yoteiRecords',rows)) return;
+    showDone('予定を登録しました：'+title);
+  }
+  $('scheduleTitle').value='';$('schedulePlace').value='';$('scheduleNote').value='';
+  renderRecent();
+};
+
+function loadScheduleEdit(index){
+  const rows=get('yoteiRecords'),r=rows[index]; if(!r)return;
+  scheduleEditIndex=index;
+  $('date').value=r.date||$('date').value;
+  $('scheduleTitle').value=r.title||'';
+  $('schedulePlace').value=r.place||'';
+  $('scheduleDisplay').value=r.display||'ポータル';
+  $('scheduleNote').value=r.note||'';
+  const checks=[...document.querySelectorAll('#scheduleTargets input[type="checkbox"]')];
+  checks.forEach(x=>x.checked=(r.targets||[]).includes(x.value));
+  document.querySelectorAll('.namepick').forEach(x=>x.checked=false);
+  (r.people||[]).forEach(full=>{
+    const idx=staff.findIndex(p=>p.join(' ')===full);
+    if(idx>=0){const n=$('n'+idx);if(n)n.checked=true;}
+  });
+  if(r.start&&r.end){
+    const st=parseTime(r.start),et=parseTime(r.end);
+    setRadio('startHour',st.h);setRadio('startMinute',st.m);
+    setRadio('endHour',et.h);setRadio('endMinute',et.m);
+  }else clearTimeSelection();
+  $('scheduleReg').textContent='この予定を更新';
+  $('scheduleEditing').textContent='修正中：'+(r.date||'')+'　'+(r.title||'');
+  $('scheduleEditing').classList.add('show');
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+function cancelSchedule(index){
+  const rows=get('yoteiRecords'),r=rows[index];if(!r)return;
+  if(!confirm('この予定を削除しますか？'))return;
+  rows[index]={...r,status:'cancelled',updatedAt:new Date().toISOString()};
+  if(!set('yoteiRecords',rows))return;
+  showDone('予定を削除しました');
+  renderRecent();
+}
+
+
+let checkTab='date';
+function allActiveRecords(){
+ const leaves=get('nenkyuRecords').map((r,i)=>({type:'休暇',source:'nenkyuRecords',i,r})).filter(x=>x.r.status!=='cancelled');
+ const trips=get('shucchoRecords').map((r,i)=>({type:'出張',source:'shucchoRecords',i,r})).filter(x=>x.r.status!=='cancelled');
+ const plans=get('yoteiRecords').map((r,i)=>({type:'予定',source:'yoteiRecords',i,r})).filter(x=>x.r.status!=='cancelled');
+ return [...leaves,...trips,...plans];
+}
+function recName(x){
+ const r=x.r;
+ if(x.type==='予定') return (r.targets||[]).join('・')||'全員';
+ return r.fullName||r.name||'';
+}
+function recTitle(x){
+ const r=x.r;
+ if(x.type==='休暇') return r.label||r.diary||r.kind||'休暇';
+ if(x.type==='出張') return (r.purpose||'')+(r.venue?('／'+r.venue):'');
+ return (r.title||'')+(r.place?('／'+r.place):'');
+}
+function recTime(x){
+ const r=x.r;
+ return [r.start,r.end].filter(Boolean).join('〜');
+}
+function renderCheckList(){
+ let arr=allActiveRecords();
+ if(checkTab==='unchecked') arr=arr.filter(x=>!x.r.checked);
+ if(checkTab==='checked') arr=arr.filter(x=>!!x.r.checked);
+ arr.sort((a,b)=>{
+   if(checkTab==='name') return recName(a).localeCompare(recName(b),'ja') || String(a.r.date||'').localeCompare(String(b.r.date||''));
+   if(checkTab==='kind') return a.type.localeCompare(b.type,'ja') || String(a.r.date||'').localeCompare(String(b.r.date||''));
+   return String(a.r.date||'').localeCompare(String(b.r.date||'')) || recName(a).localeCompare(recName(b),'ja');
+ });
+ const total=allActiveRecords();
+ $('checkSummary').textContent='全 '+total.length+'件　／　未確認 '+total.filter(x=>!x.r.checked).length+'件　／　確認済 '+total.filter(x=>x.r.checked).length+'件';
+ $('checkList').innerHTML=arr.length?arr.map(x=>{
+   const r=x.r, done=!!r.checked;
+   return '<div class="checkrow '+(done?'donecheck':'')+'">'+
+     '<button type="button" class="checkbtn" data-source="'+x.source+'" data-i="'+x.i+'">'+(done?'✓':'')+'</button>'+
+     '<div><strong>'+(r.date||'')+'</strong><div class="checkmeta">'+recTime(x)+'</div></div>'+
+     '<div class="checkkind"><strong>'+x.type+'</strong></div>'+
+     '<div class="checkmain"><strong>'+recName(x)+'</strong>　'+recTitle(x)+'</div>'+
+   '</div>';
+ }).join(''):'<div class="status">該当するデータはありません。</div>';
+ document.querySelectorAll('.checkbtn').forEach(b=>b.onclick=()=>{
+   const rows=get(b.dataset.source),i=Number(b.dataset.i);
+   if(!rows[i])return;
+   rows[i]={...rows[i],checked:!rows[i].checked,checkedAt:new Date().toISOString()};
+   if(set(b.dataset.source,rows)){renderCheckList();renderRecent();}
+ });
+}
+document.querySelectorAll('.checktab').forEach(b=>b.onclick=()=>{
+ document.querySelectorAll('.checktab').forEach(x=>x.classList.remove('active'));
+ b.classList.add('active');checkTab=b.dataset.checktab;renderCheckList();
+});
+
+function renderRecent(){
+ const leaves=get('nenkyuRecords').filter(r=>r.status!=='cancelled').map((r,i)=>({
+   type:'休暇',date:r.date,name:r.fullName||r.name,text:r.label||r.diary||r.kind||'年休',
+   time:(r.start||'')+'〜'+(r.end||''),sourceIndex:i
+ }));
+ const tripRows=get('shucchoRecords');
+ const trips=tripRows.map((r,i)=>({r,i})).filter(x=>x.r.status!=='cancelled').map(x=>({
+   type:'出張',date:x.r.date,name:x.r.fullName||x.r.name,text:(x.r.purpose||'')+'／'+(x.r.venue||''),
+   time:(x.r.start||'')+'〜'+(x.r.end||''),sourceIndex:x.i
+ }));
+ const scheduleRows=get('yoteiRecords');
+ const schedules=scheduleRows.map((r,i)=>({r,i})).filter(x=>x.r.status!=='cancelled').map(x=>({
+   type:'予定',date:x.r.date,name:(x.r.targets||[]).join('・')||'全員',
+   text:(x.r.title||'')+(x.r.place?('／'+x.r.place):''),
+   time:(x.r.start||'')+(x.r.start||x.r.end?'〜':'')+(x.r.end||''),sourceIndex:x.i
+ }));
+ const all=[...leaves,...trips,...schedules].sort((a,b)=>(b.date||'').localeCompare(a.date||'')).slice(0,16);
+
+ if(!all.length){$('recent').innerHTML='まだ登録はありません。';return}
+
+ $('recent').innerHTML=all.map(r=>{
+   const ops=r.type==='出張'
+     ? '<div class="miniops"><button type="button" class="minibtn editTrip" data-i="'+r.sourceIndex+'">修正</button><button type="button" class="minibtn cancelTrip" data-i="'+r.sourceIndex+'">削除</button></div>'
+     : (r.type==='予定'
+       ? '<div class="miniops"><button type="button" class="minibtn editSchedule" data-i="'+r.sourceIndex+'">修正</button><button type="button" class="minibtn cancelSchedule" data-i="'+r.sourceIndex+'">削除</button></div>'
+       : '<div class="miniops"><button type="button" class="minibtn editLeave" data-i="'+r.sourceIndex+'">修正</button><button type="button" class="minibtn cancelLeave" data-i="'+r.sourceIndex+'">削除</button></div>');
+   return '<div class="listitem"><div class="itemrow"><div><strong>'+r.type+'　'+r.date+'　'+r.name+'</strong>'+r.text+'　'+r.time+'</div>'+ops+'</div></div>';
+ }).join('');
+
+ document.querySelectorAll('.editLeave').forEach(btn=>btn.onclick=()=>loadLeaveEdit(Number(btn.dataset.i)));
+ document.querySelectorAll('.cancelLeave').forEach(btn=>btn.onclick=()=>cancelLeave(Number(btn.dataset.i)));
+ document.querySelectorAll('.editSchedule').forEach(btn=>btn.onclick=()=>loadScheduleEdit(Number(btn.dataset.i)));
+ document.querySelectorAll('.cancelSchedule').forEach(btn=>btn.onclick=()=>cancelSchedule(Number(btn.dataset.i)));
+ document.querySelectorAll('.editTrip').forEach(btn=>btn.onclick=()=>loadTripEdit(Number(btn.dataset.i)));
+ document.querySelectorAll('.cancelTrip').forEach(btn=>btn.onclick=()=>cancelTrip(Number(btn.dataset.i)));
+}
+
+function setRadio(name,value){
+ const el=document.querySelector('input[name="'+name+'"][value="'+value+'"]');
+ if(el) el.checked=true;
+}
+function parseTime(t){
+ const a=String(t||'').replace('：',':').split(':').map(Number);
+ return {h:a[0]||0,m:a[1]||0};
+}
+
+function selectLeaveRadio(r){
+ let pick=null;
+ if(r.kind==='特休')pick=document.querySelector('.leavepick[data-kind="特休"]');
+ else if(r.kind==='年休'){
+  pick=document.querySelector('.leavepick[data-kind="年休"]');if(pick)pick.checked=true;updateSpecialLeaveBox();
+  const h=r.oneDay||r.unit==='day'?'1day':String(r.hours||r.amount||'');
+  const hp=[...document.querySelectorAll('.nenkyuHourPick')].find(x=>x.dataset.hours===h);if(hp)hp.checked=true;return;
+ }else pick=[...document.querySelectorAll('.leavepick')].find(x=>x.dataset.label===(r.label||'')||x.dataset.kind===(r.kind||''));
+ if(pick)pick.checked=true;updateSpecialLeaveBox();
+ if(r.kind==='特休')$('specialLeaveNo').value=r.specialLeaveNo||(String(r.label||'').match(/（(.+?)）/)||[])[1]||'';
+}
+function loadLeaveEdit(index){
+ const rows=get('nenkyuRecords'),r=rows[index];if(!r)return;leaveEditIndex=index;
+ document.querySelectorAll('.namepick').forEach(x=>x.checked=false);let idx=staff.findIndex(p=>p.join(' ')===(r.fullName||''));if(idx<0)idx=staff.findIndex(p=>p[0]===r.name);if(idx>=0){const n=$('n'+idx);if(n)n.checked=true;}
+ $('date').value=r.date||$('date').value;const st=parseTime(r.start),et=parseTime(r.end);setRadio('startHour',st.h);setRadio('startMinute',st.m);setRadio('endHour',et.h);setRadio('endMinute',et.m);selectLeaveRadio(r);
+ const durVal=(r.oneDay||r.unit==='day')?'1day':String(r.hours||r.amount||'');
+ const dp=[...document.querySelectorAll('.leaveDurationPick')].find(x=>x.dataset.hours===durVal);
+ if(dp) dp.checked=true;
+ if(r.oneDay||r.unit==='day') clearTimeSelection();
+ $('leaveReg').textContent='休暇を修正保存';$('leaveEditing').textContent='修正中：'+(r.fullName||r.name)+'　'+(r.date||'')+'　'+(r.label||r.kind||'');$('leaveEditing').classList.add('show');window.scrollTo({top:0,behavior:'smooth'});
+}
+function cancelLeave(index){
+ const rows=get('nenkyuRecords'),r=rows[index];if(!r)return;if(!confirm('この休暇登録を削除しますか？'))return;rows[index]={...r,status:'cancelled',updatedAt:new Date().toISOString()};if(!set('nenkyuRecords',rows))return;if(leaveEditIndex===index){leaveEditIndex=null;$('leaveReg').textContent='年休・休暇を登録';$('leaveEditing').classList.remove('show');$('leaveEditing').textContent='';}showDone('休暇登録を削除しました');
+}
+
+function loadTripEdit(index){
+ const rows=get('shucchoRecords'),r=rows[index];if(!r)return;
+ tripEditIndex=index;
+
+ document.querySelectorAll('.namepick').forEach(x=>x.checked=false);
+ let idx=staff.findIndex(p=>p.join(' ')===(r.fullName||''));
+ if(idx<0) idx=staff.findIndex(p=>p[0]===r.name);
+ if(idx>=0){
+   const n=$('n'+idx);if(n)n.checked=true;
+ }
+
+ $('date').value=r.date||$('date').value;
+ $('purpose').value=r.purpose||'';
+ $('venue').value=r.venue||'';
+
+ const st=parseTime(r.start),et=parseTime(r.end);
+ setRadio('startHour',st.h);setRadio('startMinute',st.m);
+ setRadio('endHour',et.h);setRadio('endMinute',et.m);
+
+ $('tripReg').textContent='この出張を更新';
+ $('tripEditing').textContent='修正中：'+(r.fullName||r.name)+'　'+(r.date||'')+'　'+(r.purpose||'')+'／'+(r.venue||'');
+ $('tripEditing').classList.add('show');
+
+ window.scrollTo({top:0,behavior:'smooth'});
+}
+function cancelTrip(index){
+ const rows=get('shucchoRecords'),r=rows[index];if(!r)return;
+ if(!confirm((r.date||'')+' '+(r.fullName||r.name||'')+' の出張登録を削除しますか？'))return;
+ r.status='cancelled';r.cancelledAt=new Date().toISOString();rows[index]=r;set('shucchoRecords',rows);
+ if(tripEditIndex===index){
+   tripEditIndex=null;$('tripReg').textContent='出張を登録';$('tripEditing').classList.remove('show');$('tripEditing').textContent='';
+ }
+ showDone('出張登録を削除しました');
+}
+
+$('listBtn').onclick=()=>{renderRecent();window.scrollTo({top:document.body.scrollHeight,behavior:'smooth'})};
+$('excelBtn').onclick=()=>{
+ if(typeof XLSX==='undefined'){showDone('Excel機能を読み込めませんでした');return}
+ const leaves=get('nenkyuRecords').filter(r=>r.status!=='cancelled').map(r=>[r.date,'年休・休暇',r.fullName||r.name,r.label||r.diary||r.kind||'', '',r.start||'',r.end||'']);
+ const trips=get('shucchoRecords').filter(r=>r.status!=='cancelled').map(r=>[r.date,'出張',r.fullName||r.name,r.purpose||'',r.venue||'',r.start||'',r.end||'']);
+ const schedules=get('yoteiRecords').filter(r=>r.status!=='cancelled').map(r=>[r.date,'予定',(r.targets||[]).join('・'),r.title||'',r.place||'',r.start||'',r.end||'']);
+ const data=[['日付','区分','氏名・対象','内容・用務','会場','開始','終了'],...leaves,...trips,...schedules].sort((a,b)=>String(a[0]).localeCompare(String(b[0])));
+ const ws=XLSX.utils.aoa_to_sheet(data);ws['!cols']=[{wch:12},{wch:12},{wch:16},{wch:34},{wch:26},{wch:8},{wch:8}];
+ const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,'休暇・出張・予定一覧');XLSX.writeFile(wb,'休暇・出張・予定一覧_手城小.xlsx');
+};
+renderRecent();renderCheckList();
+(function(){
+  if(!storageAvailable()){
+    $('portalSync').textContent='この開き方では登録保存が使えません。Safariで開く必要があります。';
+    $('portalSync').style.color='#b55757';
+  }else{
+    const n=get('nenkyuRecords').length+get('shucchoRecords').length+get('yoteiRecords').length;
+    $('portalSync').textContent='保存機能：利用可能／登録済み '+n+'件';
+    $('portalSync').style.color='#3f7a54';
+  }
+})();
+})();
+</script></body></html>
