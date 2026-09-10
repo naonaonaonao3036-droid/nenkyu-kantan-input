@@ -374,6 +374,7 @@ function set(key,v){
     localStorage.setItem(key,raw); // keep yesterday's key too
     const check=localStorage.getItem(STORE_PREFIX+key);
     if(check!==raw) throw new Error('保存確認に失敗しました');
+    scheduleDriveSync();
     return true;
   }catch(e){
     $('portalSync').textContent='保存できません：'+e.message;
@@ -387,6 +388,7 @@ function showDone(text){
  $('done').classList.add('show');
  if($('clearTimeBtn')) $('clearTimeBtn').onclick=()=>{clearTimeSelection();showDone('時刻の選択を解除しました');};
 renderRecent();
+ if(typeof renderCheckList==='function') renderCheckList();
 }
 
 $('all').onclick=()=>document.querySelectorAll('.namepick').forEach(x=>x.checked=true);
