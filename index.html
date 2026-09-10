@@ -35,7 +35,7 @@
 <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
 </head><body><div class="wrap">
 <div class="top"><h1>休暇・出張・予定 かんたん入力</h1><strong>日付</strong><input id="date" type="date" style="height:40px;border:2px solid #d9a697;border-radius:10px;padding:0 9px;font-size:18px;font-weight:800">
-<div class="actions"><button id="listBtn" class="topbtn" type="button">登録一覧</button><button id="excelBtn" class="topbtn" type="button">Excel</button></div></div>
+<div class="actions"><button id="listBtn" class="topbtn" type="button">登録一覧</button><button id="excelBtn" class="topbtn" type="button">Excel</button><button id="driveExcelBtn" class="topbtn" type="button">DriveへExcel保存</button><span id="driveState" class="status">Drive保存：準備中</span><button id="backupDataBtn" class="topbtn" type="button">バックアップ</button></div></div>
 
 <section class="panel"><div class="title">① 名前（複数選択できます）</div>
 <div class="namegrid"><input class="pick namepick" type="checkbox" id="n0" data-i="0"><label class="btnlabel" for="n0">和田<span class="sub">亘</span></label><input class="pick namepick" type="checkbox" id="n1" data-i="1"><label class="btnlabel" for="n1">瀬尾</label><input class="pick namepick" type="checkbox" id="n2" data-i="2"><label class="btnlabel" for="n2">佐藤<span class="sub">かおり</span></label><input class="pick namepick" type="checkbox" id="n3" data-i="3"><label class="btnlabel" for="n3">岡田</label><input class="pick namepick" type="checkbox" id="n4" data-i="4"><label class="btnlabel" for="n4">兼藤</label><input class="pick namepick" type="checkbox" id="n5" data-i="5"><label class="btnlabel" for="n5">向井</label><input class="pick namepick" type="checkbox" id="n6" data-i="6"><label class="btnlabel" for="n6">井上<span class="sub">真維</span></label><input class="pick namepick" type="checkbox" id="n7" data-i="7"><label class="btnlabel" for="n7">池田</label><input class="pick namepick" type="checkbox" id="n8" data-i="8"><label class="btnlabel" for="n8">出口</label><input class="pick namepick" type="checkbox" id="n9" data-i="9"><label class="btnlabel" for="n9">千葉</label><input class="pick namepick" type="checkbox" id="n10" data-i="10"><label class="btnlabel" for="n10">萩原</label><input class="pick namepick" type="checkbox" id="n11" data-i="11"><label class="btnlabel" for="n11">傍田</label><input class="pick namepick" type="checkbox" id="n12" data-i="12"><label class="btnlabel" for="n12">井上<span class="sub">日向子</span></label><input class="pick namepick" type="checkbox" id="n13" data-i="13"><label class="btnlabel" for="n13">播本</label><input class="pick namepick" type="checkbox" id="n14" data-i="14"><label class="btnlabel" for="n14">石原</label><input class="pick namepick" type="checkbox" id="n15" data-i="15"><label class="btnlabel" for="n15">緒方</label><input class="pick namepick" type="checkbox" id="n16" data-i="16"><label class="btnlabel" for="n16">清水</label><input class="pick namepick" type="checkbox" id="n17" data-i="17"><label class="btnlabel" for="n17">阿部野</label><input class="pick namepick" type="checkbox" id="n18" data-i="18"><label class="btnlabel" for="n18">浦上</label><input class="pick namepick" type="checkbox" id="n19" data-i="19"><label class="btnlabel" for="n19">藤江</label><input class="pick namepick" type="checkbox" id="n20" data-i="20"><label class="btnlabel" for="n20">藤田</label><input class="pick namepick" type="checkbox" id="n21" data-i="21"><label class="btnlabel" for="n21">丹田</label><input class="pick namepick" type="checkbox" id="n22" data-i="22"><label class="btnlabel" for="n22">矢羽々</label><input class="pick namepick" type="checkbox" id="n23" data-i="23"><label class="btnlabel" for="n23">芳賀</label><input class="pick namepick" type="checkbox" id="n24" data-i="24"><label class="btnlabel" for="n24">柳田</label><input class="pick namepick" type="checkbox" id="n25" data-i="25"><label class="btnlabel" for="n25">小田</label><input class="pick namepick" type="checkbox" id="n26" data-i="26"><label class="btnlabel" for="n26">和田<span class="sub">亜弥乃</span></label><input class="pick namepick" type="checkbox" id="n27" data-i="27"><label class="btnlabel" for="n27">村上</label><input class="pick namepick" type="checkbox" id="n28" data-i="28"><label class="btnlabel" for="n28">藤本</label><input class="pick namepick" type="checkbox" id="n29" data-i="29"><label class="btnlabel" for="n29">足立</label><input class="pick namepick" type="checkbox" id="n30" data-i="30"><label class="btnlabel" for="n30">原井</label><input class="pick namepick" type="checkbox" id="n31" data-i="31"><label class="btnlabel" for="n31">大下</label><input class="pick namepick" type="checkbox" id="n32" data-i="32"><label class="btnlabel" for="n32">早瀬</label><input class="pick namepick" type="checkbox" id="n33" data-i="33"><label class="btnlabel" for="n33">西川</label><input class="pick namepick" type="checkbox" id="n34" data-i="34"><label class="btnlabel" for="n34">皿谷</label><input class="pick namepick" type="checkbox" id="n35" data-i="35"><label class="btnlabel" for="n35">岸本</label><input class="pick namepick" type="checkbox" id="n36" data-i="36"><label class="btnlabel" for="n36">山本</label><input class="pick namepick" type="checkbox" id="n37" data-i="37"><label class="btnlabel" for="n37">藤井</label><input class="pick namepick" type="checkbox" id="n38" data-i="38"><label class="btnlabel" for="n38">笠原</label><input class="pick namepick" type="checkbox" id="n39" data-i="39"><label class="btnlabel" for="n39">佐藤<span class="sub">裕子</span></label><input class="pick namepick" type="checkbox" id="n40" data-i="40"><label class="btnlabel" for="n40">羽原</label><input class="pick namepick" type="checkbox" id="n41" data-i="41"><label class="btnlabel" for="n41">谷</label><input class="pick namepick" type="checkbox" id="n42" data-i="42"><label class="btnlabel" for="n42">金森</label></div>
@@ -129,9 +129,183 @@
 </div>
 
 <script>
+
+async function driveFetchAll(){
+  if(!DRIVE_API_URL || DRIVE_API_URL.includes('https://script.google.com/macros/s/AKfycbxcnsJ0BlXzV2ZkwXGKG-cw4zvNzjx0IalRHlEWTrC2l8RZLqTE1SpYxPVuR3YzRMJk/exec')) return null;
+  const r=await fetch(DRIVE_API_URL+'?action=list',{cache:'no-store'});
+  const j=await r.json();
+  if(!j.ok) throw new Error(j.error||'Drive読込失敗');
+  return j;
+}
+function rawLocal(k){
+  const aliases=(typeof storageNames==='function')?storageNames(k):[k];
+  for(const name of aliases){
+    try{
+      const a=JSON.parse(localStorage.getItem(name)||'[]');
+      if(Array.isArray(a)&&a.length) return a;
+    }catch(e){}
+  }
+  return [];
+}
+async function driveSyncNow(){
+  if(!DRIVE_API_URL || DRIVE_API_URL.includes('https://script.google.com/macros/s/AKfycbxcnsJ0BlXzV2ZkwXGKG-cw4zvNzjx0IalRHlEWTrC2l8RZLqTE1SpYxPVuR3YzRMJk/exec')) return;
+  const payload={
+    action:'syncAll',
+    nenkyuRecords:rawLocal('nenkyuRecords'),
+    shucchoRecords:rawLocal('shucchoRecords'),
+    yoteiRecords:rawLocal('yoteiRecords')
+  };
+  const r=await fetch(DRIVE_API_URL,{
+    method:'POST',
+    headers:{'Content-Type':'text/plain;charset=utf-8'},
+    body:JSON.stringify(payload)
+  });
+  const j=await r.json();
+  if(!j.ok) throw new Error(j.error||'Drive保存失敗');
+  const e=document.getElementById('driveState');
+  if(e)e.textContent='Drive保存：済';
+}
+function scheduleDriveSync(){
+  const e=document.getElementById('driveState');
+  if(e)e.textContent='Drive保存：保存中…';
+  clearTimeout(driveSyncTimer);
+  driveSyncTimer=setTimeout(()=>driveSyncNow().catch(err=>{
+    if(e)e.textContent='Drive保存：失敗';
+    console.error(err);
+  }),350);
+}
+async function hydrateFromDrive(){
+  try{
+    const j=await driveFetchAll();
+    if(!j)return;
+    const sets=[
+      ['nenkyuRecords',j.nenkyuRecords||[]],
+      ['shucchoRecords',j.shucchoRecords||[]],
+      ['yoteiRecords',j.yoteiRecords||[]]
+    ];
+    sets.forEach(([k,remote])=>{
+      if(remote.length){
+        const names=(typeof storageNames==='function')?storageNames(k):[k];
+        names.forEach(n=>localStorage.setItem(n,JSON.stringify(remote)));
+      }
+    });
+    const e=document.getElementById('driveState');
+    if(e)e.textContent='Drive保存：接続済';
+  }catch(err){
+    const e=document.getElementById('driveState');
+    if(e)e.textContent='Drive保存：未接続';
+    console.error(err);
+  }
+}
+async function exportExcelToDrive(){
+  if(!DRIVE_API_URL || DRIVE_API_URL.includes('https://script.google.com/macros/s/AKfycbxcnsJ0BlXzV2ZkwXGKG-cw4zvNzjx0IalRHlEWTrC2l8RZLqTE1SpYxPVuR3YzRMJk/exec')){
+    alert('Drive連携URLが未設定です');
+    return;
+  }
+  const payload={
+    action:'exportExcel',
+    nenkyuRecords:rawLocal('nenkyuRecords'),
+    shucchoRecords:rawLocal('shucchoRecords'),
+    yoteiRecords:rawLocal('yoteiRecords')
+  };
+  const r=await fetch(DRIVE_API_URL,{
+    method:'POST',
+    headers:{'Content-Type':'text/plain;charset=utf-8'},
+    body:JSON.stringify(payload)
+  });
+  const j=await r.json();
+  if(!j.ok){alert(j.error||'Excel出力に失敗しました');return;}
+  if(j.url) window.open(j.url,'_blank');
+}
+
+const DRIVE_API_URL='https://script.google.com/macros/s/AKfycbxcnsJ0BlXzV2ZkwXGKG-cw4zvNzjx0IalRHlEWTrC2l8RZLqTE1SpYxPVuR3YzRMJk/exec';
+let driveSyncTimer=null;
+
 (function(){
 const staff=[["和田", "亘"], ["瀬尾", "奈緒美"], ["佐藤", "かおり"], ["岡田", "真緒"], ["兼藤", "佳奈"], ["向井", "杏奴"], ["井上", "真維"], ["池田", "真菜"], ["出口", "知子"], ["千葉", "月乃"], ["萩原", "優"], ["傍田", "美華"], ["井上", "日向子"], ["播本", "太平"], ["石原", "繭子"], ["緒方", "香織"], ["清水", "遥斗"], ["阿部野", "由佳"], ["浦上", "直輝"], ["藤江", "一雅"], ["藤田", "壮真"], ["丹田", "英里"], ["矢羽々", "由佳"], ["芳賀", "麻衣子"], ["柳田", "啓子"], ["小田", "祐希乃"], ["和田", "亜弥乃"], ["村上", "ユミ"], ["藤本", "洋平"], ["足立", "かおり"], ["原井", "さおり"], ["大下", "順子"], ["早瀬", "彩花"], ["西川", "順子"], ["皿谷", "久恵"], ["岸本", "千香子"], ["山本", "三恵子"], ["藤井", "真理子"], ["笠原", "奈都江"], ["佐藤", "裕子"], ["羽原", "和子"], ["谷", "奈津子"], ["金森", "法子"]];
 const $=id=>document.getElementById(id);
+const STORAGE_ALIASES={
+  nenkyuRecords:['teshiro_2026_nenkyuRecords','nenkyuRecords'],
+  shucchoRecords:['teshiro_2026_shucchoRecords','shucchoRecords'],
+  yoteiRecords:['teshiro_2026_yoteiRecords','yoteiRecords']
+};
+
+function storageNames(k){
+  return STORAGE_ALIASES[k] || [k];
+}
+
+function get(k){
+  const names=storageNames(k);
+  let merged=[];
+  const seen=new Set();
+
+  names.forEach(name=>{
+    try{
+      const arr=JSON.parse(localStorage.getItem(name)||'[]');
+      if(Array.isArray(arr)){
+        arr.forEach((r,idx)=>{
+          const sig=[
+            r.id||'',
+            r.date||'',
+            r.fullName||r.name||'',
+            r.kind||r.purpose||r.title||'',
+            r.amount||'',
+            r.start||'',
+            r.end||'',
+            r.updatedAt||r.createdAt||'',
+            idx
+          ].join('|');
+          if(!seen.has(sig)){
+            seen.add(sig);
+            merged.push(r);
+          }
+        });
+      }
+    }catch(e){}
+  });
+
+  // One-time migration: write merged data back to every compatible key.
+  try{
+    names.forEach(name=>localStorage.setItem(name,JSON.stringify(merged)));
+  }catch(e){}
+
+  return merged;
+}
+
+function set(k,v){
+  try{
+    const names=storageNames(k);
+    const data=JSON.stringify(v);
+
+    // Main copies
+    names.forEach(name=>localStorage.setItem(name,data));
+
+    // Rolling backup copies. These survive future code changes as long as browser data remains.
+    const stamp=new Date().toISOString().slice(0,10);
+    localStorage.setItem('backup_'+k+'_latest',data);
+    localStorage.setItem('backup_'+k+'_'+stamp,data);
+
+    scheduleDriveSync();
+    return true;
+  }catch(e){
+    showDone('保存できませんでした');
+    return false;
+  }
+}
+
+function restoreLatestBackups(){
+  ['nenkyuRecords','shucchoRecords','yoteiRecords'].forEach(k=>{
+    const current=get(k);
+    if(current.length)return;
+    try{
+      const b=JSON.parse(localStorage.getItem('backup_'+k+'_latest')||'[]');
+      if(Array.isArray(b)&&b.length){
+        set(k,b);
+      }
+    }catch(e){}
+  });
+}
+
 let tripEditIndex=null;
 let scheduleEditIndex=null;
 let leaveEditIndex=null;
@@ -617,6 +791,7 @@ $('excelBtn').onclick=()=>{
  const ws=XLSX.utils.aoa_to_sheet(data);ws['!cols']=[{wch:12},{wch:12},{wch:16},{wch:34},{wch:26},{wch:8},{wch:8}];
  const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,'休暇・出張・予定一覧');XLSX.writeFile(wb,'休暇・出張・予定一覧_手城小.xlsx');
 };
+restoreLatestBackups();
 renderRecent();renderCheckList();
 (function(){
   if(!storageAvailable()){
@@ -629,4 +804,26 @@ renderRecent();renderCheckList();
   }
 })();
 })();
+
+$('driveExcelBtn').onclick=()=>exportExcelToDrive();
+
+$('backupDataBtn').onclick=()=>{
+  const payload={
+    exportedAt:new Date().toISOString(),
+    nenkyuRecords:get('nenkyuRecords'),
+    shucchoRecords:get('shucchoRecords'),
+    yoteiRecords:get('yoteiRecords')
+  };
+  const blob=new Blob([JSON.stringify(payload,null,2)],{type:'application/json'});
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download='休暇出張予定_バックアップ_'+new Date().toISOString().slice(0,10)+'.json';
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  setTimeout(()=>URL.revokeObjectURL(a.href),1000);
+};
+
+
+hydrateFromDrive().then(()=>{try{renderRecent();renderCheckList();}catch(e){}});
 </script></body></html>
