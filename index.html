@@ -8,7 +8,7 @@
 .panel{background:#fff;border:1px solid var(--line);border-radius:12px;padding:7px;margin-top:6px}.title{font-weight:800;font-size:13px;margin-bottom:5px}
 .namegrid{display:grid;grid-template-columns:repeat(11,minmax(0,1fr));gap:3px}.pick{position:absolute;opacity:0;pointer-events:none}
 .btnlabel,.timebtn,.optionbtn{display:flex;align-items:center;justify-content:center;border:1px solid var(--line);background:#fff;border-radius:8px;min-height:34px;font-weight:700;font-size:12px;cursor:pointer;user-select:none;-webkit-user-select:none;padding:4px}
-.namepick:checked+.btnlabel,.pick:checked+.timebtn,.leavepick:checked+.optionbtn{background:var(--sel);border-color:#d9a697}
+.namepick:checked+.btnlabel,.pick:checked+.timebtn,.leavepick:checked+.optionbtn,.nenkyuHourPick:checked+.optionbtn{background:var(--sel);border-color:#d9a697}
 .sub{display:block;font-size:9px;color:var(--muted);margin-left:3px}.row{display:grid;grid-template-columns:1.25fr 1fr;gap:6px;margin-top:6px}
 .timeblock{display:grid;grid-template-columns:1fr 1fr;gap:8px}.timegrid{display:grid;grid-template-columns:repeat(10,1fr);gap:3px}.mingrid{display:grid;grid-template-columns:repeat(12,1fr);gap:3px;margin-top:3px}
 .leavegrid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:3px}.field label{font-size:11px;color:var(--muted);font-weight:800;display:block;margin:5px 0 3px}
@@ -231,6 +231,16 @@ function updateSpecialLeaveBox(){
 }
 document.querySelectorAll('.leavepick').forEach(x=>x.addEventListener('change',updateSpecialLeaveBox));
 updateSpecialLeaveBox();
+
+document.querySelectorAll('.nenkyuHourPick').forEach(r=>{
+  const label=document.querySelector('label[for="'+r.id+'"]');
+  if(label){
+    label.addEventListener('click',()=>{
+      r.checked=true;
+    });
+  }
+});
+
 function nenkyuSelection(){
  const h=document.querySelector('.nenkyuHourPick:checked');
  if(!h)return null;
