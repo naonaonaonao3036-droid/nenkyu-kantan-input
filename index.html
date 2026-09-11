@@ -35,7 +35,7 @@
 <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
 </head><body><div class="wrap">
 <div class="top"><h1>休暇・出張・予定 かんたん入力</h1><strong>日付</strong><input id="date" type="date" style="height:40px;border:2px solid #d9a697;border-radius:10px;padding:0 9px;font-size:18px;font-weight:800">
-<div class="actions"><button id="listBtn" class="topbtn" type="button">登録一覧</button><button id="excelBtn" class="topbtn" type="button">Excel</button><button id="driveExcelBtn" class="topbtn" type="button">DriveへExcel保存</button><span id="driveState" class="status">Drive保存：準備中</span><button id="backupDataBtn" class="topbtn" type="button">バックアップ</button><button id="undoChoiceBtn" class="topbtn" type="button">↩ 入力を1つ戻す</button><button id="resetInputBtn" class="topbtn" type="button">入力内容をリセット</button><button id="undoDeleteBtn" class="topbtn" type="button">↩ 直前の削除を戻す</button></div></div>
+<div class="actions"><button id="listBtn" class="topbtn" type="button">登録一覧</button><button id="excelBtn" class="topbtn" type="button">Excel</button><button id="driveExcelBtn" class="topbtn" type="button">DriveへExcel保存</button><span id="driveState" class="status">Drive保存：準備中</span><button id="backupDataBtn" class="topbtn" type="button">バックアップ</button><button id="recoverDataBtn" class="topbtn" type="button">入力済みデータを復旧</button><button id="undoChoiceBtn" class="topbtn" type="button">↩ 入力を1つ戻す</button><button id="resetInputBtn" class="topbtn" type="button">入力内容をリセット</button><button id="undoDeleteBtn" class="topbtn" type="button">↩ 直前の削除を戻す</button></div></div>
 
 <section class="panel"><div class="title">① 名前（複数選択できます）</div>
 <div class="namegrid"><input class="pick namepick" type="checkbox" id="n0" data-i="0"><label class="btnlabel" for="n0">和田<span class="sub">亘</span></label><input class="pick namepick" type="checkbox" id="n1" data-i="1"><label class="btnlabel" for="n1">瀬尾</label><input class="pick namepick" type="checkbox" id="n2" data-i="2"><label class="btnlabel" for="n2">佐藤<span class="sub">かおり</span></label><input class="pick namepick" type="checkbox" id="n3" data-i="3"><label class="btnlabel" for="n3">岡田</label><input class="pick namepick" type="checkbox" id="n4" data-i="4"><label class="btnlabel" for="n4">兼藤</label><input class="pick namepick" type="checkbox" id="n5" data-i="5"><label class="btnlabel" for="n5">向井</label><input class="pick namepick" type="checkbox" id="n6" data-i="6"><label class="btnlabel" for="n6">井上<span class="sub">真維</span></label><input class="pick namepick" type="checkbox" id="n7" data-i="7"><label class="btnlabel" for="n7">池田</label><input class="pick namepick" type="checkbox" id="n8" data-i="8"><label class="btnlabel" for="n8">出口</label><input class="pick namepick" type="checkbox" id="n9" data-i="9"><label class="btnlabel" for="n9">千葉</label><input class="pick namepick" type="checkbox" id="n10" data-i="10"><label class="btnlabel" for="n10">萩原</label><input class="pick namepick" type="checkbox" id="n11" data-i="11"><label class="btnlabel" for="n11">傍田</label><input class="pick namepick" type="checkbox" id="n12" data-i="12"><label class="btnlabel" for="n12">井上<span class="sub">日向子</span></label><input class="pick namepick" type="checkbox" id="n13" data-i="13"><label class="btnlabel" for="n13">播本</label><input class="pick namepick" type="checkbox" id="n14" data-i="14"><label class="btnlabel" for="n14">石原</label><input class="pick namepick" type="checkbox" id="n15" data-i="15"><label class="btnlabel" for="n15">緒方</label><input class="pick namepick" type="checkbox" id="n16" data-i="16"><label class="btnlabel" for="n16">清水</label><input class="pick namepick" type="checkbox" id="n17" data-i="17"><label class="btnlabel" for="n17">阿部野</label><input class="pick namepick" type="checkbox" id="n18" data-i="18"><label class="btnlabel" for="n18">浦上</label><input class="pick namepick" type="checkbox" id="n19" data-i="19"><label class="btnlabel" for="n19">藤江</label><input class="pick namepick" type="checkbox" id="n20" data-i="20"><label class="btnlabel" for="n20">藤田</label><input class="pick namepick" type="checkbox" id="n21" data-i="21"><label class="btnlabel" for="n21">丹田</label><input class="pick namepick" type="checkbox" id="n22" data-i="22"><label class="btnlabel" for="n22">矢羽々</label><input class="pick namepick" type="checkbox" id="n23" data-i="23"><label class="btnlabel" for="n23">芳賀</label><input class="pick namepick" type="checkbox" id="n24" data-i="24"><label class="btnlabel" for="n24">柳田</label><input class="pick namepick" type="checkbox" id="n25" data-i="25"><label class="btnlabel" for="n25">小田</label><input class="pick namepick" type="checkbox" id="n26" data-i="26"><label class="btnlabel" for="n26">和田<span class="sub">亜弥乃</span></label><input class="pick namepick" type="checkbox" id="n27" data-i="27"><label class="btnlabel" for="n27">村上</label><input class="pick namepick" type="checkbox" id="n28" data-i="28"><label class="btnlabel" for="n28">藤本</label><input class="pick namepick" type="checkbox" id="n29" data-i="29"><label class="btnlabel" for="n29">足立</label><input class="pick namepick" type="checkbox" id="n30" data-i="30"><label class="btnlabel" for="n30">原井</label><input class="pick namepick" type="checkbox" id="n31" data-i="31"><label class="btnlabel" for="n31">大下</label><input class="pick namepick" type="checkbox" id="n32" data-i="32"><label class="btnlabel" for="n32">早瀬</label><input class="pick namepick" type="checkbox" id="n33" data-i="33"><label class="btnlabel" for="n33">西川</label><input class="pick namepick" type="checkbox" id="n34" data-i="34"><label class="btnlabel" for="n34">皿谷</label><input class="pick namepick" type="checkbox" id="n35" data-i="35"><label class="btnlabel" for="n35">岸本</label><input class="pick namepick" type="checkbox" id="n36" data-i="36"><label class="btnlabel" for="n36">山本</label><input class="pick namepick" type="checkbox" id="n37" data-i="37"><label class="btnlabel" for="n37">藤井</label><input class="pick namepick" type="checkbox" id="n38" data-i="38"><label class="btnlabel" for="n38">笠原</label><input class="pick namepick" type="checkbox" id="n39" data-i="39"><label class="btnlabel" for="n39">佐藤<span class="sub">裕子</span></label><input class="pick namepick" type="checkbox" id="n40" data-i="40"><label class="btnlabel" for="n40">羽原</label><input class="pick namepick" type="checkbox" id="n41" data-i="41"><label class="btnlabel" for="n41">谷</label><input class="pick namepick" type="checkbox" id="n42" data-i="42"><label class="btnlabel" for="n42">金森</label><input class="pick namepick" type="checkbox" id="n43" data-i="43"><label class="btnlabel" for="n43">松下</label></div>
@@ -175,47 +175,17 @@ function scheduleDriveSync(){
   }),350);
 }
 async function hydrateFromDrive(){
-  try{
-    const j=await driveFetchAll();
-    if(!j)return;
-    const sets=[
-      ['nenkyuRecords',j.nenkyuRecords||[]],
-      ['shucchoRecords',j.shucchoRecords||[]],
-      ['yoteiRecords',j.yoteiRecords||[]]
-    ];
-    sets.forEach(([k,remote])=>{
-      if(remote.length){
-        const names=(typeof storageNames==='function')?storageNames(k):[k];
-        names.forEach(n=>localStorage.setItem(n,JSON.stringify(remote)));
-      }
-    });
-    const e=document.getElementById('driveState');
-    if(e)e.textContent='Drive保存：接続済';
-  }catch(err){
-    const e=document.getElementById('driveState');
-    if(e)e.textContent='Drive保存：未接続';
-    console.error(err);
+  // Old Drive endpoint can replace the source sheet. Do not hydrate/overwrite automatically.
+  if(document.getElementById('driveState')){
+    document.getElementById('driveState').textContent='保存：端末＋バックアップ（元データ保護）';
+    document.getElementById('driveState').style.color='#3f7a54';
   }
+  return null;
 }
 async function exportExcelToDrive(){
-  if(!DRIVE_API_URL || DRIVE_API_URL.includes('https://script.google.com/macros/s/AKfycbxcnsJ0BlXzV2ZkwXGKG-cw4zvNzjx0IalRHlEWTrC2l8RZLqTE1SpYxPVuR3YzRMJk/exec')){
-    alert('Drive連携URLが未設定です');
-    return;
-  }
-  const payload={
-    action:'exportExcel',
-    nenkyuRecords:rawLocal('nenkyuRecords'),
-    shucchoRecords:rawLocal('shucchoRecords'),
-    yoteiRecords:rawLocal('yoteiRecords')
-  };
-  const r=await fetch(DRIVE_API_URL,{
-    method:'POST',
-    headers:{'Content-Type':'text/plain;charset=utf-8'},
-    body:JSON.stringify(payload)
-  });
-  const j=await r.json();
-  if(!j.ok){alert(j.error||'Excel出力に失敗しました');return;}
-  if(j.url) window.open(j.url,'_blank');
+  // Safety: the old server-side export performed syncAll first and could overwrite the source.
+  // Use the local Excel export instead.
+  if(document.getElementById('excelBtn')) document.getElementById('excelBtn').click();
 }
 
 const DRIVE_API_URL='https://script.google.com/macros/s/AKfycbxcnsJ0BlXzV2ZkwXGKG-cw4zvNzjx0IalRHlEWTrC2l8RZLqTE1SpYxPVuR3YzRMJk/exec';
@@ -386,6 +356,7 @@ $('timeReset').onclick=()=>{resetTimeOnly();showDone('時刻の選択を解除�
 
 function jp(h,m){return h+'：'+String(m).padStart(2,'0')}
 const STORE_PREFIX='teshiro_2026_';
+
 function storageAvailable(){
   try{
     const k='__storage_test__';
@@ -394,36 +365,149 @@ function storageAvailable(){
     return true;
   }catch(e){ return false; }
 }
-function get(key){
+
+function _safeArray(key){
   try{
-    // New key first, then legacy key for compatibility with yesterday's data.
-    let raw=localStorage.getItem(STORE_PREFIX+key);
-    if(!raw) raw=localStorage.getItem(key);
-    if(!raw) return [];
-    const v=JSON.parse(raw);
+    const v=JSON.parse(localStorage.getItem(key)||'[]');
     return Array.isArray(v)?v:[];
-  }catch(e){
-    console.error('read error',e);
-    return [];
-  }
+  }catch(e){return []}
 }
+
+function _recordSig(r){
+  return [
+    r.id||'', r.date||'', r.fullName||r.name||'',
+    r.kind||r.purpose||r.title||'', r.amount||'',
+    r.start||'', r.end||'', r.venue||r.place||'',
+    r.updatedAt||r.createdAt||''
+  ].join('|');
+}
+
+function _legacyJournalRecords(key){
+  const wantType = key==='nenkyuRecords' ? '休暇' : key==='shucchoRecords' ? '出張' : '予定';
+  const map=new Map();
+
+  // Broken "immutable base" version: recover its frozen base.
+  try{
+    const base=JSON.parse(localStorage.getItem('teshiro_immutable_base_v1')||'null');
+    const arr=base&&Array.isArray(base.records)?base.records:[];
+    arr.filter(r=>r&&r.type===wantType).forEach(r=>map.set(String(r.id||_recordSig(r)),{...r}));
+  }catch(e){}
+
+  // Recover additions/updates made while that version was being used.
+  try{
+    const changes=JSON.parse(localStorage.getItem('teshiro_changes_v1')||'[]');
+    if(Array.isArray(changes)){
+      changes.forEach(c=>{
+        if(!c||!c.targetId)return;
+        if(c.op==='ADD' && c.record && c.record.type===wantType){
+          map.set(String(c.targetId),{...c.record,id:String(c.targetId)});
+        }else if(c.op==='UPDATE' && c.record){
+          const old=map.get(String(c.targetId));
+          if(old && old.type===wantType) map.set(String(c.targetId),{...old,...c.record,id:String(c.targetId)});
+        }else if(c.op==='CANCEL'){
+          const old=map.get(String(c.targetId)); if(old) map.set(String(c.targetId),{...old,status:'cancelled'});
+        }else if(c.op==='RESTORE'){
+          const old=map.get(String(c.targetId)); if(old) map.set(String(c.targetId),{...old,status:'active'});
+        }
+      });
+    }
+  }catch(e){}
+
+  return [...map.values()];
+}
+
+function get(key){
+  // IMPORTANT: never trust only one key. Recover from every version/backup we've used.
+  const keys=[
+    STORE_PREFIX+key,
+    key,
+    'backup_'+key+'_latest'
+  ];
+  try{
+    for(let i=0;i<localStorage.length;i++){
+      const k=localStorage.key(i);
+      if(k && k.startsWith('backup_'+key+'_')) keys.push(k);
+    }
+  }catch(e){}
+
+  const merged=[];
+  const byId=new Map();
+  const noIdSeen=new Set();
+
+  function addRecord(r){
+    if(!r || typeof r!=='object')return;
+    if(r.id){
+      const id=String(r.id);
+      const old=byId.get(id);
+      if(!old){byId.set(id,{...r});return;}
+      const ot=Date.parse(old.updatedAt||old.createdAt||0)||0;
+      const nt=Date.parse(r.updatedAt||r.createdAt||0)||0;
+      if(nt>=ot) byId.set(id,{...old,...r});
+      return;
+    }
+    const sig=_recordSig(r);
+    if(!noIdSeen.has(sig)){noIdSeen.add(sig);merged.push({...r});}
+  }
+
+  [...new Set(keys)].forEach(k=>_safeArray(k).forEach(addRecord));
+  _legacyJournalRecords(key).forEach(addRecord);
+  const out=[...byId.values(),...merged];
+
+  // Write the recovered union back to all compatible local keys.
+  // This does NOT delete anything and does NOT touch the Drive/Excel source.
+  try{
+    const raw=JSON.stringify(out);
+    localStorage.setItem(STORE_PREFIX+key,raw);
+    localStorage.setItem(key,raw);
+    localStorage.setItem('backup_'+key+'_latest',raw);
+  }catch(e){}
+
+  return out;
+}
+
 function set(key,v){
   try{
     if(!storageAvailable()) throw new Error('この開き方ではブラウザ保存が使えません');
-    const raw=JSON.stringify(v);
+
+    // Merge with everything recoverable before saving, so a short list can never wipe a longer list.
+    const old=get(key);
+    const byId=new Map();
+    const noId=[];
+    [...old,...(Array.isArray(v)?v:[])].forEach(r=>{
+      if(!r||typeof r!=='object')return;
+      if(r.id){
+        const id=String(r.id), prev=byId.get(id);
+        if(!prev){byId.set(id,{...r});return;}
+        const pt=Date.parse(prev.updatedAt||prev.createdAt||0)||0;
+        const nt=Date.parse(r.updatedAt||r.createdAt||0)||0;
+        if(nt>=pt)byId.set(id,{...prev,...r});
+      }else noId.push(r);
+    });
+    const out=[...byId.values(),...noId];
+
+    const raw=JSON.stringify(out);
     localStorage.setItem(STORE_PREFIX+key,raw);
-    localStorage.setItem(key,raw); // keep yesterday's key too
-    const check=localStorage.getItem(STORE_PREFIX+key);
-    if(check!==raw) throw new Error('保存確認に失敗しました');
-    scheduleDriveSync();
+    localStorage.setItem(key,raw);
+    localStorage.setItem('backup_'+key+'_latest',raw);
+    localStorage.setItem('backup_'+key+'_'+new Date().toISOString().slice(0,10),raw);
+
+    // Do NOT auto-sync to the old destructive Drive endpoint.
+    // It previously cleared/replaced "本番データ". Keep data local+backup until the backend is made append-only.
+    if($('driveState')){
+      $('driveState').textContent='保存：端末＋バックアップ済（元データ上書き停止中）';
+      $('driveState').style.color='#3f7a54';
+    }
     return true;
   }catch(e){
-    $('portalSync').textContent='保存できません：'+e.message;
-    $('portalSync').style.color='#b55757';
+    if($('portalSync')){
+      $('portalSync').textContent='保存できません：'+e.message;
+      $('portalSync').style.color='#b55757';
+    }
     console.error('write error',e);
     return false;
   }
 }
+
 function showDone(text){
  $('done').innerHTML='✓ <strong>'+text+'</strong><br><span style="font-size:12px;font-weight:700">登録は保存済みです。画面を閉じても同じSafariで残ります。</span>';
  $('done').classList.add('show');
@@ -932,6 +1016,13 @@ $('backupDataBtn').onclick=()=>{
   setTimeout(()=>URL.revokeObjectURL(a.href),1000);
 };
 
+
+
+if($('recoverDataBtn')) $('recoverDataBtn').onclick=()=>{
+  const a=get('nenkyuRecords'),b=get('shucchoRecords'),c=get('yoteiRecords');
+  renderRecent();renderCheckList();
+  showDone('復旧確認：休暇 '+a.filter(x=>x.status!=='cancelled').length+'件／出張 '+b.filter(x=>x.status!=='cancelled').length+'件／予定 '+c.filter(x=>x.status!=='cancelled').length+'件');
+};
 
 hydrateFromDrive().then(()=>{try{renderRecent();renderCheckList();}catch(e){}});
 </script></body></html>
