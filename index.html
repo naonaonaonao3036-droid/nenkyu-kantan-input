@@ -375,124 +375,120 @@ function _safeArray(key){
 
 function _recordSig(r){
   return [
-    r.id||'', r.date||'', r.fullName||r.name||'',
-    r.kind||r.purpose||r.title||'', r.amount||'',
-    r.start||'', r.end||'', r.venue||r.place||'',
-    r.updatedAt||r.createdAt||''
+    r.date||'', r.fullName||r.name||'',
+    r.kind||r.purpose||r.title||'', r.label||'',
+    r.amount||'', r.unit||'', r.start||'', r.end||'',
+    r.venue||r.place||'', Array.isArray(r.targets)?r.targets.join('・'):(r.targets||''),
+    r.specialLeaveNo||'', r.note||''
   ].join('|');
 }
-
+function _hash32(s){
+  let h=2166136261;
+  s=String(s||'');
+  for(let i=0;i<s.length;i++){h^=s.charCodeAt(i);h=Math.imul(h,16777619);}
+  return (h>>>0).toString(36);
+}
+function _ensureId(r,key){
+  if(!r || typeof r!=='object') return r;
+  if(r.id) return r;
+  // Same logical record gets the same id across old/local/backup copies.
+  return {...r,id:'legacy-'+_hash32(key+'|'+_recordSig(r))};
+}
+function _safeArray(key){
+  try{
+    const v=JSON.parse(localStorage.getItem(key)||'[]');
+    return Array.isArray(v)?v:[];
+  }catch(e){return []}
+}
 function _legacyJournalRecords(key){
   const wantType = key==='nenkyuRecords' ? '休暇' : key==='shucchoRecords' ? '出張' : '予定';
   const map=new Map();
-
-  // Broken "immutable base" version: recover its frozen base.
   try{
     const base=JSON.parse(localStorage.getItem('teshiro_immutable_base_v1')||'null');
     const arr=base&&Array.isArray(base.records)?base.records:[];
-    arr.filter(r=>r&&r.type===wantType).forEach(r=>map.set(String(r.id||_recordSig(r)),{...r}));
+    arr.filter(r=>r&&r.type===wantType).forEach(r=>{
+      const rr=_ensureId(r,key); map.set(String(rr.id),rr);
+    });
   }catch(e){}
-
-  // Recover additions/updates made while that version was being used.
   try{
     const changes=JSON.parse(localStorage.getItem('teshiro_changes_v1')||'[]');
     if(Array.isArray(changes)){
       changes.forEach(c=>{
         if(!c||!c.targetId)return;
+        const tid=String(c.targetId);
         if(c.op==='ADD' && c.record && c.record.type===wantType){
-          map.set(String(c.targetId),{...c.record,id:String(c.targetId)});
+          const rr=_ensureId({...c.record,id:tid},key); map.set(tid,rr);
         }else if(c.op==='UPDATE' && c.record){
-          const old=map.get(String(c.targetId));
-          if(old && old.type===wantType) map.set(String(c.targetId),{...old,...c.record,id:String(c.targetId)});
+          const old=map.get(tid);
+          if(old && old.type===wantType) map.set(tid,{...old,...c.record,id:tid});
         }else if(c.op==='CANCEL'){
-          const old=map.get(String(c.targetId)); if(old) map.set(String(c.targetId),{...old,status:'cancelled'});
+          const old=map.get(tid); if(old) map.set(tid,{...old,status:'cancelled'});
         }else if(c.op==='RESTORE'){
-          const old=map.get(String(c.targetId)); if(old) map.set(String(c.targetId),{...old,status:'active'});
+          const old=map.get(tid); if(old) map.set(tid,{...old,status:'active'});
         }
       });
     }
   }catch(e){}
-
   return [...map.values()];
 }
-
+function _mergeRecords(key, arrays){
+  const byId=new Map();
+  const sigToId=new Map();
+  arrays.forEach(arr=>{
+    (Array.isArray(arr)?arr:[]).forEach(raw=>{
+      if(!raw||typeof raw!=='object')return;
+      let r=_ensureId(raw,key);
+      const sig=_recordSig(r);
+      // Deduplicate old copies that are logically the same.
+      if(sigToId.has(sig) && String(r.id).startsWith('legacy-')){
+        r={...r,id:sigToId.get(sig)};
+      }else if(!sigToId.has(sig)){
+        sigToId.set(sig,String(r.id));
+      }
+      const id=String(r.id);
+      const old=byId.get(id);
+      if(!old){byId.set(id,{...r});return;}
+      const ot=Date.parse(old.updatedAt||old.createdAt||0)||0;
+      const nt=Date.parse(r.updatedAt||r.createdAt||0)||0;
+      // Newer copy wins, but preserve checked state if either copy is checked.
+      const winner=nt>=ot?{...old,...r}:{...r,...old};
+      winner.checked=!!(old.checked||r.checked);
+      winner.checkedAt=r.checkedAt||old.checkedAt||'';
+      byId.set(id,winner);
+    });
+  });
+  return [...byId.values()];
+}
 function get(key){
-  // IMPORTANT: never trust only one key. Recover from every version/backup we've used.
-  const keys=[
-    STORE_PREFIX+key,
-    key,
-    'backup_'+key+'_latest'
-  ];
+  const keys=[STORE_PREFIX+key,key,'backup_'+key+'_latest'];
   try{
     for(let i=0;i<localStorage.length;i++){
       const k=localStorage.key(i);
       if(k && k.startsWith('backup_'+key+'_')) keys.push(k);
     }
   }catch(e){}
-
-  const merged=[];
-  const byId=new Map();
-  const noIdSeen=new Set();
-
-  function addRecord(r){
-    if(!r || typeof r!=='object')return;
-    if(r.id){
-      const id=String(r.id);
-      const old=byId.get(id);
-      if(!old){byId.set(id,{...r});return;}
-      const ot=Date.parse(old.updatedAt||old.createdAt||0)||0;
-      const nt=Date.parse(r.updatedAt||r.createdAt||0)||0;
-      if(nt>=ot) byId.set(id,{...old,...r});
-      return;
-    }
-    const sig=_recordSig(r);
-    if(!noIdSeen.has(sig)){noIdSeen.add(sig);merged.push({...r});}
-  }
-
-  [...new Set(keys)].forEach(k=>_safeArray(k).forEach(addRecord));
-  _legacyJournalRecords(key).forEach(addRecord);
-  const out=[...byId.values(),...merged];
-
-  // Write the recovered union back to all compatible local keys.
-  // This does NOT delete anything and does NOT touch the Drive/Excel source.
+  const arrays=[...new Set(keys)].map(_safeArray);
+  arrays.push(_legacyJournalRecords(key));
+  const out=_mergeRecords(key,arrays);
   try{
     const raw=JSON.stringify(out);
     localStorage.setItem(STORE_PREFIX+key,raw);
     localStorage.setItem(key,raw);
     localStorage.setItem('backup_'+key+'_latest',raw);
   }catch(e){}
-
   return out;
 }
-
 function set(key,v){
   try{
     if(!storageAvailable()) throw new Error('この開き方ではブラウザ保存が使えません');
-
-    // Merge with everything recoverable before saving, so a short list can never wipe a longer list.
-    const old=get(key);
-    const byId=new Map();
-    const noId=[];
-    [...old,...(Array.isArray(v)?v:[])].forEach(r=>{
-      if(!r||typeof r!=='object')return;
-      if(r.id){
-        const id=String(r.id), prev=byId.get(id);
-        if(!prev){byId.set(id,{...r});return;}
-        const pt=Date.parse(prev.updatedAt||prev.createdAt||0)||0;
-        const nt=Date.parse(r.updatedAt||r.createdAt||0)||0;
-        if(nt>=pt)byId.set(id,{...prev,...r});
-      }else noId.push(r);
-    });
-    const out=[...byId.values(),...noId];
-
+    // v is the current authoritative working list. Normalize IDs and de-duplicate,
+    // but never auto-call the old destructive Drive endpoint.
+    const out=_mergeRecords(key,[Array.isArray(v)?v:[]]);
     const raw=JSON.stringify(out);
     localStorage.setItem(STORE_PREFIX+key,raw);
     localStorage.setItem(key,raw);
     localStorage.setItem('backup_'+key+'_latest',raw);
     localStorage.setItem('backup_'+key+'_'+new Date().toISOString().slice(0,10),raw);
-
-    // Do NOT auto-sync to the old destructive Drive endpoint.
-    // It previously cleared/replaced "本番データ". Keep data local+backup until the backend is made append-only.
     if($('driveState')){
       $('driveState').textContent='保存：端末＋バックアップ済（元データ上書き停止中）';
       $('driveState').style.color='#3f7a54';
@@ -507,6 +503,7 @@ function set(key,v){
     return false;
   }
 }
+function newId(prefix){return (prefix||'rec')+'-'+Date.now()+'-'+Math.random().toString(36).slice(2,9)}
 
 function showDone(text){
  $('done').innerHTML='✓ <strong>'+text+'</strong><br><span style="font-size:12px;font-weight:700">登録は保存済みです。画面を閉じても同じSafariで残ります。</span>';
@@ -624,7 +621,7 @@ $('leaveReg').onclick=()=>{
  }else{
    const batchId='leave-'+Date.now()+'-'+Math.random().toString(36).slice(2,8);
    names.forEach(n=>{
-     rows.push({batchId,date:$('date').value,name:n.name,fullName:n.full,start:t?jp(t.sh,t.sm):'',end:t?jp(t.eh,t.em):'',
+     rows.push({id:newId('leave'),batchId,date:$('date').value,name:n.name,fullName:n.full,start:t?jp(t.sh,t.sm):'',end:t?jp(t.eh,t.em):'',
         kind:pick.dataset.kind,amount:dur.amount,unit:dur.unit,hours:dur.hours,oneDay:dur.oneDay,label,
         specialLeaveNo:kind==='特休'?$('specialLeaveNo').value.trim():'',
         portal:n.name+'　'+(t?(jp(t.sh,t.sm)+'〜'+jp(t.eh,t.em)+'　'):'')+label,
@@ -660,7 +657,7 @@ $('tripReg').onclick=()=>{
    showDone(count+'人分の出張をまとめて修正しました：'+p+'／'+v);
  }else{
    const batchId='trip-'+Date.now()+'-'+Math.random().toString(36).slice(2,8);
-   names.forEach(n=>rows.push({batchId,date:$('date').value,name:n.name,fullName:n.full,purpose:p,venue:v,start:jp(t.sh,t.sm),end:jp(t.eh,t.em),status:'active',updatedAt:new Date().toISOString()}));
+   names.forEach(n=>rows.push({id:newId('trip'),batchId,date:$('date').value,name:n.name,fullName:n.full,purpose:p,venue:v,start:jp(t.sh,t.sm),end:jp(t.eh,t.em),status:'active',updatedAt:new Date().toISOString()}));
    if(!set('shucchoRecords',rows)) return;
    showDone(names.length+'人分の出張を登録しました：'+p+'／'+v);$('portalSync').textContent='保存済み：この端末のブラウザに登録を保持しています。';
  }
@@ -850,17 +847,35 @@ function renderCheckList(){
  $('checkList').innerHTML=arr.length?arr.map(x=>{
    const r=x.r, done=!!r.checked;
    return '<div class="checkrow '+(done?'donecheck':'')+'">'+
-     '<button type="button" class="checkbtn" data-source="'+x.source+'" data-i="'+x.i+'">'+(done?'✓':'')+'</button>'+
+     '<label style="display:flex;align-items:center;justify-content:center"><input type="checkbox" class="checkmark" data-source="'+x.source+'" data-i="'+x.i+'" '+(done?'checked':'')+' style="width:25px;height:25px"></label>'+
      '<div><strong>'+(r.date||'')+'</strong><div class="checkmeta">'+recTime(x)+'</div></div>'+
      '<div class="checkkind"><strong>'+x.type+'</strong></div>'+
-     '<div class="checkmain"><strong>'+recName(x)+'</strong>　'+recTitle(x)+'</div>'+
+     '<div class="checkmain"><strong>'+recName(x)+'</strong>　'+recTitle(x)+
+       '<div class="miniops" style="margin-top:5px">'+
+         '<button type="button" class="minibtn checkEdit" data-type="'+x.type+'" data-i="'+x.i+'">修正</button>'+
+         '<button type="button" class="minibtn checkDelete" data-type="'+x.type+'" data-i="'+x.i+'">削除</button>'+
+       '</div>'+
+     '</div>'+
    '</div>';
  }).join(''):'<div class="status">該当するデータはありません。</div>';
- document.querySelectorAll('.checkbtn').forEach(b=>b.onclick=()=>{
+
+ document.querySelectorAll('.checkmark').forEach(b=>b.onchange=()=>{
    const rows=get(b.dataset.source),i=Number(b.dataset.i);
    if(!rows[i])return;
-   rows[i]={...rows[i],checked:!rows[i].checked,checkedAt:new Date().toISOString()};
+   rows[i]={...rows[i],checked:!!b.checked,checkedAt:b.checked?new Date().toISOString():'',updatedAt:new Date().toISOString()};
    if(set(b.dataset.source,rows)){renderCheckList();renderRecent();}
+ });
+ document.querySelectorAll('.checkEdit').forEach(b=>b.onclick=()=>{
+   const i=Number(b.dataset.i),type=b.dataset.type;
+   if(type==='休暇') loadLeaveEdit(i);
+   else if(type==='出張') loadTripEdit(i);
+   else loadScheduleEdit(i);
+ });
+ document.querySelectorAll('.checkDelete').forEach(b=>b.onclick=()=>{
+   const i=Number(b.dataset.i),type=b.dataset.type;
+   if(type==='休暇') cancelLeave(i);
+   else if(type==='出張') cancelTrip(i);
+   else cancelSchedule(i);
  });
 }
 document.querySelectorAll('.checktab').forEach(b=>b.onclick=()=>{
@@ -1021,7 +1036,7 @@ $('backupDataBtn').onclick=()=>{
 if($('recoverDataBtn')) $('recoverDataBtn').onclick=()=>{
   const a=get('nenkyuRecords'),b=get('shucchoRecords'),c=get('yoteiRecords');
   renderRecent();renderCheckList();
-  showDone('復旧確認：休暇 '+a.filter(x=>x.status!=='cancelled').length+'件／出張 '+b.filter(x=>x.status!=='cancelled').length+'件／予定 '+c.filter(x=>x.status!=='cancelled').length+'件');
+  showDone('復旧確認：休暇 '+a.filter(x=>x.status!=='cancelled').length+'件／出張 '+b.filter(x=>x.status!=='cancelled').length+'件／予定 '+c.filter(x=>x.status!=='cancelled').length+'件。重複は同一内容を1件にまとめています。');
 };
 
 hydrateFromDrive().then(()=>{try{renderRecent();renderCheckList();}catch(e){}});
