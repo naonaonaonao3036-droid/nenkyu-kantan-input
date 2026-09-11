@@ -35,7 +35,7 @@
 <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
 </head><body><div class="wrap">
 <div class="top"><h1>休暇・出張・予定 かんたん入力</h1><strong>日付</strong><input id="date" type="date" style="height:40px;border:2px solid #d9a697;border-radius:10px;padding:0 9px;font-size:18px;font-weight:800">
-<div class="actions"><button id="listBtn" class="topbtn" type="button">登録一覧</button><button id="excelBtn" class="topbtn" type="button">Excel</button><button id="driveExcelBtn" class="topbtn" type="button">DriveへExcel保存</button><span id="driveState" class="status">Drive保存：準備中</span><button id="backupDataBtn" class="topbtn" type="button">バックアップ</button></div></div>
+<div class="actions"><button id="listBtn" class="topbtn" type="button">登録一覧</button><button id="excelBtn" class="topbtn" type="button">Excel</button><button id="driveExcelBtn" class="topbtn" type="button">DriveへExcel保存</button><span id="driveState" class="status">Drive保存：準備中</span><button id="backupDataBtn" class="topbtn" type="button">バックアップ</button><button id="undoDeleteBtn" class="topbtn" type="button">↩ 直前の削除を戻す</button></div></div>
 
 <section class="panel"><div class="title">① 名前（複数選択できます）</div>
 <div class="namegrid"><input class="pick namepick" type="checkbox" id="n0" data-i="0"><label class="btnlabel" for="n0">和田<span class="sub">亘</span></label><input class="pick namepick" type="checkbox" id="n1" data-i="1"><label class="btnlabel" for="n1">瀬尾</label><input class="pick namepick" type="checkbox" id="n2" data-i="2"><label class="btnlabel" for="n2">佐藤<span class="sub">かおり</span></label><input class="pick namepick" type="checkbox" id="n3" data-i="3"><label class="btnlabel" for="n3">岡田</label><input class="pick namepick" type="checkbox" id="n4" data-i="4"><label class="btnlabel" for="n4">兼藤</label><input class="pick namepick" type="checkbox" id="n5" data-i="5"><label class="btnlabel" for="n5">向井</label><input class="pick namepick" type="checkbox" id="n6" data-i="6"><label class="btnlabel" for="n6">井上<span class="sub">真維</span></label><input class="pick namepick" type="checkbox" id="n7" data-i="7"><label class="btnlabel" for="n7">池田</label><input class="pick namepick" type="checkbox" id="n8" data-i="8"><label class="btnlabel" for="n8">出口</label><input class="pick namepick" type="checkbox" id="n9" data-i="9"><label class="btnlabel" for="n9">千葉</label><input class="pick namepick" type="checkbox" id="n10" data-i="10"><label class="btnlabel" for="n10">萩原</label><input class="pick namepick" type="checkbox" id="n11" data-i="11"><label class="btnlabel" for="n11">傍田</label><input class="pick namepick" type="checkbox" id="n12" data-i="12"><label class="btnlabel" for="n12">井上<span class="sub">日向子</span></label><input class="pick namepick" type="checkbox" id="n13" data-i="13"><label class="btnlabel" for="n13">播本</label><input class="pick namepick" type="checkbox" id="n14" data-i="14"><label class="btnlabel" for="n14">石原</label><input class="pick namepick" type="checkbox" id="n15" data-i="15"><label class="btnlabel" for="n15">緒方</label><input class="pick namepick" type="checkbox" id="n16" data-i="16"><label class="btnlabel" for="n16">清水</label><input class="pick namepick" type="checkbox" id="n17" data-i="17"><label class="btnlabel" for="n17">阿部野</label><input class="pick namepick" type="checkbox" id="n18" data-i="18"><label class="btnlabel" for="n18">浦上</label><input class="pick namepick" type="checkbox" id="n19" data-i="19"><label class="btnlabel" for="n19">藤江</label><input class="pick namepick" type="checkbox" id="n20" data-i="20"><label class="btnlabel" for="n20">藤田</label><input class="pick namepick" type="checkbox" id="n21" data-i="21"><label class="btnlabel" for="n21">丹田</label><input class="pick namepick" type="checkbox" id="n22" data-i="22"><label class="btnlabel" for="n22">矢羽々</label><input class="pick namepick" type="checkbox" id="n23" data-i="23"><label class="btnlabel" for="n23">芳賀</label><input class="pick namepick" type="checkbox" id="n24" data-i="24"><label class="btnlabel" for="n24">柳田</label><input class="pick namepick" type="checkbox" id="n25" data-i="25"><label class="btnlabel" for="n25">小田</label><input class="pick namepick" type="checkbox" id="n26" data-i="26"><label class="btnlabel" for="n26">和田<span class="sub">亜弥乃</span></label><input class="pick namepick" type="checkbox" id="n27" data-i="27"><label class="btnlabel" for="n27">村上</label><input class="pick namepick" type="checkbox" id="n28" data-i="28"><label class="btnlabel" for="n28">藤本</label><input class="pick namepick" type="checkbox" id="n29" data-i="29"><label class="btnlabel" for="n29">足立</label><input class="pick namepick" type="checkbox" id="n30" data-i="30"><label class="btnlabel" for="n30">原井</label><input class="pick namepick" type="checkbox" id="n31" data-i="31"><label class="btnlabel" for="n31">大下</label><input class="pick namepick" type="checkbox" id="n32" data-i="32"><label class="btnlabel" for="n32">早瀬</label><input class="pick namepick" type="checkbox" id="n33" data-i="33"><label class="btnlabel" for="n33">西川</label><input class="pick namepick" type="checkbox" id="n34" data-i="34"><label class="btnlabel" for="n34">皿谷</label><input class="pick namepick" type="checkbox" id="n35" data-i="35"><label class="btnlabel" for="n35">岸本</label><input class="pick namepick" type="checkbox" id="n36" data-i="36"><label class="btnlabel" for="n36">山本</label><input class="pick namepick" type="checkbox" id="n37" data-i="37"><label class="btnlabel" for="n37">藤井</label><input class="pick namepick" type="checkbox" id="n38" data-i="38"><label class="btnlabel" for="n38">笠原</label><input class="pick namepick" type="checkbox" id="n39" data-i="39"><label class="btnlabel" for="n39">佐藤<span class="sub">裕子</span></label><input class="pick namepick" type="checkbox" id="n40" data-i="40"><label class="btnlabel" for="n40">羽原</label><input class="pick namepick" type="checkbox" id="n41" data-i="41"><label class="btnlabel" for="n41">谷</label><input class="pick namepick" type="checkbox" id="n42" data-i="42"><label class="btnlabel" for="n42">金森</label></div>
@@ -50,7 +50,7 @@
 
 <div class="choicecols">
 <section class="panel"><div class="title">③ 年休・休暇を登録</div>
-<div class="leavegrid"><input class="pick leavepick" type="radio" name="leaveType" id="lvN" data-label="年休" data-kind="年休" data-amount="0" data-unit="hour"><label class="optionbtn" for="lvN">年休</label><input class="pick leavepick" type="radio" name="leaveType" id="lv9" data-label="夏季研修" data-kind="夏季研修" data-amount="1" data-unit="day"><label class="optionbtn" for="lv9">夏季研修</label><input class="pick leavepick" type="radio" name="leaveType" id="lv10" data-label="市内一斉研修" data-kind="市内一斉研修" data-amount="1" data-unit="day"><label class="optionbtn" for="lv10">市内一斉研修</label><input class="pick leavepick" type="radio" name="leaveType" id="lv11" data-label="健康診断" data-kind="健康診断" data-amount="1" data-unit="day"><label class="optionbtn" for="lv11">健康診断</label><input class="pick leavepick" type="radio" name="leaveType" id="lv12" data-label="職専免（厚生）" data-kind="職専免（厚生）" data-amount="1" data-unit="day"><label class="optionbtn" for="lv12">職専免（厚生）</label><input class="pick leavepick" type="radio" name="leaveType" id="lv13" data-label="職専免（普通研修）" data-kind="職専免（普通研修）" data-amount="1" data-unit="day"><label class="optionbtn" for="lv13">職専免（普通研修）</label><input class="pick leavepick" type="radio" name="leaveType" id="lv14" data-label="夏季厚生" data-kind="夏季厚生" data-amount="1" data-unit="day"><label class="optionbtn" for="lv14">夏季厚生</label><input class="pick leavepick" type="radio" name="leaveType" id="lv15" data-label="夏季休暇" data-kind="夏季休暇" data-amount="1" data-unit="day"><label class="optionbtn" for="lv15">夏季休暇</label><input class="pick leavepick" type="radio" name="leaveType" id="lv16" data-label="短期介護" data-kind="短期介護" data-amount="1" data-unit="day"><label class="optionbtn" for="lv16">短期介護</label><input class="pick leavepick" type="radio" name="leaveType" id="lv17" data-label="子看" data-kind="子看" data-amount="0" data-unit="hour"><label class="optionbtn" for="lv17">子看</label><input class="pick leavepick" type="radio" name="leaveType" id="lv18" data-label="特休" data-kind="特休" data-amount="1" data-unit="day"><label class="optionbtn" for="lv18">特休</label></div>
+<div class="leavegrid"><input class="pick leavepick" type="radio" name="leaveType" id="lvN" data-label="年休" data-kind="年休" data-amount="0" data-unit="hour"><label class="optionbtn" for="lvN">年休</label><input class="pick leavepick" type="radio" name="leaveType" id="lv9" data-label="夏季研修" data-kind="夏季研修" data-amount="1" data-unit="day"><label class="optionbtn" for="lv9">夏季研修</label><input class="pick leavepick" type="radio" name="leaveType" id="lv10" data-label="市内一斉研修" data-kind="市内一斉研修" data-amount="1" data-unit="day"><label class="optionbtn" for="lv10">市内一斉研修</label><input class="pick leavepick" type="radio" name="leaveType" id="lv11" data-label="健康診断" data-kind="健康診断" data-amount="1" data-unit="day"><label class="optionbtn" for="lv11">健康診断</label><input class="pick leavepick" type="radio" name="leaveType" id="lv12" data-label="厚生" data-kind="厚生" data-amount="0" data-unit="hour"><label class="optionbtn" for="lv12">厚生</label><input class="pick leavepick" type="radio" name="leaveType" id="lv13" data-label="職専免（普通研修）" data-kind="職専免（普通研修）" data-amount="1" data-unit="day"><label class="optionbtn" for="lv13">職専免（普通研修）</label><input class="pick leavepick" type="radio" name="leaveType" id="lv14" data-label="夏季厚生" data-kind="夏季厚生" data-amount="1" data-unit="day"><label class="optionbtn" for="lv14">夏季厚生</label><input class="pick leavepick" type="radio" name="leaveType" id="lv15" data-label="夏季休暇" data-kind="夏季休暇" data-amount="1" data-unit="day"><label class="optionbtn" for="lv15">夏季休暇</label><input class="pick leavepick" type="radio" name="leaveType" id="lv16" data-label="短期介護" data-kind="短期介護" data-amount="1" data-unit="day"><label class="optionbtn" for="lv16">短期介護</label><input class="pick leavepick" type="radio" name="leaveType" id="lv17" data-label="子看" data-kind="子看" data-amount="0" data-unit="hour"><label class="optionbtn" for="lv17">子看</label><input class="pick leavepick" type="radio" name="leaveType" id="lv18" data-label="特休" data-kind="特休" data-amount="1" data-unit="day"><label class="optionbtn" for="lv18">特休</label></div>
 
 <div id="nenkyuHoursBox" class="specialleave" style="display:block">
 <label>年休時間</label>
@@ -66,7 +66,7 @@
 <input class="pick nenkyuHourPick" type="radio" name="nenkyuAmount" id="nhDay" data-hours="1day"><label class="optionbtn" for="nhDay">1日</label>
 </div></div>
 
-<div id="specialLeaveBox" class="specialleave" style="display:none"><label>特休（何号）※手入力</label><input id="specialLeaveNo" type="text" inputmode="text" lang="ja" autocomplete="off" autocapitalize="off" placeholder="例：3号・育児時間・看護など"></div>
+<div id="specialLeaveBox" class="specialleave" style="display:none"><label>特休（　　　　）※ここを手入力</label><input id="specialLeaveNo" type="text" inputmode="text" lang="ja" autocomplete="off" autocapitalize="off" placeholder="例：3号・育児時間・看護など"></div>
 <button id="leaveReg" class="reg" type="button">年休・休暇を登録</button>
 <div id="leaveEditing" class="editingbar"></div>
 <div class="status">同じ日に複数回ある場合は、続けて別のボタンを選んで登録できます。特休は「何号」を手入力できます。</div>
@@ -420,9 +420,10 @@ document.querySelectorAll('.nenkyuHourPick').forEach(r=>{
 function nenkyuSelection(){
  const h=document.querySelector('.nenkyuHourPick:checked');
  if(!h)return null;
- if(h.dataset.hours==='1day')return {label:'年休1日',amount:1,unit:'day',hours:null,oneDay:true};
+ if(h.dataset.hours==='1day')return {mark:'1日',label:'年休1日',amount:1,unit:'day',hours:null,oneDay:true};
  const n=Number(h.dataset.hours);const c=['','①','②','③','④','⑤','⑥','⑦','⑧'];
- return {label:'年休'+(c[n]||('('+n+'時間)')),amount:n,unit:'hour',hours:n,oneDay:false};
+ const mark=c[n]||('('+n+'時間)');
+ return {mark:mark,label:'年休'+mark,amount:n,unit:'hour',hours:n,oneDay:false};
 }
 function specialLeaveLabel(pick){
  if(pick.dataset.kind!=='特休') return pick.dataset.label;
@@ -443,16 +444,19 @@ $('leaveReg').onclick=()=>{
  const pick=document.querySelector('.leavepick:checked');if(!pick){showDone('休暇の種類を選んでください');return}
  let dur=nenkyuSelection();if(!dur){showDone('①〜⑧または1日を選んでください');return}
  let label=pick.dataset.label;
+ const amountMark=dur.mark || (dur.oneDay?'1日':'');
  if(pick.dataset.kind==='特休'){
    const manual=$('specialLeaveNo').value.trim();
-   if(!manual){showDone('特休の内容を入力してください');return}
-   label='特休（'+manual+'）';
+   if(!manual){showDone('特休の（　）に内容を入力してください');return}
+   label='特休（'+manual+'）'+amountMark;
  } else if(pick.dataset.kind==='子看'){
-   label='子看'+dur.label;
+   label='子看'+amountMark;
  } else if(pick.dataset.kind==='年休'){
-   label=dur.label;
+   label='年休'+amountMark;
+ } else if(pick.dataset.kind==='厚生'){
+   label='厚生'+amountMark;
  } else {
-   label=label+(dur.oneDay?'1日':' '+dur.label);
+   label=label+(amountMark?amountMark:'');
  }
  let t=null;
  if(dur.oneDay){
@@ -613,9 +617,28 @@ function loadScheduleEdit(index){
   $('scheduleEditing').classList.add('show');
   window.scrollTo({top:0,behavior:'smooth'});
 }
+function rememberDeleted(source,index,record){
+  try{localStorage.setItem('teshiro_last_deleted',JSON.stringify({source,index,record,at:new Date().toISOString()}));}catch(e){}
+}
+function undoLastDelete(){
+  let x=null;
+  try{x=JSON.parse(localStorage.getItem('teshiro_last_deleted')||'null');}catch(e){}
+  if(!x||!x.source||!x.record){showDone('戻せる削除はありません');return;}
+  const rows=get(x.source);
+  let idx=Number(x.index);
+  if(!Number.isInteger(idx)||idx<0||idx>=rows.length) idx=rows.findIndex(r=>r&&r.id&&x.record.id&&r.id===x.record.id);
+  if(idx<0){showDone('削除したデータを見つけられませんでした');return;}
+  rows[idx]={...x.record,status:'active',updatedAt:new Date().toISOString()};
+  if(!set(x.source,rows))return;
+  try{localStorage.removeItem('teshiro_last_deleted');}catch(e){}
+  showDone('直前に削除したデータを戻しました');
+}
+if($('undoDeleteBtn')) $('undoDeleteBtn').onclick=undoLastDelete;
+
 function cancelSchedule(index){
   const rows=get('yoteiRecords'),r=rows[index];if(!r)return;
   if(!confirm('この予定を削除しますか？'))return;
+  rememberDeleted('yoteiRecords',index,{...r});
   rows[index]={...r,status:'cancelled',updatedAt:new Date().toISOString()};
   if(!set('yoteiRecords',rows))return;
   showDone('予定を削除しました');
@@ -745,7 +768,7 @@ function loadLeaveEdit(index){
  $('leaveReg').textContent='休暇を修正保存';$('leaveEditing').textContent='修正中：'+(r.fullName||r.name)+'　'+(r.date||'')+'　'+(r.label||r.kind||'');$('leaveEditing').classList.add('show');window.scrollTo({top:0,behavior:'smooth'});
 }
 function cancelLeave(index){
- const rows=get('nenkyuRecords'),r=rows[index];if(!r)return;if(!confirm('この休暇登録を削除しますか？'))return;rows[index]={...r,status:'cancelled',updatedAt:new Date().toISOString()};if(!set('nenkyuRecords',rows))return;if(leaveEditIndex===index){leaveEditIndex=null;$('leaveReg').textContent='年休・休暇を登録';$('leaveEditing').classList.remove('show');$('leaveEditing').textContent='';}showDone('休暇登録を削除しました');
+ const rows=get('nenkyuRecords'),r=rows[index];if(!r)return;if(!confirm('この休暇登録を削除しますか？'))return;rememberDeleted('nenkyuRecords',index,{...r});rows[index]={...r,status:'cancelled',updatedAt:new Date().toISOString()};if(!set('nenkyuRecords',rows))return;if(leaveEditIndex===index){leaveEditIndex=null;$('leaveReg').textContent='年休・休暇を登録';$('leaveEditing').classList.remove('show');$('leaveEditing').textContent='';}showDone('休暇登録を削除しました');
 }
 
 function loadTripEdit(index){
@@ -776,6 +799,7 @@ function loadTripEdit(index){
 function cancelTrip(index){
  const rows=get('shucchoRecords'),r=rows[index];if(!r)return;
  if(!confirm((r.date||'')+' '+(r.fullName||r.name||'')+' の出張登録を削除しますか？'))return;
+ rememberDeleted('shucchoRecords',index,{...r});
  r.status='cancelled';r.cancelledAt=new Date().toISOString();rows[index]=r;set('shucchoRecords',rows);
  if(tripEditIndex===index){
    tripEditIndex=null;$('tripReg').textContent='出張を登録';$('tripEditing').classList.remove('show');$('tripEditing').textContent='';
