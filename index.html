@@ -32,55 +32,23 @@
 .checkmeta{font-size:11px;color:var(--muted)}
 @media(max-width:700px){.checkrow{grid-template-columns:40px 95px 1fr}.checkrow .checkkind{grid-column:2}.checkrow .checkmain{grid-column:2/-1}}
 
-/* ===== 左：本物のGoogleシート / 右：入力パネル ===== */
-.realSheetSplit{
-  display:grid;
-  grid-template-columns:minmax(0,1fr) minmax(0,1fr);
-  gap:8px;
-  align-items:start;
-  margin-top:7px;
-}
-.realSheetPane{
-  position:sticky;
-  top:0;
-  height:calc(100vh - 8px);
-  min-height:620px;
-  background:#fff;
-  border:2px solid #d8c8c0;
-  border-radius:12px;
-  overflow:hidden;
-  display:flex;
-  flex-direction:column;
-}
-.realSheetToolbar{
-  display:flex;
-  gap:6px;
-  align-items:center;
-  flex-wrap:wrap;
-  padding:7px;
-  border-bottom:1px solid var(--line);
-  background:#fff;
-}
-.realSheetToolbar strong{font-size:14px}
-.realSheetFrame{
-  width:100%;
-  flex:1;
-  border:0;
-  background:#fff;
-}
-.inputRightPane{min-width:0}
-.sheetOpenBtn,.sheetRefreshBtn{
-  border:1px solid var(--line);
-  background:#fff;
-  border-radius:8px;
-  min-height:36px;
-  padding:0 10px;
-  font-weight:800;
-}
-.sheetNote{font-size:11px;color:var(--muted)}
-@media(max-width:900px){
-  .realSheetSplit{grid-template-columns:1fr}
-  .realSheetPane{position:relative;height:52vh;min-height:430px}
+/* ===== iPad Split View 右半分専用 ===== */
+.wrap{max-width:none;width:100%;padding:6px}
+.top{gap:6px}
+.top h1{font-size:17px}
+.panel{padding:6px;margin-top:5px}
+.namegrid{grid-template-columns:repeat(8,minmax(0,1fr));gap:3px}
+.timegrid{grid-template-columns:repeat(6,minmax(0,1fr));gap:3px}
+.mingrid{grid-template-columns:repeat(6,minmax(0,1fr));gap:3px}
+.leavegrid{grid-template-columns:repeat(5,minmax(0,1fr));gap:3px}
+.row,.choicecols,.timeblock{grid-template-columns:1fr}
+.btnlabel,.timebtn,.optionbtn{min-height:42px;font-size:12px}
+.topbtn,.reg{min-height:42px}
+.field input{height:44px;font-size:16px}
+@media(min-width:900px){
+  .namegrid{grid-template-columns:repeat(8,minmax(0,1fr))}
+  .timegrid{grid-template-columns:repeat(6,minmax(0,1fr))}
+  .mingrid{grid-template-columns:repeat(6,minmax(0,1fr))}
 }
 
 </style>
@@ -89,25 +57,6 @@
 <div class="top"><h1>休暇・出張・予定 かんたん入力</h1><strong>日付</strong><input id="date" type="date" style="height:40px;border:2px solid #d9a697;border-radius:10px;padding:0 9px;font-size:18px;font-weight:800">
 <div class="actions"><button id="listBtn" class="topbtn" type="button">登録一覧</button><button id="excelBtn" class="topbtn" type="button">Excel</button><button id="driveExcelBtn" class="topbtn" type="button">Excelをもう1部保存</button><span id="driveState" class="status">保存：確認中</span><button id="backupDataBtn" class="topbtn" type="button">バックアップ</button><button id="recoverDataBtn" class="topbtn" type="button">入力済みデータを復旧</button><button id="undoChoiceBtn" class="topbtn" type="button">↩ 入力を1つ戻す</button><button id="resetInputBtn" class="topbtn" type="button">入力内容をリセット</button><button id="undoDeleteBtn" class="topbtn" type="button">↩ 直前の削除を戻す</button></div></div>
 
-
-<div class="realSheetSplit">
-  <section class="realSheetPane">
-    <div class="realSheetToolbar">
-      <strong>正本：休暇出張予定_本番データ</strong>
-      <button id="sheetRefreshBtn" class="sheetRefreshBtn" type="button">↻ シート更新</button>
-      <button id="sheetOpenBtn" class="sheetOpenBtn" type="button">シートを直接開く</button>
-      <span class="sheetNote">左は実際のGoogleシート「本番データ」です</span>
-    </div>
-    <iframe
-      id="realSheetFrame"
-      class="realSheetFrame"
-      title="休暇出張予定 本番データ"
-      src="https://docs.google.com/spreadsheets/d/18RSXO9JwxYBUFYzH_t_Ea83jM2qkjBfd1dRwX5hjkEE/edit?rm=minimal&gid=1204973001#gid=1204973001"
-      loading="eager"
-      referrerpolicy="no-referrer-when-downgrade">
-    </iframe>
-  </section>
-  <main class="inputRightPane">
 <section class="panel"><div class="title">① 名前（複数選択できます）</div>
 <div class="namegrid"><input class="pick namepick" type="checkbox" id="n0" data-i="0"><label class="btnlabel" for="n0">和田<span class="sub">亘</span></label><input class="pick namepick" type="checkbox" id="n1" data-i="1"><label class="btnlabel" for="n1">瀬尾</label><input class="pick namepick" type="checkbox" id="n2" data-i="2"><label class="btnlabel" for="n2">佐藤<span class="sub">かおり</span></label><input class="pick namepick" type="checkbox" id="n3" data-i="3"><label class="btnlabel" for="n3">岡田</label><input class="pick namepick" type="checkbox" id="n4" data-i="4"><label class="btnlabel" for="n4">兼藤</label><input class="pick namepick" type="checkbox" id="n5" data-i="5"><label class="btnlabel" for="n5">向井</label><input class="pick namepick" type="checkbox" id="n6" data-i="6"><label class="btnlabel" for="n6">井上<span class="sub">真維</span></label><input class="pick namepick" type="checkbox" id="n7" data-i="7"><label class="btnlabel" for="n7">池田</label><input class="pick namepick" type="checkbox" id="n8" data-i="8"><label class="btnlabel" for="n8">出口</label><input class="pick namepick" type="checkbox" id="n9" data-i="9"><label class="btnlabel" for="n9">千葉</label><input class="pick namepick" type="checkbox" id="n10" data-i="10"><label class="btnlabel" for="n10">萩原</label><input class="pick namepick" type="checkbox" id="n11" data-i="11"><label class="btnlabel" for="n11">傍田</label><input class="pick namepick" type="checkbox" id="n12" data-i="12"><label class="btnlabel" for="n12">井上<span class="sub">日向子</span></label><input class="pick namepick" type="checkbox" id="n13" data-i="13"><label class="btnlabel" for="n13">播本</label><input class="pick namepick" type="checkbox" id="n14" data-i="14"><label class="btnlabel" for="n14">石原</label><input class="pick namepick" type="checkbox" id="n15" data-i="15"><label class="btnlabel" for="n15">緒方</label><input class="pick namepick" type="checkbox" id="n16" data-i="16"><label class="btnlabel" for="n16">清水</label><input class="pick namepick" type="checkbox" id="n17" data-i="17"><label class="btnlabel" for="n17">阿部野</label><input class="pick namepick" type="checkbox" id="n18" data-i="18"><label class="btnlabel" for="n18">浦上</label><input class="pick namepick" type="checkbox" id="n19" data-i="19"><label class="btnlabel" for="n19">藤江</label><input class="pick namepick" type="checkbox" id="n20" data-i="20"><label class="btnlabel" for="n20">藤田</label><input class="pick namepick" type="checkbox" id="n21" data-i="21"><label class="btnlabel" for="n21">丹田</label><input class="pick namepick" type="checkbox" id="n22" data-i="22"><label class="btnlabel" for="n22">矢羽々</label><input class="pick namepick" type="checkbox" id="n23" data-i="23"><label class="btnlabel" for="n23">芳賀</label><input class="pick namepick" type="checkbox" id="n24" data-i="24"><label class="btnlabel" for="n24">柳田</label><input class="pick namepick" type="checkbox" id="n25" data-i="25"><label class="btnlabel" for="n25">小田</label><input class="pick namepick" type="checkbox" id="n26" data-i="26"><label class="btnlabel" for="n26">和田<span class="sub">亜弥乃</span></label><input class="pick namepick" type="checkbox" id="n27" data-i="27"><label class="btnlabel" for="n27">村上</label><input class="pick namepick" type="checkbox" id="n28" data-i="28"><label class="btnlabel" for="n28">藤本</label><input class="pick namepick" type="checkbox" id="n29" data-i="29"><label class="btnlabel" for="n29">足立</label><input class="pick namepick" type="checkbox" id="n30" data-i="30"><label class="btnlabel" for="n30">原井</label><input class="pick namepick" type="checkbox" id="n31" data-i="31"><label class="btnlabel" for="n31">大下</label><input class="pick namepick" type="checkbox" id="n32" data-i="32"><label class="btnlabel" for="n32">早瀬</label><input class="pick namepick" type="checkbox" id="n33" data-i="33"><label class="btnlabel" for="n33">西川</label><input class="pick namepick" type="checkbox" id="n34" data-i="34"><label class="btnlabel" for="n34">皿谷</label><input class="pick namepick" type="checkbox" id="n35" data-i="35"><label class="btnlabel" for="n35">岸本</label><input class="pick namepick" type="checkbox" id="n36" data-i="36"><label class="btnlabel" for="n36">山本</label><input class="pick namepick" type="checkbox" id="n37" data-i="37"><label class="btnlabel" for="n37">藤井</label><input class="pick namepick" type="checkbox" id="n38" data-i="38"><label class="btnlabel" for="n38">笠原</label><input class="pick namepick" type="checkbox" id="n39" data-i="39"><label class="btnlabel" for="n39">佐藤<span class="sub">裕子</span></label><input class="pick namepick" type="checkbox" id="n40" data-i="40"><label class="btnlabel" for="n40">羽原</label><input class="pick namepick" type="checkbox" id="n41" data-i="41"><label class="btnlabel" for="n41">谷</label><input class="pick namepick" type="checkbox" id="n42" data-i="42"><label class="btnlabel" for="n42">金森</label><input class="pick namepick" type="checkbox" id="n43" data-i="43"><label class="btnlabel" for="n43">松下</label></div>
 <div style="display:flex;gap:6px;margin-top:5px"><button id="all" class="topbtn" type="button">全員選択</button><button id="clear" class="topbtn" type="button">選択解除</button></div></section>
@@ -144,8 +93,8 @@
 </section>
 
 <section class="panel tripbox"><div class="title">④ 出張を登録</div>
-<div class="field"><label>用務</label><input id="purpose" placeholder="例：市内一斉研修（道徳）"></div>
-<div class="field"><label>会場名</label><input id="venue" placeholder="例：緑丘小学校"></div>
+<div class="field"><label>用務</label><div style="display:grid;grid-template-columns:1fr auto;gap:5px"><input id="purpose" inputmode="text" lang="ja" autocomplete="off" placeholder="例：市内一斉研修（道徳）"><button type="button" id="purposeVoice" class="topbtn">🎤 音声</button></div></div>
+<div class="field"><label>会場名</label><div style="display:grid;grid-template-columns:1fr auto;gap:5px"><input id="venue" inputmode="text" lang="ja" autocomplete="off" placeholder="例：緑丘小学校"><button type="button" id="venueVoice" class="topbtn">🎤 音声</button></div></div>
 <button id="tripReg" class="reg" type="button">出張を登録</button>
 <div id="tripEditing" class="editingbar"></div>
 <div class="status">「直近の登録」の修正を押すと、その出張を読み込んで上書きできます。</div>
@@ -196,8 +145,6 @@
 <div id="checkSummary" class="status"></div>
 <div id="checkList"></div>
 </section>
-  </main>
-</div>
 
 </div>
 
@@ -1278,20 +1225,28 @@ if($('recoverDataBtn')) $('recoverDataBtn').onclick=()=>{
 
 hydrateFromDrive().then(()=>{try{renderRecent();renderCheckList();}catch(e){}});
 
-// ===== 本物のGoogleシート表示 =====
-(function setupRealSheet(){
-  const frame=$('realSheetFrame');
-  const refresh=$('sheetRefreshBtn');
-  const open=$('sheetOpenBtn');
-  if(refresh) refresh.onclick=()=>{
-    if(!frame)return;
-    // 同じ本物のシートを再読込して最新状態を表示
-    const base='https://docs.google.com/spreadsheets/d/18RSXO9JwxYBUFYzH_t_Ea83jM2qkjBfd1dRwX5hjkEE/edit?rm=minimal&gid=1204973001#gid=1204973001';
-    frame.src=base+(base.includes('?')?'&':'?')+'_t='+Date.now();
-  };
-  if(open) open.onclick=()=>{
-    window.open('https://docs.google.com/spreadsheets/d/18RSXO9JwxYBUFYzH_t_Ea83jM2qkjBfd1dRwX5hjkEE/edit#gid=1204973001','_blank');
-  };
+(function setupDictationButtons(){
+  const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+  function bind(btnId,inputId){
+    const btn=$(btnId),input=$(inputId); if(!btn||!input)return;
+    btn.onclick=()=>{
+      if(SR){
+        try{
+          const rec=new SR();rec.lang='ja-JP';rec.interimResults=false;rec.maxAlternatives=1;
+          btn.textContent='🎤 聞いています';
+          rec.onresult=e=>{input.value=e.results[0][0].transcript;};
+          rec.onend=()=>btn.textContent='🎤 音声';
+          rec.onerror=()=>{btn.textContent='🎤 音声';input.focus();};
+          rec.start();
+        }catch(e){input.focus();}
+      }else{
+        input.focus();
+        showDone('入力欄を開きました。iPadキーボードのマイクを押して音声入力してください');
+      }
+    };
+  }
+  bind('purposeVoice','purpose');
+  bind('venueVoice','venue');
 })();
 
 </script></body></html>
