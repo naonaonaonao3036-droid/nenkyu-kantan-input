@@ -863,20 +863,30 @@ if($('resetInputBtn')) $('resetInputBtn').onclick=()=>{
 };
 
 function rememberDeleted(source,index,record){
-  try{localStorage.setItem('teshiro_last_deleted',JSON.stringify({source,index,record,at:new Date().toISOString()}));}catch(e){}
+  const records=Array.isArray(record)?record:[record];
+  try{
+    localStorage.setItem('teshiro_last_deleted',JSON.stringify({
+      source,index,records,at:new Date().toISOString()
+    }));
+  }catch(e){}
 }
 function undoLastDelete(){
   let x=null;
   try{x=JSON.parse(localStorage.getItem('teshiro_last_deleted')||'null');}catch(e){}
-  if(!x||!x.source||!x.record){showDone('戻せる削除はありません');return;}
+  const saved=x && (x.records || (x.record?[x.record]:null));
+  if(!x||!x.source||!saved||!saved.length){showDone('戻せる削除はありません');return;}
   const rows=get(x.source);
-  let idx=Number(x.index);
-  if(!Number.isInteger(idx)||idx<0||idx>=rows.length) idx=rows.findIndex(r=>r&&r.id&&x.record.id&&r.id===x.record.id);
-  if(idx<0){showDone('削除したデータを見つけられませんでした');return;}
-  rows[idx]={...x.record,status:'active',updatedAt:new Date().toISOString()};
+  let restored=0;
+  saved.forEach(rec=>{
+    let idx=rows.findIndex(r=>r&&r.id&&rec.id&&r.id===rec.id);
+    if(idx<0 && rec.batchId) idx=rows.findIndex(r=>r&&r.batchId===rec.batchId&&(r.fullName||r.name)===(rec.fullName||rec.name));
+    if(idx<0) rows.push({...rec,status:'active',updatedAt:new Date().toISOString()});
+    else rows[idx]={...rows[idx],...rec,status:'active',updatedAt:new Date().toISOString()};
+    restored++;
+  });
   if(!set(x.source,rows))return;
   try{localStorage.removeItem('teshiro_last_deleted');}catch(e){}
-  showDone('直前に削除したデータを戻しました');
+  showDone(restored+'件を戻しました');
 }
 if($('undoDeleteBtn')) $('undoDeleteBtn').onclick=undoLastDelete;
 
@@ -992,9 +1002,9 @@ function renderRecent(){
 
  $('recent').innerHTML=grouped.length?grouped.map(r=>{
    const ops=r.type==='休暇'
-     ? '<div class="miniops"><button type="button" class="minibtn editLeave" data-i="'+r.sourceIndex+'">まとめて修正</button><button type="button" class="minibtn cancelLeave" data-i="'+r.sourceIndex+'">削除</button></div>'
+     ? '<div class="miniops"><button type="button" class="minibtn editLeave" data-i="'+r.sourceIndex+'">まとめて修正</button><button type="button" class="minibtn cancelLeave" data-i="'+r.sourceIndex+'">まとめて削除</button></div>'
      : r.type==='出張'
-       ? '<div class="miniops"><button type="button" class="minibtn editTrip" data-i="'+r.sourceIndex+'">まとめて修正</button><button type="button" class="minibtn cancelTrip" data-i="'+r.sourceIndex+'">削除</button></div>'
+       ? '<div class="miniops"><button type="button" class="minibtn editTrip" data-i="'+r.sourceIndex+'">まとめて修正</button><button type="button" class="minibtn cancelTrip" data-i="'+r.sourceIndex+'">まとめて削除</button></div>'
        : '<div class="miniops"><button type="button" class="minibtn editSchedule" data-i="'+r.sourceIndex+'">修正</button><button type="button" class="minibtn cancelSchedule" data-i="'+r.sourceIndex+'">削除</button></div>';
    return '<div class="listitem"><div class="itemrow"><div><strong>'+esc(r.date)+'　'+esc(r.type)+'</strong>'+
      '<div>'+esc(r.title)+'</div>'+
@@ -1027,7 +1037,19 @@ function loadLeaveEdit(index){
  $('leaveReg').textContent='この一括登録をまとめて修正保存';$('leaveEditing').textContent='一括修正中：'+leaveEditIndices.length+'人　※名前の追加・削除もできます　'+(r.date||'')+'　'+(r.label||r.kind||'');$('leaveEditing').classList.add('show');window.scrollTo({top:0,behavior:'smooth'});
 }
 function cancelLeave(index){
- const rows=get('nenkyuRecords'),r=rows[index];if(!r)return;if(!confirm('この休暇登録を削除しますか？'))return;rememberDeleted('nenkyuRecords',index,{...r});rows[index]={...r,status:'cancelled',updatedAt:new Date().toISOString()};if(!set('nenkyuRecords',rows))return;if(leaveEditIndices.includes(index)||leaveEditIndex===index){leaveEditIndex=null;leaveEditIndices=[];$('leaveReg').textContent='年休・休暇を登録';$('leaveEditing').classList.remove('show');$('leaveEditing').textContent='';}showDone('休暇登録を削除しました');
+ const rows=get('nenkyuRecords'),r=rows[index];if(!r)return;
+ const targets=r.batchId
+   ? rows.map((x,i)=>x&&x.batchId===r.batchId&&x.status!=='cancelled'?i:-1).filter(i=>i>=0)
+   : [index];
+ const saved=targets.map(i=>({...rows[i]}));
+ const msg=targets.length>1 ? 'この一括休暇 '+targets.length+'件をまとめて削除しますか？' : 'この休暇登録を削除しますか？';
+ if(!confirm(msg))return;
+ rememberDeleted('nenkyuRecords',index,saved);
+ targets.forEach(i=>rows[i]={...rows[i],status:'cancelled',updatedAt:new Date().toISOString()});
+ if(!set('nenkyuRecords',rows))return;
+ leaveEditIndex=null;leaveEditIndices=[];$('leaveReg').textContent='年休・休暇を登録';
+ $('leaveEditing').classList.remove('show');$('leaveEditing').textContent='';
+ showDone(targets.length+'件の休暇登録を削除しました');
 }
 
 function loadTripEdit(index){
@@ -1051,13 +1073,19 @@ function loadTripEdit(index){
 }
 function cancelTrip(index){
  const rows=get('shucchoRecords'),r=rows[index];if(!r)return;
- if(!confirm((r.date||'')+' '+(r.fullName||r.name||'')+' の出張登録を削除しますか？'))return;
- rememberDeleted('shucchoRecords',index,{...r});
- r.status='cancelled';r.cancelledAt=new Date().toISOString();rows[index]=r;set('shucchoRecords',rows);
- if(tripEditIndices.includes(index)||tripEditIndex===index){
-   tripEditIndex=null;tripEditIndices=[];$('tripReg').textContent='出張を登録';$('tripEditing').classList.remove('show');$('tripEditing').textContent='';
- }
- showDone('出張登録を削除しました');
+ const targets=r.batchId
+   ? rows.map((x,i)=>x&&x.batchId===r.batchId&&x.status!=='cancelled'?i:-1).filter(i=>i>=0)
+   : [index];
+ const saved=targets.map(i=>({...rows[i]}));
+ const msg=targets.length>1 ? 'この一括出張 '+targets.length+'件をまとめて削除しますか？'
+   : ((r.date||'')+' '+(r.fullName||r.name||'')+' の出張登録を削除しますか？');
+ if(!confirm(msg))return;
+ rememberDeleted('shucchoRecords',index,saved);
+ targets.forEach(i=>rows[i]={...rows[i],status:'cancelled',cancelledAt:new Date().toISOString(),updatedAt:new Date().toISOString()});
+ if(!set('shucchoRecords',rows))return;
+ tripEditIndex=null;tripEditIndices=[];$('tripReg').textContent='出張を登録';
+ $('tripEditing').classList.remove('show');$('tripEditing').textContent='';
+ showDone(targets.length+'件の出張登録を削除しました');
 }
 
 $('listBtn').onclick=()=>{renderRecent();window.scrollTo({top:document.body.scrollHeight,behavior:'smooth'})};
