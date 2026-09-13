@@ -1,1223 +1,292 @@
-<!doctype html><html lang="ja"><head><meta charset="utf-8">
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
-<title>休暇・出張・予定 かんたん入力</title>
+<title>休暇・出張・予定 入力</title>
+<script src="https://appsforoffice.microsoft.com/lib/1/hosted/office.js"></script>
 <style>
-:root{--bg:#fffaf7;--line:#e7ddd8;--ink:#3e3532;--muted:#84756f;--sel:#fde9e2;--ok:#eaf6ec;--warn:#fff7db}
-*{box-sizing:border-box}body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif;background:var(--bg);color:var(--ink)}
-.wrap{max-width:1180px;margin:auto;padding:8px}.top{display:flex;align-items:center;gap:10px;flex-wrap:wrap}.top h1{font-size:20px;margin:0}
-.panel{background:#fff;border:1px solid var(--line);border-radius:12px;padding:7px;margin-top:6px}.title{font-weight:800;font-size:13px;margin-bottom:5px}
-.namegrid{display:grid;grid-template-columns:repeat(11,minmax(0,1fr));gap:3px}.pick{position:absolute;opacity:0;pointer-events:none}
-.btnlabel,.timebtn,.optionbtn{display:flex;align-items:center;justify-content:center;border:1px solid var(--line);background:#fff;border-radius:8px;min-height:34px;font-weight:700;font-size:12px;cursor:pointer;user-select:none;-webkit-user-select:none;padding:4px}
-.namepick:checked+.btnlabel,.pick:checked+.timebtn,.leavepick:checked+.optionbtn,.nenkyuHourPick:checked+.optionbtn{background:var(--sel);border-color:#d9a697}
-.sub{display:block;font-size:9px;color:var(--muted);margin-left:3px}.row{display:grid;grid-template-columns:1.25fr 1fr;gap:6px;margin-top:6px}
-.timeblock{display:grid;grid-template-columns:1fr 1fr;gap:8px}.timegrid{display:grid;grid-template-columns:repeat(10,1fr);gap:3px}.mingrid{display:grid;grid-template-columns:repeat(12,1fr);gap:3px;margin-top:3px}
-.leavegrid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:3px}.field label{font-size:11px;color:var(--muted);font-weight:800;display:block;margin:5px 0 3px}
-.field input{width:100%;height:40px;border:1px solid var(--line);border-radius:9px;padding:0 9px;font-size:15px}
-.topbtn,.reg{border:1px solid var(--line);background:#fff;border-radius:9px;font-weight:800;height:40px;padding:0 12px}.reg{width:100%;background:var(--sel);border-color:#d9a697;margin-top:6px}
-.status{font-size:11px;color:var(--muted);margin-top:4px}.done{display:none;background:var(--ok);border:1px solid #b9d7be;border-radius:10px;padding:12px;margin-top:6px;font-weight:800;font-size:16px}
-.done.show{display:block}.actions{margin-left:auto;display:flex;gap:6px;flex-wrap:wrap}.choicecols{display:grid;grid-template-columns:1.05fr .95fr;gap:6px}
-.tripbox{background:#fffdf5}.listitem{border:1px solid var(--line);border-radius:9px;padding:7px;margin-top:5px}.listitem strong{display:block}.itemrow{display:grid;grid-template-columns:1fr auto;gap:8px;align-items:center}.miniops{display:flex;gap:4px}.minibtn{height:34px;border:1px solid var(--line);background:#fff;border-radius:8px;padding:0 10px;font-weight:800}.editingbar{display:none;background:#fff3cc;border:1px solid #d6b85e;border-radius:9px;padding:8px;margin-top:6px;font-weight:800}.editingbar.show{display:block}
-@media(max-width:900px){.namegrid{grid-template-columns:repeat(8,1fr)}.row,.choicecols,.timeblock{grid-template-columns:1fr}.leavegrid{grid-template-columns:repeat(4,1fr)}.actions{margin-left:0}}
-.specialleave{margin-top:8px;padding:8px;border:1px solid #d9e0e6;border-radius:9px;background:#fbfcfd}.specialleave label{display:block;font-size:12px;font-weight:900;margin-bottom:4px}.specialleave input{width:100%;padding:9px;border:1px solid #d9e0e6;border-radius:8px;font:inherit}
-.scheduleTargets{display:flex;gap:6px;flex-wrap:wrap;margin:7px 0}
-.scheduleTargets label{border:1px solid #d9dfe5;border-radius:999px;padding:6px 9px;font-size:12px;font-weight:800;background:#fff}
-.scheduleTargets input{margin-right:4px}
-
-.checktabs{display:flex;gap:5px;flex-wrap:wrap;margin:6px 0}
-.checktab.active{background:#fde9e2;border-color:#d9a697}
-.checkrow{display:grid;grid-template-columns:42px 105px 90px 1fr;gap:7px;align-items:center;border:1px solid var(--line);border-radius:9px;padding:7px;margin-top:5px;background:#fff}
-.checkrow.donecheck{background:#eef8f1}
-.checkbtn{width:34px;height:34px;border:2px solid #aeb8c0;border-radius:8px;background:#fff;font-size:21px;font-weight:900}
-.donecheck .checkbtn{color:#3f7a54;border-color:#3f7a54;background:#fff}
-.checkmeta{font-size:11px;color:var(--muted)}
-@media(max-width:700px){.checkrow{grid-template-columns:40px 95px 1fr}.checkrow .checkkind{grid-column:2}.checkrow .checkmain{grid-column:2/-1}}
-
-/* ===== iPad Split View 右半分専用 ===== */
-.wrap{max-width:none;width:100%;padding:6px}
-.top{gap:6px}
-.top h1{font-size:17px}
-.panel{padding:6px;margin-top:5px}
-.namegrid{grid-template-columns:repeat(8,minmax(0,1fr));gap:3px}
-.timegrid{grid-template-columns:repeat(6,minmax(0,1fr));gap:3px}
-.mingrid{grid-template-columns:repeat(6,minmax(0,1fr));gap:3px}
-.leavegrid{grid-template-columns:repeat(5,minmax(0,1fr));gap:3px}
-.row,.choicecols,.timeblock{grid-template-columns:1fr}
-.btnlabel,.timebtn,.optionbtn{min-height:42px;font-size:12px}
-.topbtn,.reg{min-height:42px}
-.field input{height:44px;font-size:16px}
-@media(min-width:900px){
-  .namegrid{grid-template-columns:repeat(8,minmax(0,1fr))}
-  .timegrid{grid-template-columns:repeat(6,minmax(0,1fr))}
-  .mingrid{grid-template-columns:repeat(6,minmax(0,1fr))}
-}
-
+:root{--bg:#fffaf7;--line:#e5d9d3;--ink:#3e3532;--sel:#fde9e2;--ok:#eaf6ec}
+*{box-sizing:border-box} body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif;background:var(--bg);color:var(--ink)}
+.wrap{padding:6px} h1{font-size:17px;margin:0 0 6px}
+.panel{background:white;border:1px solid var(--line);border-radius:10px;padding:6px;margin:5px 0}
+.title{font-size:13px;font-weight:900;margin-bottom:5px}
+.grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:3px}
+.timegrid{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:3px}
+.btn{border:1px solid var(--line);border-radius:8px;background:#fff;min-height:40px;font-weight:800;font-size:12px;padding:4px}
+.btn.sel{background:var(--sel);border-color:#d49b88}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:5px}
+input,select{width:100%;height:40px;border:1px solid var(--line);border-radius:8px;padding:0 8px;font-size:15px;background:#fff}
+.reg{width:100%;min-height:44px;border:1px solid #d49b88;background:var(--sel);border-radius:9px;font-size:15px;font-weight:900;margin-top:5px}
+.status{font-size:12px;font-weight:800;padding:6px;border-radius:8px;background:var(--ok);display:none;margin:5px 0}
+.ops{display:flex;gap:4px;flex-wrap:wrap}
+.small{min-height:38px;border:1px solid var(--line);background:#fff;border-radius:8px;font-weight:800;padding:0 8px}
+.voice{display:grid;grid-template-columns:1fr auto;gap:4px}
 </style>
-<script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
-</head><body><div class="wrap">
-<div class="top"><h1>休暇・出張・予定 かんたん入力</h1><span style="font-size:11px;font-weight:800;color:#3f7a54">Excel専用（Googleスプレッドシート不使用）</span><strong>日付</strong><input id="date" type="date" style="height:40px;border:2px solid #d9a697;border-radius:10px;padding:0 9px;font-size:18px;font-weight:800">
-<div class="actions"><button id="listBtn" class="topbtn" type="button">登録一覧</button><button id="excelBtn" class="topbtn" type="button">Excel（.xlsx）</button><button id="backupDataBtn" class="topbtn" type="button">バックアップ</button><button id="recoverDataBtn" class="topbtn" type="button">入力済みデータを復旧</button><button id="undoChoiceBtn" class="topbtn" type="button">↩ 入力を1つ戻す</button><button id="resetInputBtn" class="topbtn" type="button">入力内容をリセット</button><button id="undoDeleteBtn" class="topbtn" type="button">↩ 直前の削除を戻す</button></div></div>
+</head>
+<body><div class="wrap">
+<h1>休暇・出張・予定 かんたん入力</h1><div style='font-size:11px;font-weight:800;color:#3f7a54;margin-bottom:5px'>Excel正本ベース版</div>
+<div id="status" class="status"></div>
 
-<section class="panel"><div class="title">① 名前（複数選択できます）</div>
-<div class="namegrid"><input class="pick namepick" type="checkbox" id="n0" data-i="0"><label class="btnlabel" for="n0">和田<span class="sub">亘</span></label><input class="pick namepick" type="checkbox" id="n1" data-i="1"><label class="btnlabel" for="n1">瀬尾</label><input class="pick namepick" type="checkbox" id="n2" data-i="2"><label class="btnlabel" for="n2">佐藤<span class="sub">かおり</span></label><input class="pick namepick" type="checkbox" id="n3" data-i="3"><label class="btnlabel" for="n3">岡田</label><input class="pick namepick" type="checkbox" id="n4" data-i="4"><label class="btnlabel" for="n4">兼藤</label><input class="pick namepick" type="checkbox" id="n5" data-i="5"><label class="btnlabel" for="n5">向井</label><input class="pick namepick" type="checkbox" id="n6" data-i="6"><label class="btnlabel" for="n6">井上<span class="sub">真維</span></label><input class="pick namepick" type="checkbox" id="n7" data-i="7"><label class="btnlabel" for="n7">池田</label><input class="pick namepick" type="checkbox" id="n8" data-i="8"><label class="btnlabel" for="n8">出口</label><input class="pick namepick" type="checkbox" id="n9" data-i="9"><label class="btnlabel" for="n9">千葉</label><input class="pick namepick" type="checkbox" id="n10" data-i="10"><label class="btnlabel" for="n10">萩原</label><input class="pick namepick" type="checkbox" id="n11" data-i="11"><label class="btnlabel" for="n11">傍田</label><input class="pick namepick" type="checkbox" id="n12" data-i="12"><label class="btnlabel" for="n12">井上<span class="sub">日向子</span></label><input class="pick namepick" type="checkbox" id="n13" data-i="13"><label class="btnlabel" for="n13">播本</label><input class="pick namepick" type="checkbox" id="n14" data-i="14"><label class="btnlabel" for="n14">石原</label><input class="pick namepick" type="checkbox" id="n15" data-i="15"><label class="btnlabel" for="n15">緒方</label><input class="pick namepick" type="checkbox" id="n16" data-i="16"><label class="btnlabel" for="n16">清水</label><input class="pick namepick" type="checkbox" id="n17" data-i="17"><label class="btnlabel" for="n17">阿部野</label><input class="pick namepick" type="checkbox" id="n18" data-i="18"><label class="btnlabel" for="n18">浦上</label><input class="pick namepick" type="checkbox" id="n19" data-i="19"><label class="btnlabel" for="n19">藤江</label><input class="pick namepick" type="checkbox" id="n20" data-i="20"><label class="btnlabel" for="n20">藤田</label><input class="pick namepick" type="checkbox" id="n21" data-i="21"><label class="btnlabel" for="n21">丹田</label><input class="pick namepick" type="checkbox" id="n22" data-i="22"><label class="btnlabel" for="n22">矢羽々</label><input class="pick namepick" type="checkbox" id="n23" data-i="23"><label class="btnlabel" for="n23">芳賀</label><input class="pick namepick" type="checkbox" id="n24" data-i="24"><label class="btnlabel" for="n24">柳田</label><input class="pick namepick" type="checkbox" id="n25" data-i="25"><label class="btnlabel" for="n25">小田</label><input class="pick namepick" type="checkbox" id="n26" data-i="26"><label class="btnlabel" for="n26">和田<span class="sub">亜弥乃</span></label><input class="pick namepick" type="checkbox" id="n27" data-i="27"><label class="btnlabel" for="n27">村上</label><input class="pick namepick" type="checkbox" id="n28" data-i="28"><label class="btnlabel" for="n28">藤本</label><input class="pick namepick" type="checkbox" id="n29" data-i="29"><label class="btnlabel" for="n29">足立</label><input class="pick namepick" type="checkbox" id="n30" data-i="30"><label class="btnlabel" for="n30">原井</label><input class="pick namepick" type="checkbox" id="n31" data-i="31"><label class="btnlabel" for="n31">大下</label><input class="pick namepick" type="checkbox" id="n32" data-i="32"><label class="btnlabel" for="n32">早瀬</label><input class="pick namepick" type="checkbox" id="n33" data-i="33"><label class="btnlabel" for="n33">西川</label><input class="pick namepick" type="checkbox" id="n34" data-i="34"><label class="btnlabel" for="n34">皿谷</label><input class="pick namepick" type="checkbox" id="n35" data-i="35"><label class="btnlabel" for="n35">岸本</label><input class="pick namepick" type="checkbox" id="n36" data-i="36"><label class="btnlabel" for="n36">山本</label><input class="pick namepick" type="checkbox" id="n37" data-i="37"><label class="btnlabel" for="n37">藤井</label><input class="pick namepick" type="checkbox" id="n38" data-i="38"><label class="btnlabel" for="n38">笠原</label><input class="pick namepick" type="checkbox" id="n39" data-i="39"><label class="btnlabel" for="n39">佐藤<span class="sub">裕子</span></label><input class="pick namepick" type="checkbox" id="n40" data-i="40"><label class="btnlabel" for="n40">羽原</label><input class="pick namepick" type="checkbox" id="n41" data-i="41"><label class="btnlabel" for="n41">谷</label><input class="pick namepick" type="checkbox" id="n42" data-i="42"><label class="btnlabel" for="n42">金森</label><input class="pick namepick" type="checkbox" id="n43" data-i="43"><label class="btnlabel" for="n43">松下</label></div>
-<div style="display:flex;gap:6px;margin-top:5px"><button id="all" class="topbtn" type="button">全員選択</button><button id="clear" class="topbtn" type="button">選択解除</button></div></section>
-
-<section class="panel"><div class="title">② 時刻（開始と終了を別々に選択）</div>
-<div class="timeblock">
-<div><strong>開始</strong><div class="timegrid"><input class="pick" type="radio" name="startHour" id="sh8" value="8" checked><label class="timebtn" for="sh8">08</label><input class="pick" type="radio" name="startHour" id="sh9" value="9"><label class="timebtn" for="sh9">09</label><input class="pick" type="radio" name="startHour" id="sh10" value="10"><label class="timebtn" for="sh10">10</label><input class="pick" type="radio" name="startHour" id="sh11" value="11"><label class="timebtn" for="sh11">11</label><input class="pick" type="radio" name="startHour" id="sh12" value="12"><label class="timebtn" for="sh12">12</label><input class="pick" type="radio" name="startHour" id="sh13" value="13"><label class="timebtn" for="sh13">13</label><input class="pick" type="radio" name="startHour" id="sh14" value="14"><label class="timebtn" for="sh14">14</label><input class="pick" type="radio" name="startHour" id="sh15" value="15"><label class="timebtn" for="sh15">15</label><input class="pick" type="radio" name="startHour" id="sh16" value="16"><label class="timebtn" for="sh16">16</label><input class="pick" type="radio" name="startHour" id="sh17" value="17"><label class="timebtn" for="sh17">17</label></div><div class="mingrid"><input class="pick" type="radio" name="startMinute" id="sm0" value="0"><label class="timebtn" for="sm0">00</label><input class="pick" type="radio" name="startMinute" id="sm5" value="5"><label class="timebtn" for="sm5">05</label><input class="pick" type="radio" name="startMinute" id="sm10" value="10"><label class="timebtn" for="sm10">10</label><input class="pick" type="radio" name="startMinute" id="sm15" value="15"><label class="timebtn" for="sm15">15</label><input class="pick" type="radio" name="startMinute" id="sm20" value="20" checked><label class="timebtn" for="sm20">20</label><input class="pick" type="radio" name="startMinute" id="sm25" value="25"><label class="timebtn" for="sm25">25</label><input class="pick" type="radio" name="startMinute" id="sm30" value="30"><label class="timebtn" for="sm30">30</label><input class="pick" type="radio" name="startMinute" id="sm35" value="35"><label class="timebtn" for="sm35">35</label><input class="pick" type="radio" name="startMinute" id="sm40" value="40"><label class="timebtn" for="sm40">40</label><input class="pick" type="radio" name="startMinute" id="sm45" value="45"><label class="timebtn" for="sm45">45</label><input class="pick" type="radio" name="startMinute" id="sm50" value="50"><label class="timebtn" for="sm50">50</label><input class="pick" type="radio" name="startMinute" id="sm55" value="55"><label class="timebtn" for="sm55">55</label></div></div>
-<div><strong>終了</strong><div class="timegrid"><input class="pick" type="radio" name="endHour" id="eh8" value="8"><label class="timebtn" for="eh8">08</label><input class="pick" type="radio" name="endHour" id="eh9" value="9"><label class="timebtn" for="eh9">09</label><input class="pick" type="radio" name="endHour" id="eh10" value="10"><label class="timebtn" for="eh10">10</label><input class="pick" type="radio" name="endHour" id="eh11" value="11"><label class="timebtn" for="eh11">11</label><input class="pick" type="radio" name="endHour" id="eh12" value="12"><label class="timebtn" for="eh12">12</label><input class="pick" type="radio" name="endHour" id="eh13" value="13"><label class="timebtn" for="eh13">13</label><input class="pick" type="radio" name="endHour" id="eh14" value="14"><label class="timebtn" for="eh14">14</label><input class="pick" type="radio" name="endHour" id="eh15" value="15"><label class="timebtn" for="eh15">15</label><input class="pick" type="radio" name="endHour" id="eh16" value="16" checked><label class="timebtn" for="eh16">16</label><input class="pick" type="radio" name="endHour" id="eh17" value="17"><label class="timebtn" for="eh17">17</label></div><div class="mingrid"><input class="pick" type="radio" name="endMinute" id="em0" value="0"><label class="timebtn" for="em0">00</label><input class="pick" type="radio" name="endMinute" id="em5" value="5"><label class="timebtn" for="em5">05</label><input class="pick" type="radio" name="endMinute" id="em10" value="10"><label class="timebtn" for="em10">10</label><input class="pick" type="radio" name="endMinute" id="em15" value="15"><label class="timebtn" for="em15">15</label><input class="pick" type="radio" name="endMinute" id="em20" value="20"><label class="timebtn" for="em20">20</label><input class="pick" type="radio" name="endMinute" id="em25" value="25"><label class="timebtn" for="em25">25</label><input class="pick" type="radio" name="endMinute" id="em30" value="30"><label class="timebtn" for="em30">30</label><input class="pick" type="radio" name="endMinute" id="em35" value="35"><label class="timebtn" for="em35">35</label><input class="pick" type="radio" name="endMinute" id="em40" value="40"><label class="timebtn" for="em40">40</label><input class="pick" type="radio" name="endMinute" id="em45" value="45"><label class="timebtn" for="em45">45</label><input class="pick" type="radio" name="endMinute" id="em50" value="50" checked><label class="timebtn" for="em50">50</label><input class="pick" type="radio" name="endMinute" id="em55" value="55"><label class="timebtn" for="em55">55</label></div></div>
-</div><div style="margin-top:7px"><button id="timeReset" class="topbtn" type="button">時刻選択を解除</button></div></section>
-
-
-<div class="choicecols">
-<section class="panel"><div class="title">③ 年休・休暇を登録</div>
-<div class="leavegrid"><input class="pick leavepick" type="radio" name="leaveType" id="lvN" data-label="年休" data-kind="年休" data-amount="0" data-unit="hour"><label class="optionbtn" for="lvN">年休</label><input class="pick leavepick" type="radio" name="leaveType" id="lv9" data-label="夏季研修" data-kind="夏季研修" data-amount="1" data-unit="day"><label class="optionbtn" for="lv9">夏季研修</label><input class="pick leavepick" type="radio" name="leaveType" id="lv10" data-label="市内一斉研修" data-kind="市内一斉研修" data-amount="1" data-unit="day"><label class="optionbtn" for="lv10">市内一斉研修</label><input class="pick leavepick" type="radio" name="leaveType" id="lv11" data-label="健康診断" data-kind="健康診断" data-amount="1" data-unit="day"><label class="optionbtn" for="lv11">健康診断</label><input class="pick leavepick" type="radio" name="leaveType" id="lv12" data-label="厚生" data-kind="厚生" data-amount="0" data-unit="hour"><label class="optionbtn" for="lv12">厚生</label><input class="pick leavepick" type="radio" name="leaveType" id="lvWork" data-label="職専免" data-kind="職専免" data-amount="0" data-unit="hour"><label class="optionbtn" for="lvWork">職専免</label><input class="pick leavepick" type="radio" name="leaveType" id="lv14" data-label="夏季厚生" data-kind="夏季厚生" data-amount="1" data-unit="day"><label class="optionbtn" for="lv14">夏季厚生</label><input class="pick leavepick" type="radio" name="leaveType" id="lv15" data-label="夏季休暇" data-kind="夏季休暇" data-amount="1" data-unit="day"><label class="optionbtn" for="lv15">夏季休暇</label><input class="pick leavepick" type="radio" name="leaveType" id="lv16" data-label="短期介護" data-kind="短期介護" data-amount="1" data-unit="day"><label class="optionbtn" for="lv16">短期介護</label><input class="pick leavepick" type="radio" name="leaveType" id="lv17" data-label="子看" data-kind="子看" data-amount="0" data-unit="hour"><label class="optionbtn" for="lv17">子看</label><input class="pick leavepick" type="radio" name="leaveType" id="lv18" data-label="特休" data-kind="特休" data-amount="1" data-unit="day"><label class="optionbtn" for="lv18">特休</label></div>
-
-<div id="nenkyuHoursBox" class="specialleave" style="display:block">
-<label>年休時間</label>
-<div class="leavegrid" id="nenkyuHoursGrid">
-<input class="pick nenkyuHourPick" type="radio" name="nenkyuAmount" id="nh1" data-hours="1"><label class="optionbtn" for="nh1">①</label>
-<input class="pick nenkyuHourPick" type="radio" name="nenkyuAmount" id="nh2" data-hours="2"><label class="optionbtn" for="nh2">②</label>
-<input class="pick nenkyuHourPick" type="radio" name="nenkyuAmount" id="nh3" data-hours="3"><label class="optionbtn" for="nh3">③</label>
-<input class="pick nenkyuHourPick" type="radio" name="nenkyuAmount" id="nh4" data-hours="4"><label class="optionbtn" for="nh4">④</label>
-<input class="pick nenkyuHourPick" type="radio" name="nenkyuAmount" id="nh5" data-hours="5"><label class="optionbtn" for="nh5">⑤</label>
-<input class="pick nenkyuHourPick" type="radio" name="nenkyuAmount" id="nh6" data-hours="6"><label class="optionbtn" for="nh6">⑥</label>
-<input class="pick nenkyuHourPick" type="radio" name="nenkyuAmount" id="nh7" data-hours="7"><label class="optionbtn" for="nh7">⑦</label>
-<input class="pick nenkyuHourPick" type="radio" name="nenkyuAmount" id="nh8" data-hours="8"><label class="optionbtn" for="nh8">⑧</label>
-<input class="pick nenkyuHourPick" type="radio" name="nenkyuAmount" id="nhDay" data-hours="1day"><label class="optionbtn" for="nhDay">1日</label>
-</div></div>
-
-<div id="specialLeaveBox" class="specialleave" style="display:none"><label>特休（　　　　）※ここを手入力</label><input id="specialLeaveNo" type="text" inputmode="text" lang="ja" autocomplete="off" autocapitalize="off" placeholder="例：3号・育児時間・看護など"></div>
-<button id="leaveReg" class="reg" type="button">年休・休暇を登録</button>
-<div id="leaveEditing" class="editingbar"></div>
-<div class="status">①〜⑧／1日だけなら自動で「年休」。厚生＋③→厚生③、職専免＋③→職専免③、特休＋手入力＋③→特休（手入力）③。同じ日に複数回登録できます。</div>
+<section class="panel">
+<div class="title">日付</div>
+<input id="date" type="date">
 </section>
 
-<section class="panel tripbox"><div class="title">④ 出張を登録</div>
-<div class="field"><label>用務</label><div style="display:grid;grid-template-columns:1fr auto;gap:5px"><input id="purpose" inputmode="text" lang="ja" autocomplete="off" placeholder="例：市内一斉研修（道徳）"><button type="button" id="purposeVoice" class="topbtn">🎤 音声</button></div></div>
-<div class="field"><label>会場名</label><div style="display:grid;grid-template-columns:1fr auto;gap:5px"><input id="venue" inputmode="text" lang="ja" autocomplete="off" placeholder="例：緑丘小学校"><button type="button" id="venueVoice" class="topbtn">🎤 音声</button></div></div>
-<button id="tripReg" class="reg" type="button">出張を登録</button>
-<div id="tripEditing" class="editingbar"></div>
-<div class="status">「直近の登録」の修正を押すと、その出張を読み込んで上書きできます。</div>
-</section>
+<section class="panel">
+<div class="title">① 名前（複数選択可）</div>
+<div id="names" class="grid"></div>
+<div class="ops" style="margin-top:4px">
+<button class="small" id="clearNames">選択解除</button>
+<button class="small" id="selectAll">全員選択</button>
 </div>
-
-<div id="done" class="done"></div><div id="portalSync" class="status" style="margin-top:6px;font-weight:800">ポータル連携：未確認</div>
-
-
-<section class="panel schedulebox"><div class="title">⑤ 予定を登録</div>
-<div class="field"><label>予定名</label><input id="scheduleTitle" placeholder="例：読み聞かせ・職員会議・来校者"></div>
-<div class="field"><label>場所</label><input id="schedulePlace" placeholder="例：体育館・会議室・校長室"></div>
-<div style="font-size:12px;font-weight:900;margin-top:8px">対象（複数選択可）</div>
-<div id="scheduleTargets" class="scheduleTargets">
-<label><input type="checkbox" value="全員" checked>全員</label>
-<label><input type="checkbox" value="1年">1年</label>
-<label><input type="checkbox" value="2年">2年</label>
-<label><input type="checkbox" value="3年">3年</label>
-<label><input type="checkbox" value="4年">4年</label>
-<label><input type="checkbox" value="5年">5年</label>
-<label><input type="checkbox" value="6年">6年</label>
-<label><input type="checkbox" value="校長">校長</label>
-<label><input type="checkbox" value="教頭">教頭</label>
-<label><input type="checkbox" value="個人">個人</label>
-</div>
-<div class="field"><label>表示先</label>
-<select id="scheduleDisplay">
-<option>ポータル</option>
-<option>ポータル＋書類</option>
-<option>書類のみ</option>
-</select></div>
-<div class="field"><label>補足</label><input id="scheduleNote" placeholder="必要なものだけ"></div>
-<button id="scheduleReg" class="reg" type="button">予定を登録</button>
-<div id="scheduleEditing" class="editingbar"></div>
-<div class="status">予定もこの画面で確定してから、あとで新ポータルへ集約します。</div>
 </section>
 
-<section class="panel"><div class="title">⑥ 直近の登録</div><div id="recent" class="status">まだ登録はありません。</div></section>
-
-<section class="panel"><div class="title">⑦ 確認一覧</div>
-<div class="checktabs">
-<button type="button" class="topbtn checktab active" data-checktab="date">日付順</button>
-<button type="button" class="topbtn checktab" data-checktab="name">名前順</button>
-<button type="button" class="topbtn checktab" data-checktab="kind">区分順</button>
-<button type="button" class="topbtn checktab" data-checktab="unchecked">未確認だけ</button>
-<button type="button" class="topbtn checktab" data-checktab="checked">確認済みだけ</button>
+<section class="panel">
+<div class="title">② 時刻</div>
+<div class="row">
+<div><strong>開始</strong><div id="sh" class="timegrid"></div><div id="sm" class="timegrid"></div></div>
+<div><strong>終了</strong><div id="eh" class="timegrid"></div><div id="em" class="timegrid"></div></div>
 </div>
-<div id="checkSummary" class="status"></div>
-<div id="checkList"></div>
 </section>
 
+<section class="panel">
+<div class="title">③ 年休・休暇</div>
+<div id="leaveKinds" class="grid"></div>
+<div style="height:4px"></div>
+<div id="amounts" class="grid"></div>
+<input id="specialText" placeholder="特休の内容（必要な時だけ）" style="margin-top:5px;display:none">
+<button class="reg" id="leaveReg">年休・休暇を登録</button>
+</section>
+
+<section class="panel">
+<div class="title">④ 出張</div>
+<div class="voice"><input id="purpose" placeholder="用務"><button class="small" data-voice="purpose">🎤</button></div>
+<div class="voice" style="margin-top:4px"><input id="venue" placeholder="会場"><button class="small" data-voice="venue">🎤</button></div>
+<button class="reg" id="tripReg">出張を登録</button>
+</section>
+
+<section class="panel">
+<div class="title">⑤ 予定</div>
+<input id="planTitle" placeholder="予定名">
+<input id="planTarget" placeholder="対象" style="margin-top:4px">
+<input id="planPlace" placeholder="場所" style="margin-top:4px">
+<button class="reg" id="planReg">予定を登録</button>
+</section>
+
+<section class="panel">
+<div class="title">一括データ操作</div>
+<div class="ops">
+<button class="small" id="editLastGroup">直前の一括登録を修正</button>
+<button class="small" id="deleteLastGroup">直前の一括登録を削除</button>
+<button class="small" id="undoDelete">直前の削除を戻す</button>
+</div>
+</section>
+
+<section class="panel">
+<div class="title">出力・バックアップ</div>
+<div class="ops">
+<button class="small" id="backupNow">今日のバックアップ</button>
+<button class="small" id="refreshOutputs">学校日誌・ポータル更新</button><button class="small" id="printSheet">印刷</button>
+</div>
+</section>
 </div>
 
 <script>
+const STAFF=[{"name": "和田", "full": "和田 亘"}, {"name": "瀬尾", "full": "瀬尾 奈緒美"}, {"name": "佐藤", "full": "佐藤 かおり"}, {"name": "岡田", "full": "岡田 真緒"}, {"name": "兼藤", "full": "兼藤 佳奈"}, {"name": "向井", "full": "向井 杏奴"}, {"name": "井上", "full": "井上 真維"}, {"name": "池田", "full": "池田 真菜"}, {"name": "出口", "full": "出口 知子"}, {"name": "千葉", "full": "千葉 月乃"}, {"name": "萩原", "full": "萩原 優"}, {"name": "傍田", "full": "傍田 美華"}, {"name": "井上", "full": "井上 日向子"}, {"name": "播本", "full": "播本 太平"}, {"name": "石原", "full": "石原 繭子"}, {"name": "緒方", "full": "緒方 香織"}, {"name": "清水", "full": "清水 遥斗"}, {"name": "阿部野", "full": "阿部野 由佳"}, {"name": "浦上", "full": "浦上 直輝"}, {"name": "藤江", "full": "藤江 一雅"}, {"name": "藤田", "full": "藤田 壮真"}, {"name": "丹田", "full": "丹田 英里"}, {"name": "矢羽々", "full": "矢羽々 由佳"}, {"name": "芳賀", "full": "芳賀 麻衣子"}, {"name": "柳田", "full": "柳田 啓子"}, {"name": "小田", "full": "小田 祐希乃"}, {"name": "和田", "full": "和田 亜弥乃"}, {"name": "村上", "full": "村上 ユミ"}, {"name": "藤本", "full": "藤本 洋平"}, {"name": "足立", "full": "足立 かおり"}, {"name": "原井", "full": "原井 さおり"}, {"name": "大下", "full": "大下 順子"}, {"name": "早瀬", "full": "早瀬 彩花"}, {"name": "西川", "full": "西川 順子"}, {"name": "皿谷", "full": "皿谷 久恵"}, {"name": "岸本", "full": "岸本 千香子"}, {"name": "山本", "full": "山本 三恵子"}, {"name": "藤井", "full": "藤井 真理子"}, {"name": "笠原", "full": "笠原 奈都江"}, {"name": "佐藤", "full": "佐藤 裕子"}, {"name": "羽原", "full": "羽原 和子"}, {"name": "谷", "full": "谷 奈津子"}, {"name": "金森", "full": "金森 法子"}, {"name": "松下", "full": "松下 由佳"}];
+let selectedNames=new Set(), leaveKind='', leaveAmount='', lastGroupId='', lastDeleted=[];
+const $=id=>document.getElementById(id);
+const now=()=>new Date().toISOString();
+const gid=()=> 'g-'+Date.now()+'-'+Math.random().toString(36).slice(2,8);
+const rid=()=> 'r-'+Date.now()+'-'+Math.random().toString(36).slice(2,9);
 
-async function driveFetchAll(){ return null; }
-function rawLocal(k){
-  const aliases=(typeof storageNames==='function')?storageNames(k):[k];
-  for(const name of aliases){
-    try{
-      const a=JSON.parse(localStorage.getItem(name)||'[]');
-      if(Array.isArray(a)&&a.length) return a;
-    }catch(e){}
-  }
-  return [];
+function msg(t){$('status').textContent=t;$('status').style.display='block';}
+function fmt(h,m){return String(h).padStart(2,'0')+':'+String(m).padStart(2,'0')}
+function selectedTime(prefixH,prefixM){
+ const h=document.querySelector('[data-time="'+prefixH+'"].sel');
+ const m=document.querySelector('[data-time="'+prefixM+'"].sel');
+ return h&&m ? fmt(h.dataset.v,m.dataset.v) : '';
 }
-async function driveSyncNow(){ return null; }
-async function hydrateFromDrive(){ return null; };
-
-function storageNames(k){
-  return STORAGE_ALIASES[k] || [k];
-}
-
-/* 同一端末で消えにくくするため localStorage + IndexedDB の二重保存。
-   旧Drive APIへの自動同期は行わない（元データ上書き事故防止）。 */
-const DB_NAME='teshiro_leave_trip_schedule_v1';
-const DB_STORE='snapshots';
-
-function openBackupDB(){
-  return new Promise((resolve,reject)=>{
-    const req=indexedDB.open(DB_NAME,1);
-    req.onupgradeneeded=()=>{const db=req.result;if(!db.objectStoreNames.contains(DB_STORE))db.createObjectStore(DB_STORE);};
-    req.onsuccess=()=>resolve(req.result);
-    req.onerror=()=>reject(req.error);
-  });
-}
-async function idbPut(k,v){
-  try{
-    const db=await openBackupDB();
-    await new Promise((resolve,reject)=>{
-      const tx=db.transaction(DB_STORE,'readwrite');
-      tx.objectStore(DB_STORE).put(v,k);
-      tx.oncomplete=resolve; tx.onerror=()=>reject(tx.error);
-    });
-    db.close();
-  }catch(e){console.warn('IndexedDB backup failed',e)}
-}
-async function idbGet(k){
-  try{
-    const db=await openBackupDB();
-    const v=await new Promise((resolve,reject)=>{
-      const tx=db.transaction(DB_STORE,'readonly');
-      const req=tx.objectStore(DB_STORE).get(k);
-      req.onsuccess=()=>resolve(req.result); req.onerror=()=>reject(req.error);
-    });
-    db.close(); return v;
-  }catch(e){return null}
-}
-function innerSig(r){
-  return [
-    r.date||'',r.fullName||r.name||'',r.kind||r.purpose||r.title||'',r.label||'',
-    r.amount||'',r.unit||'',r.start||'',r.end||'',r.venue||r.place||'',
-    Array.isArray(r.targets)?r.targets.join('・'):(r.targets||''),r.specialLeaveNo||'',r.note||''
-  ].join('|');
-}
-function innerHash(s){
-  let h=2166136261;s=String(s||'');
-  for(let i=0;i<s.length;i++){h^=s.charCodeAt(i);h=Math.imul(h,16777619);}
-  return (h>>>0).toString(36);
-}
-function ensureRecordId(r,k){
-  if(!r||typeof r!=='object')return r;
-  if(r.id)return r;
-  return {...r,id:'legacy-'+innerHash(k+'|'+innerSig(r))};
-}
-function mergeList(k,lists){
-  const byId=new Map(),sigMap=new Map();
-  (lists||[]).forEach(list=>(Array.isArray(list)?list:[]).forEach(raw=>{
-    if(!raw||typeof raw!=='object')return;
-    let r=ensureRecordId(raw,k);
-    const sig=innerSig(r);
-    if(sigMap.has(sig)&&String(r.id).startsWith('legacy-')) r={...r,id:sigMap.get(sig)};
-    else if(!sigMap.has(sig)) sigMap.set(sig,String(r.id));
-    const id=String(r.id),old=byId.get(id);
-    if(!old){byId.set(id,{...r});return}
-    const ot=Date.parse(old.updatedAt||old.createdAt||0)||0;
-    const nt=Date.parse(r.updatedAt||r.createdAt||0)||0;
-    const winner=nt>=ot?{...old,...r}:{...r,...old};
-    winner.checked=!!(old.checked||r.checked);
-    winner.checkedAt=r.checkedAt||old.checkedAt||'';
-    byId.set(id,winner);
-  }));
-  return [...byId.values()];
-}
-function get(k){
-  const names=[...storageNames(k),'backup_'+k+'_latest'];
-  try{
-    for(let i=0;i<localStorage.length;i++){
-      const name=localStorage.key(i);
-      if(name&&name.startsWith('backup_'+k+'_'))names.push(name);
-    }
-  }catch(e){}
-  const lists=[];
-  [...new Set(names)].forEach(name=>{
-    try{const a=JSON.parse(localStorage.getItem(name)||'[]');if(Array.isArray(a))lists.push(a)}catch(e){}
-  });
-  // 旧「正本固定版」で残ったデータも救出
-  try{
-    const type=k==='nenkyuRecords'?'休暇':k==='shucchoRecords'?'出張':'予定';
-    const base=JSON.parse(localStorage.getItem('teshiro_immutable_base_v1')||'null');
-    if(base&&Array.isArray(base.records))lists.push(base.records.filter(r=>r&&r.type===type));
-  }catch(e){}
-  const out=mergeList(k,lists);
-  try{
-    const raw=JSON.stringify(out);
-    storageNames(k).forEach(name=>localStorage.setItem(name,raw));
-    localStorage.setItem('backup_'+k+'_latest',raw);
-  }catch(e){}
-  return out;
-}
-function set(k,v){
-  try{
-    if(!storageAvailable())throw new Error('ブラウザ保存が使えません');
-    const out=mergeList(k,[Array.isArray(v)?v:[]]);
-    const raw=JSON.stringify(out);
-    storageNames(k).forEach(name=>localStorage.setItem(name,raw));
-    localStorage.setItem('backup_'+k+'_latest',raw);
-    localStorage.setItem('backup_'+k+'_'+new Date().toISOString().slice(0,10),raw);
-    idbPut(k,out); // 2本目の保存
-    if($('driveState')){
-      $('driveState').textContent='保存：端末内二重保存＋バックアップ';
-      $('driveState').style.color='#3f7a54';
-    }
-    return true;
-  }catch(e){
-    showDone('保存できませんでした：'+e.message);
-    return false;
-  }
-}
-async function restoreFromIndexedDB(){
-  let changed=false;
-  for(const k of ['nenkyuRecords','shucchoRecords','yoteiRecords']){
-    const local=get(k),backup=await idbGet(k);
-    if(Array.isArray(backup)&&backup.length){
-      const merged=mergeList(k,[local,backup]);
-      if(merged.length!==local.length || JSON.stringify(merged)!==JSON.stringify(local)){
-        const raw=JSON.stringify(merged);
-        storageNames(k).forEach(name=>localStorage.setItem(name,raw));
-        localStorage.setItem('backup_'+k+'_latest',raw);
-        changed=true;
-      }
-    }else if(local.length){
-      await idbPut(k,local);
-    }
-  }
-  return changed;
-}
-function restoreLatestBackups(){
-  ['nenkyuRecords','shucchoRecords','yoteiRecords'].forEach(k=>{
-    const current=get(k);
-    if(current.length)return;
-    try{
-      const b=JSON.parse(localStorage.getItem('backup_'+k+'_latest')||'[]');
-      if(Array.isArray(b)&&b.length){
-        const raw=JSON.stringify(b);
-        storageNames(k).forEach(name=>localStorage.setItem(name,raw));
-      }
-    }catch(e){}
-  });
-}
-
-let tripEditIndex=null;
-let tripEditIndices=[];
-let scheduleEditIndex=null;
-let leaveEditIndex=null;
-let leaveEditIndices=[];
-
-let inputChoiceHistory=[];
-let restoringInputChoice=false;
-
-function captureInputState(){
-  const checked={};
-  document.querySelectorAll('input[type="checkbox"],input[type="radio"]').forEach(x=>{
-    if(x.id) checked[x.id]=!!x.checked;
-  });
-  return {
-    checked,
-    specialLeaveNo:$('specialLeaveNo')?$('specialLeaveNo').value:'',
-    purpose:$('purpose')?$('purpose').value:'',
-    venue:$('venue')?$('venue').value:'',
-    scheduleTitle:$('scheduleTitle')?$('scheduleTitle').value:'',
-    schedulePlace:$('schedulePlace')?$('schedulePlace').value:'',
-    scheduleDisplay:$('scheduleDisplay')?$('scheduleDisplay').value:'',
-    scheduleNote:$('scheduleNote')?$('scheduleNote').value:''
-  };
-}
-function pushInputState(){
-  if(restoringInputChoice)return;
-  inputChoiceHistory.push(captureInputState());
-  if(inputChoiceHistory.length>40)inputChoiceHistory.shift();
-}
-function restoreInputState(st){
-  if(!st)return;
-  restoringInputChoice=true;
-  Object.entries(st.checked||{}).forEach(([id,v])=>{const el=$(id);if(el)el.checked=!!v;});
-  if($('specialLeaveNo'))$('specialLeaveNo').value=st.specialLeaveNo||'';
-  if($('purpose'))$('purpose').value=st.purpose||'';
-  if($('venue'))$('venue').value=st.venue||'';
-  if($('scheduleTitle'))$('scheduleTitle').value=st.scheduleTitle||'';
-  if($('schedulePlace'))$('schedulePlace').value=st.schedulePlace||'';
-  if($('scheduleDisplay'))$('scheduleDisplay').value=st.scheduleDisplay||'ポータル';
-  if($('scheduleNote'))$('scheduleNote').value=st.scheduleNote||'';
-  if(typeof updateSpecialLeaveBox==='function')updateSpecialLeaveBox();
-  restoringInputChoice=false;
-}
-const now=new Date();$('date').value=now.getFullYear()+'-'+String(now.getMonth()+1).padStart(2,'0')+'-'+String(now.getDate()).padStart(2,'0');
-
-function checkedNames(){
- return [...document.querySelectorAll('.namepick:checked')].map(x=>({i:Number(x.dataset.i),name:staff[Number(x.dataset.i)][0],full:staff[Number(x.dataset.i)].join(' ')}));
-}
-function num(name){const x=document.querySelector('input[name="'+name+'"]:checked');return x?Number(x.value):0}
-
-function clearTimeSelection(){
-  document.querySelectorAll('input[name="startHour"],input[name="startMinute"],input[name="endHour"],input[name="endMinute"]').forEach(x=>x.checked=false);
-}
-function hasCompleteTime(){
-  return !!(document.querySelector('input[name="startHour"]:checked') &&
-            document.querySelector('input[name="startMinute"]:checked') &&
-            document.querySelector('input[name="endHour"]:checked') &&
-            document.querySelector('input[name="endMinute"]:checked'));
-}
-function durationSelection(){
-  const d=document.querySelector('.leaveDurationPick:checked');
-  if(!d) return null;
-  if(d.dataset.hours==='1day') return {label:'1日',amount:1,unit:'day',hours:null,oneDay:true};
-  const n=Number(d.dataset.hours);
-  return {label:n+'時間',amount:n,unit:'hour',hours:n,oneDay:false};
-}
-
-function timeData(){return {sh:num('startHour'),sm:num('startMinute'),eh:num('endHour'),em:num('endMinute')}}
-function resetTimeOnly(){clearTimeSelection();}
-$('timeReset').onclick=()=>{resetTimeOnly();showDone('時刻の選択を解除しました');};
-['startHour','startMinute','endHour','endMinute'].forEach(name=>{
- document.querySelectorAll('input[name="'+name+'"]').forEach(r=>{
-  r.addEventListener('pointerdown',()=>{r.dataset.wasChecked=r.checked?'1':'0';});
-  r.addEventListener('click',()=>{if(r.dataset.wasChecked==='1'){r.checked=false;r.dataset.wasChecked='0';}});
+function renderNames(){
+ $('names').innerHTML=STAFF.map((s,i)=>`<button class="btn" data-name="${i}">${s.name}</button>`).join('');
+ document.querySelectorAll('[data-name]').forEach(b=>b.onclick=()=>{
+   const i=Number(b.dataset.name),full=STAFF[i].full;
+   if(selectedNames.has(full))selectedNames.delete(full);else selectedNames.add(full);
+   b.classList.toggle('sel',selectedNames.has(full));
  });
-});
-
-function jp(h,m){return h+'：'+String(m).padStart(2,'0')}
-const STORE_PREFIX='teshiro_2026_';
-
-function storageAvailable(){
-  try{
-    const k='__storage_test__';
-    localStorage.setItem(k,'1');
-    localStorage.removeItem(k);
-    return true;
-  }catch(e){ return false; }
 }
-
-function _safeArray(key){
-  try{
-    const v=JSON.parse(localStorage.getItem(key)||'[]');
-    return Array.isArray(v)?v:[];
-  }catch(e){return []}
+function makeTimes(id,vals,key){
+ $(id).innerHTML=vals.map(v=>`<button class="btn" data-time="${key}" data-v="${v}">${String(v).padStart(2,'0')}</button>`).join('');
+ document.querySelectorAll(`[data-time="${key}"]`).forEach(b=>b.onclick=()=>{
+   document.querySelectorAll(`[data-time="${key}"]`).forEach(x=>x.classList.remove('sel'));
+   b.classList.add('sel');
+ });
 }
-
-function _recordSig(r){
-  return [
-    r.date||'', r.fullName||r.name||'',
-    r.kind||r.purpose||r.title||'', r.label||'',
-    r.amount||'', r.unit||'', r.start||'', r.end||'',
-    r.venue||r.place||'', Array.isArray(r.targets)?r.targets.join('・'):(r.targets||''),
-    r.specialLeaveNo||'', r.note||''
-  ].join('|');
+function makeChoices(){
+ const kinds=['年休','厚生','職専免','夏季休暇','夏季厚生','子看','特休'];
+ $('leaveKinds').innerHTML=kinds.map(k=>`<button class="btn" data-kind="${k}">${k}</button>`).join('');
+ document.querySelectorAll('[data-kind]').forEach(b=>b.onclick=()=>{
+   document.querySelectorAll('[data-kind]').forEach(x=>x.classList.remove('sel'));b.classList.add('sel');
+   leaveKind=b.dataset.kind;$('specialText').style.display=leaveKind==='特休'?'block':'none';
+ });
+ const amounts=['①','②','③','④','⑤','⑥','⑦','⑧','1日'];
+ $('amounts').innerHTML=amounts.map(a=>`<button class="btn" data-amount="${a}">${a}</button>`).join('');
+ document.querySelectorAll('[data-amount]').forEach(b=>b.onclick=()=>{
+   document.querySelectorAll('[data-amount]').forEach(x=>x.classList.remove('sel'));b.classList.add('sel');leaveAmount=b.dataset.amount;
+ });
 }
-function _hash32(s){
-  let h=2166136261;
-  s=String(s||'');
-  for(let i=0;i<s.length;i++){h^=s.charCodeAt(i);h=Math.imul(h,16777619);}
-  return (h>>>0).toString(36);
+function tableRow(type,name,groupId,extra={}){
+ return [
+  rid(),groupId,$('date').value,type,name,
+  selectedTime('sh','sm'),selectedTime('eh','em'),
+  extra.leave||'',extra.amount||'',extra.purpose||'',extra.venue||'',
+  extra.plan||'',extra.target||'',extra.place||'',extra.note||'',
+  '',now(),now()
+ ];
 }
-function _ensureId(r,key){
-  if(!r || typeof r!=='object') return r;
-  if(r.id) return r;
-  // Same logical record gets the same id across old/local/backup copies.
-  return {...r,id:'legacy-'+_hash32(key+'|'+_recordSig(r))};
+async function addRows(rows){
+ await Excel.run(async context=>{
+   const table=context.workbook.tables.getItem('MasterTable');
+   table.rows.add(null,rows);
+   await context.sync();
+ });
 }
-function _safeArray(key){
-  try{
-    const v=JSON.parse(localStorage.getItem(key)||'[]');
-    return Array.isArray(v)?v:[];
-  }catch(e){return []}
+async function getAllMasterRows(){
+ return await Excel.run(async context=>{
+   const table=context.workbook.tables.getItem('MasterTable');
+   const body=table.getDataBodyRange(); body.load('values');
+   await context.sync(); return body.values||[];
+ });
 }
-function _legacyJournalRecords(key){
-  const wantType = key==='nenkyuRecords' ? '休暇' : key==='shucchoRecords' ? '出張' : '予定';
-  const map=new Map();
-  try{
-    const base=JSON.parse(localStorage.getItem('teshiro_immutable_base_v1')||'null');
-    const arr=base&&Array.isArray(base.records)?base.records:[];
-    arr.filter(r=>r&&r.type===wantType).forEach(r=>{
-      const rr=_ensureId(r,key); map.set(String(rr.id),rr);
-    });
-  }catch(e){}
-  try{
-    const changes=JSON.parse(localStorage.getItem('teshiro_changes_v1')||'[]');
-    if(Array.isArray(changes)){
-      changes.forEach(c=>{
-        if(!c||!c.targetId)return;
-        const tid=String(c.targetId);
-        if(c.op==='ADD' && c.record && c.record.type===wantType){
-          const rr=_ensureId({...c.record,id:tid},key); map.set(tid,rr);
-        }else if(c.op==='UPDATE' && c.record){
-          const old=map.get(tid);
-          if(old && old.type===wantType) map.set(tid,{...old,...c.record,id:tid});
-        }else if(c.op==='CANCEL'){
-          const old=map.get(tid); if(old) map.set(tid,{...old,status:'cancelled'});
-        }else if(c.op==='RESTORE'){
-          const old=map.get(tid); if(old) map.set(tid,{...old,status:'active'});
-        }
-      });
-    }
-  }catch(e){}
-  return [...map.values()];
+async function deleteGroup(groupId){
+ await Excel.run(async context=>{
+   const table=context.workbook.tables.getItem('MasterTable');
+   const rows=table.rows; rows.load('items/values,items/index');
+   await context.sync();
+   const targets=rows.items.filter(r=>String(r.values[0][1])===String(groupId)).sort((a,b)=>b.index-a.index);
+   lastDeleted=targets.map(r=>r.values[0]);
+   targets.forEach(r=>r.delete());
+   await context.sync();
+ });
 }
-function _mergeRecords(key, arrays){
-  const byId=new Map();
-  const sigToId=new Map();
-  arrays.forEach(arr=>{
-    (Array.isArray(arr)?arr:[]).forEach(raw=>{
-      if(!raw||typeof raw!=='object')return;
-      let r=_ensureId(raw,key);
-      const sig=_recordSig(r);
-      // Deduplicate old copies that are logically the same.
-      if(sigToId.has(sig) && String(r.id).startsWith('legacy-')){
-        r={...r,id:sigToId.get(sig)};
-      }else if(!sigToId.has(sig)){
-        sigToId.set(sig,String(r.id));
-      }
-      const id=String(r.id);
-      const old=byId.get(id);
-      if(!old){byId.set(id,{...r});return;}
-      const ot=Date.parse(old.updatedAt||old.createdAt||0)||0;
-      const nt=Date.parse(r.updatedAt||r.createdAt||0)||0;
-      // Newer copy wins, but preserve checked state if either copy is checked.
-      const winner=nt>=ot?{...old,...r}:{...r,...old};
-      winner.checked=!!(old.checked||r.checked);
-      winner.checkedAt=r.checkedAt||old.checkedAt||'';
-      byId.set(id,winner);
-    });
-  });
-  return [...byId.values()];
+async function replaceGroup(groupId,newRows){
+ await deleteGroup(groupId);
+ await addRows(newRows);
+ lastDeleted=[];
 }
-function get(key){
-  const keys=[STORE_PREFIX+key,key,'backup_'+key+'_latest'];
-  try{
-    for(let i=0;i<localStorage.length;i++){
-      const k=localStorage.key(i);
-      if(k && k.startsWith('backup_'+key+'_')) keys.push(k);
-    }
-  }catch(e){}
-  const arrays=[...new Set(keys)].map(_safeArray);
-  arrays.push(_legacyJournalRecords(key));
-  const out=_mergeRecords(key,arrays);
-  try{
-    const raw=JSON.stringify(out);
-    localStorage.setItem(STORE_PREFIX+key,raw);
-    localStorage.setItem(key,raw);
-    localStorage.setItem('backup_'+key+'_latest',raw);
-  }catch(e){}
-  return out;
+async function createBackup(){
+ const today=new Date().toISOString().slice(0,10);
+ const all=await getAllMasterRows();
+ await Excel.run(async context=>{
+   const ws=context.workbook.worksheets.getItem('バックアップ');
+   const used=ws.getUsedRangeOrNullObject(); used.load('rowCount,isNullObject'); await context.sync();
+   const start=used.isNullObject?1:used.rowCount;
+   if(all.length){
+      ws.getRangeByIndexes(start,0,all.length,19).values=all.map(r=>[today,...r]);
+   }
+   await context.sync();
+ });
+ msg('今日のバックアップを保存しました');
 }
-function set(key,v){
-  try{
-    if(!storageAvailable()) throw new Error('この開き方ではブラウザ保存が使えません');
-    // v is the current authoritative working list. Normalize IDs and de-duplicate,
-    // but never auto-call the old destructive Drive endpoint.
-    const out=_mergeRecords(key,[Array.isArray(v)?v:[]]);
-    const raw=JSON.stringify(out);
-    localStorage.setItem(STORE_PREFIX+key,raw);
-    localStorage.setItem(key,raw);
-    localStorage.setItem('backup_'+key+'_latest',raw);
-    localStorage.setItem('backup_'+key+'_'+new Date().toISOString().slice(0,10),raw);
-    if($('driveState')){
-      $('driveState').textContent='保存：端末＋バックアップ済（元データ上書き停止中）';
-      $('driveState').style.color='#3f7a54';
-    }
-    return true;
-  }catch(e){
-    if($('portalSync')){
-      $('portalSync').textContent='保存できません：'+e.message;
-      $('portalSync').style.color='#b55757';
-    }
-    console.error('write error',e);
-    return false;
-  }
-}
-function newId(prefix){return (prefix||'rec')+'-'+Date.now()+'-'+Math.random().toString(36).slice(2,9)}
-
-function showDone(text){
- $('done').innerHTML='✓ <strong>'+text+'</strong><br><span style="font-size:12px;font-weight:700">登録は保存済みです。画面を閉じても同じSafariで残ります。</span>';
- $('done').classList.add('show');
- if($('clearTimeBtn')) $('clearTimeBtn').onclick=()=>{clearTimeSelection();showDone('時刻の選択を解除しました');};
-renderRecent();
- if(typeof renderCheckList==='function') renderCheckList();
-}
-
-$('all').onclick=()=>document.querySelectorAll('.namepick').forEach(x=>x.checked=true);
-$('clear').onclick=()=>document.querySelectorAll('.namepick').forEach(x=>x.checked=false);
-
-
-function updateSpecialLeaveBox(){
- const pick=document.querySelector('.leavepick:checked');
- const isSpecial=pick&&pick.dataset.kind==='特休';
- const isNenkyu=pick&&pick.dataset.kind==='年休';
- $('specialLeaveBox').style.display=isSpecial?'block':'none';
- $('nenkyuHoursBox').style.display='block';
- if($('leaveDurationBox')) $('leaveDurationBox').style.display=isNenkyu?'none':'block';
- if(!isSpecial&&leaveEditIndex===null)$('specialLeaveNo').value='';
- 
-}
-document.querySelectorAll('.leavepick').forEach(x=>x.addEventListener('change',updateSpecialLeaveBox));
-updateSpecialLeaveBox();
-
-document.querySelectorAll('.btnlabel,.timebtn,.leavepick + .optionbtn,.leaveDurationPick + .optionbtn').forEach(el=>{
-  el.addEventListener('pointerdown',pushInputState);
-});
-document.querySelectorAll('.nenkyuHourPick').forEach(r=>{
-  const label=document.querySelector('label[for="'+r.id+'"]');
-  if(label){
-    label.addEventListener('pointerdown',pushInputState);
-    label.addEventListener('click',()=>{
-      r.checked=true;
-      if(!document.querySelector('.leavepick:checked')){
-        const y=$('lvN'); if(y)y.checked=true;
-      }
-      updateSpecialLeaveBox();
-    });
-  }
-});
-
-function nenkyuSelection(){
- const h=document.querySelector('.nenkyuHourPick:checked');
- if(!h)return null;
- if(h.dataset.hours==='1day')return {mark:'1日',label:'年休1日',amount:1,unit:'day',hours:null,oneDay:true};
- const n=Number(h.dataset.hours);const c=['','①','②','③','④','⑤','⑥','⑦','⑧'];
- const mark=c[n]||('('+n+'時間)');
- return {mark:mark,label:'年休'+mark,amount:n,unit:'hour',hours:n,oneDay:false};
-}
-function specialLeaveLabel(pick){
- if(pick.dataset.kind!=='特休') return pick.dataset.label;
- let no=$('specialLeaveNo').value.trim();
- if(!no) return '';
- return '特休（'+no+'）';
-}
-
-function resetTimeAndLeave(){
- clearTimeSelection();
- document.querySelectorAll('.leavepick,.leaveDurationPick,.nenkyuHourPick').forEach(x=>x.checked=false);
- if($('specialLeaveNo')) $('specialLeaveNo').value='';
- if(typeof updateSpecialLeaveBox==='function') updateSpecialLeaveBox();
-}
-
-$('leaveReg').onclick=()=>{
- const names=checkedNames();if(!names.length){showDone('名前を選んでください');return}
- const pick=document.querySelector('.leavepick:checked');if(!pick){showDone('休暇の種類を選んでください');return}
- let dur=nenkyuSelection();if(!dur){showDone('①〜⑧または1日を選んでください');return}
- let label=pick.dataset.label;
- const amountMark=dur.mark || (dur.oneDay?'1日':'');
- if(pick.dataset.kind==='特休'){
-   const manual=$('specialLeaveNo').value.trim();
-   if(!manual){showDone('特休の（　）に内容を入力してください');return}
-   label='特休（'+manual+'）'+amountMark;
- } else if(pick.dataset.kind==='子看'){
-   label='子看'+amountMark;
- } else if(pick.dataset.kind==='年休'){
-   label='年休'+amountMark;
- } else if(pick.dataset.kind==='厚生'){
-   label='厚生'+amountMark;
- } else {
-   label=label+(amountMark?amountMark:'');
- }
- let t=null;
- if(dur.oneDay){
-   // 1日は時刻なしで登録できる
-   clearTimeSelection();
- } else {
-   if(!hasCompleteTime()){showDone('開始・終了時刻を選んでください');return}
-   t=timeData();
-   if(t.eh*60+t.em<=t.sh*60+t.sm){showDone('終了時刻を確認してください');return}
- }
- const rows=get('nenkyuRecords');
- const kind=pick.dataset.kind;
-
- if(leaveEditIndex!==null){
-   const targets=(leaveEditIndices.length?leaveEditIndices:[leaveEditIndex]).slice().sort((a,b)=>a-b);
-   const batchId=(rows[targets[0]]&&rows[targets[0]].batchId)||('leave-'+Date.now()+'-'+Math.random().toString(36).slice(2,8));
-   const selectedNames=new Map(names.map(n=>[n.full,n]));
-   const used=new Set();
-
-   // 既存メンバーを氏名で更新。選択から外した人は取消。
-   targets.forEach(idx=>{
-     const old=rows[idx]||{};
-     const key=old.fullName||old.name||'';
-     const n=selectedNames.get(key);
-     if(!n){
-       rows[idx]={...old,status:'cancelled',updatedAt:new Date().toISOString()};
-       return;
-     }
-     used.add(key);
-     rows[idx]={...old,batchId,date:$('date').value,name:n.name,fullName:n.full,start:t?jp(t.sh,t.sm):'',end:t?jp(t.eh,t.em):'',
-        kind:pick.dataset.kind,amount:dur.amount,unit:dur.unit,hours:dur.hours,oneDay:dur.oneDay,label,
-        specialLeaveNo:kind==='特休'?$('specialLeaveNo').value.trim():'',
-        portal:n.name+'　'+(t?(jp(t.sh,t.sm)+'〜'+jp(t.eh,t.em)+'　'):'')+label,
-        diary:n.name+'　'+label,status:'active',updatedAt:new Date().toISOString()};
-   });
-
-   // 新しく追加された人は同じ一括登録グループとして追加。
-   names.forEach(n=>{
-     if(used.has(n.full))return;
-     rows.push({id:newId('leave'),batchId,date:$('date').value,name:n.name,fullName:n.full,start:t?jp(t.sh,t.sm):'',end:t?jp(t.eh,t.em):'',
-        kind:pick.dataset.kind,amount:dur.amount,unit:dur.unit,hours:dur.hours,oneDay:dur.oneDay,label,
-        specialLeaveNo:kind==='特休'?$('specialLeaveNo').value.trim():'',
-        portal:n.name+'　'+(t?(jp(t.sh,t.sm)+'〜'+jp(t.eh,t.em)+'　'):'')+label,
-        diary:n.name+'　'+label,status:'active',updatedAt:new Date().toISOString()});
-   });
-
-   if(!set('nenkyuRecords',rows)) return;
-   const count=names.length;
-   leaveEditIndex=null;leaveEditIndices=[];
-   $('leaveReg').textContent='年休・休暇を登録';
-   $('leaveEditing').classList.remove('show');
-   $('leaveEditing').textContent='';
-   showDone(count+'人分の休暇をまとめて修正しました：'+label);resetTimeAndLeave();
- }else{
-   const batchId='leave-'+Date.now()+'-'+Math.random().toString(36).slice(2,8);
-   names.forEach(n=>{
-     rows.push({id:newId('leave'),batchId,date:$('date').value,name:n.name,fullName:n.full,start:t?jp(t.sh,t.sm):'',end:t?jp(t.eh,t.em):'',
-        kind:pick.dataset.kind,amount:dur.amount,unit:dur.unit,hours:dur.hours,oneDay:dur.oneDay,label,
-        specialLeaveNo:kind==='特休'?$('specialLeaveNo').value.trim():'',
-        portal:n.name+'　'+(t?(jp(t.sh,t.sm)+'〜'+jp(t.eh,t.em)+'　'):'')+label,
-        diary:n.name+'　'+label,status:'active',updatedAt:new Date().toISOString()});
-   });
-   if(set('nenkyuRecords',rows)){
-    showDone(names.length+'人分の「'+label+'」を登録しました');
-    $('portalSync').textContent='保存済み：この端末のSafariに登録を保持しています。';
-    renderRecent();resetTimeAndLeave();
+async function refreshOutputs(){
+ const all=await getAllMasterRows();
+ const active=all;
+ const diary=[['日付','区分','表示内容','開始','終了']];
+ const portal=[['日付','区分','表示内容']];
+ const groups=new Map();
+ for(const r of active){
+   const [id,g,date,type,name,start,end,leave,amount,purpose,venue,plan,target,place,note]=r;
+   if(type==='出張'){
+      const k=[date,type,purpose,venue,start,end].join('|');
+      if(!groups.has(k))groups.set(k,{date,type,purpose,venue,start,end,names:[]});
+      groups.get(k).names.push(name);
+   } else if(type==='休暇'){
+      const detail=(leave||'')+(amount||'');
+      diary.push([date,'休暇',`${detail} ${name}`,start,end]);
+      portal.push([date,'休暇',`${detail} ${name} ${start&&end?start+'〜'+end:''}`]);
+   } else if(type==='予定'){
+      diary.push([date,'予定',`${plan} ${target} ${place}`,start,end]);
+      portal.push([date,'予定',`${plan} ${target} ${start&&end?start+'〜'+end:''}`]);
    }
  }
-};
-
-$('tripReg').onclick=()=>{
- const names=checkedNames();if(!names.length){showDone('名前を選んでください');return}
- const p=$('purpose').value.trim(),v=$('venue').value.trim();if(!p||!v){showDone('用務と会場名を入力してください');return}
- const t=timeData();if(t.eh*60+t.em<=t.sh*60+t.sm){showDone('終了時刻を確認してください');return}
- const rows=get('shucchoRecords');
-
- if(tripEditIndex!==null){
-   const targets=(tripEditIndices.length?tripEditIndices:[tripEditIndex]).slice().sort((a,b)=>a-b);
-   const batchId=(rows[targets[0]]&&rows[targets[0]].batchId)||('trip-'+Date.now()+'-'+Math.random().toString(36).slice(2,8));
-   const selectedNames=new Map(names.map(n=>[n.full,n]));
-   const used=new Set();
-
-   // 既存メンバーを氏名で更新。選択から外した人は取消。
-   targets.forEach(idx=>{
-     const old=rows[idx]||{};
-     const key=old.fullName||old.name||'';
-     const n=selectedNames.get(key);
-     if(!n){
-       rows[idx]={...old,status:'cancelled',updatedAt:new Date().toISOString()};
-       return;
-     }
-     used.add(key);
-     rows[idx]={...old,batchId,date:$('date').value,name:n.name,fullName:n.full,purpose:p,venue:v,start:jp(t.sh,t.sm),end:jp(t.eh,t.em),status:'active',updatedAt:new Date().toISOString()};
-   });
-
-   // 新しく追加した人も同じグループへ追加。
-   names.forEach(n=>{
-     if(used.has(n.full))return;
-     rows.push({id:newId('trip'),batchId,date:$('date').value,name:n.name,fullName:n.full,purpose:p,venue:v,start:jp(t.sh,t.sm),end:jp(t.eh,t.em),status:'active',updatedAt:new Date().toISOString()});
-   });
-
-   if(!set('shucchoRecords',rows)) return;
-   const count=names.length;
-   tripEditIndex=null;tripEditIndices=[];
-   $('tripReg').textContent='出張を登録';
-   $('tripEditing').classList.remove('show');
-   $('tripEditing').textContent='';
-   showDone(count+'人分の出張をまとめて修正しました：'+p+'／'+v);
- }else{
-   const batchId='trip-'+Date.now()+'-'+Math.random().toString(36).slice(2,8);
-   names.forEach(n=>rows.push({id:newId('trip'),batchId,date:$('date').value,name:n.name,fullName:n.full,purpose:p,venue:v,start:jp(t.sh,t.sm),end:jp(t.eh,t.em),status:'active',updatedAt:new Date().toISOString()}));
-   if(!set('shucchoRecords',rows)) return;
-   showDone(names.length+'人分の出張を登録しました：'+p+'／'+v);$('portalSync').textContent='保存済み：この端末のブラウザに登録を保持しています。';
+ for(const g of groups.values()){
+   const names=g.names.join('・');
+   diary.push([g.date,'出張',`${g.purpose} ${g.venue} ${names}`,g.start,g.end]);
+   portal.push([g.date,'出張',`${g.purpose} ${names} ${g.start&&g.end?g.start+'〜'+g.end:''}`]);
  }
-};
-
-
-function selectedScheduleTargets(){
-  const checks=[...document.querySelectorAll('#scheduleTargets input[type="checkbox"]')];
-  return checks.filter(x=>x.checked).map(x=>x.value);
-}
-(function(){
-  const checks=[...document.querySelectorAll('#scheduleTargets input[type="checkbox"]')];
-  checks.forEach(cb=>cb.addEventListener('change',()=>{
-    if(cb.value==='全員' && cb.checked){
-      checks.forEach(x=>{if(x!==cb)x.checked=false});
-    }else if(cb.checked){
-      const all=checks.find(x=>x.value==='全員'); if(all) all.checked=false;
-    }
-    if(!checks.some(x=>x.checked)){
-      const all=checks.find(x=>x.value==='全員'); if(all) all.checked=true;
-    }
-  }));
-})();
-
-$('scheduleReg').onclick=()=>{
-  const title=$('scheduleTitle').value.trim();
-  if(!title){showDone('予定名を入力してください');return}
-  const targets=selectedScheduleTargets();
-  const individuals=targets.includes('個人') ? checkedNames() : [];
-  if(targets.includes('個人') && !individuals.length){showDone('個人を選んだ場合は、上の名前も選んでください');return}
-  const t=hasCompleteTime()?timeData():null;
-  if(t && t.eh*60+t.em<=t.sh*60+t.sm){showDone('終了時刻を確認してください');return}
-  const rows=get('yoteiRecords');
-  const rec={
-    date:$('date').value,
-    title,
-    place:$('schedulePlace').value.trim(),
-    targets,
-    people:individuals.map(x=>x.full),
-    display:$('scheduleDisplay').value,
-    note:$('scheduleNote').value.trim(),
-    start:t?jp(t.sh,t.sm):'',
-    end:t?jp(t.eh,t.em):'',
-    status:'active',
-    updatedAt:new Date().toISOString()
-  };
-  if(scheduleEditIndex!==null){
-    rows[scheduleEditIndex]={...(rows[scheduleEditIndex]||{}),...rec};
-    if(!set('yoteiRecords',rows)) return;
-    scheduleEditIndex=null;
-    $('scheduleReg').textContent='予定を登録';
-    $('scheduleEditing').textContent='';
-    $('scheduleEditing').classList.remove('show');
-    showDone('予定を修正しました：'+title);
-  }else{
-    rows.push(rec);
-    if(!set('yoteiRecords',rows)) return;
-    showDone('予定を登録しました：'+title);
-  }
-  $('scheduleTitle').value='';$('schedulePlace').value='';$('scheduleNote').value='';
-  renderRecent();
-};
-
-function loadScheduleEdit(index){
-  const rows=get('yoteiRecords'),r=rows[index]; if(!r)return;
-  scheduleEditIndex=index;
-  $('date').value=r.date||$('date').value;
-  $('scheduleTitle').value=r.title||'';
-  $('schedulePlace').value=r.place||'';
-  $('scheduleDisplay').value=r.display||'ポータル';
-  $('scheduleNote').value=r.note||'';
-  const checks=[...document.querySelectorAll('#scheduleTargets input[type="checkbox"]')];
-  checks.forEach(x=>x.checked=(r.targets||[]).includes(x.value));
-  document.querySelectorAll('.namepick').forEach(x=>x.checked=false);
-  (r.people||[]).forEach(full=>{
-    const idx=staff.findIndex(p=>p.join(' ')===full);
-    if(idx>=0){const n=$('n'+idx);if(n)n.checked=true;}
-  });
-  if(r.start&&r.end){
-    const st=parseTime(r.start),et=parseTime(r.end);
-    setRadio('startHour',st.h);setRadio('startMinute',st.m);
-    setRadio('endHour',et.h);setRadio('endMinute',et.m);
-  }else clearTimeSelection();
-  $('scheduleReg').textContent='この予定を更新';
-  $('scheduleEditing').textContent='修正中：'+(r.date||'')+'　'+(r.title||'');
-  $('scheduleEditing').classList.add('show');
-  window.scrollTo({top:0,behavior:'smooth'});
-}
-
-if($('undoChoiceBtn')) $('undoChoiceBtn').onclick=()=>{
-  const st=inputChoiceHistory.pop();
-  if(!st){showDone('戻せる入力操作はありません');return;}
-  restoreInputState(st);
-  showDone('入力を1つ前の状態に戻しました');
-};
-
-if($('resetInputBtn')) $('resetInputBtn').onclick=()=>{
-  if(!confirm('入力中の内容をリセットしますか？\n※日付と登録済みデータは残ります。'))return;
-  document.querySelectorAll('.namepick').forEach(x=>x.checked=false);
-  clearTimeSelection();
-  document.querySelectorAll('.leavepick,.leaveDurationPick,.nenkyuHourPick').forEach(x=>x.checked=false);
-  if($('specialLeaveNo'))$('specialLeaveNo').value='';
-  if($('purpose'))$('purpose').value='';
-  if($('venue'))$('venue').value='';
-  if($('scheduleTitle'))$('scheduleTitle').value='';
-  if($('schedulePlace'))$('schedulePlace').value='';
-  if($('scheduleDisplay'))$('scheduleDisplay').value='ポータル';
-  if($('scheduleNote'))$('scheduleNote').value='';
-  document.querySelectorAll('#scheduleTargets input[type="checkbox"]').forEach(x=>x.checked=(x.value==='全員'));
-  leaveEditIndex=null; leaveEditIndices=[];
-  tripEditIndex=null; tripEditIndices=[];
-  scheduleEditIndex=null;
-  if($('leaveReg'))$('leaveReg').textContent='年休・休暇を登録';
-  if($('tripReg'))$('tripReg').textContent='出張を登録';
-  if($('scheduleReg'))$('scheduleReg').textContent='予定を登録';
-  if($('leaveEditing')){$('leaveEditing').textContent='';$('leaveEditing').classList.remove('show');}
-  if($('tripEditing')){$('tripEditing').textContent='';$('tripEditing').classList.remove('show');}
-  if($('scheduleEditing')){$('scheduleEditing').textContent='';$('scheduleEditing').classList.remove('show');}
-  inputChoiceHistory=[];
-  updateSpecialLeaveBox();
-  $('done').classList.remove('show');
-  $('done').innerHTML='';
-};
-
-function rememberDeleted(source,index,record){
-  const records=Array.isArray(record)?record:[record];
-  try{
-    localStorage.setItem('teshiro_last_deleted',JSON.stringify({
-      source,index,records,at:new Date().toISOString()
-    }));
-  }catch(e){}
-}
-function undoLastDelete(){
-  let x=null;
-  try{x=JSON.parse(localStorage.getItem('teshiro_last_deleted')||'null');}catch(e){}
-  const saved=x && (x.records || (x.record?[x.record]:null));
-  if(!x||!x.source||!saved||!saved.length){showDone('戻せる削除はありません');return;}
-  const rows=get(x.source);
-  let restored=0;
-  saved.forEach(rec=>{
-    let idx=rows.findIndex(r=>r&&r.id&&rec.id&&r.id===rec.id);
-    if(idx<0 && rec.batchId) idx=rows.findIndex(r=>r&&r.batchId===rec.batchId&&(r.fullName||r.name)===(rec.fullName||rec.name));
-    if(idx<0) rows.push({...rec,status:'active',updatedAt:new Date().toISOString()});
-    else rows[idx]={...rows[idx],...rec,status:'active',updatedAt:new Date().toISOString()};
-    restored++;
-  });
-  if(!set(x.source,rows))return;
-  try{localStorage.removeItem('teshiro_last_deleted');}catch(e){}
-  showDone(restored+'件を戻しました');
-}
-if($('undoDeleteBtn')) $('undoDeleteBtn').onclick=undoLastDelete;
-
-function cancelSchedule(index){
-  const rows=get('yoteiRecords'),r=rows[index];if(!r)return;
-  if(!confirm('この予定を削除しますか？'))return;
-  rememberDeleted('yoteiRecords',index,{...r});
-  rows[index]={...r,status:'cancelled',updatedAt:new Date().toISOString()};
-  if(!set('yoteiRecords',rows))return;
-  showDone('予定を削除しました');
-  renderRecent();
-}
-
-
-let checkTab='date';
-function allActiveRecords(){
- const leaves=get('nenkyuRecords').map((r,i)=>({type:'休暇',source:'nenkyuRecords',i,r})).filter(x=>x.r.status!=='cancelled');
- const trips=get('shucchoRecords').map((r,i)=>({type:'出張',source:'shucchoRecords',i,r})).filter(x=>x.r.status!=='cancelled');
- const plans=get('yoteiRecords').map((r,i)=>({type:'予定',source:'yoteiRecords',i,r})).filter(x=>x.r.status!=='cancelled');
- return [...leaves,...trips,...plans];
-}
-function recName(x){
- const r=x.r;
- if(x.type==='予定') return (r.targets||[]).join('・')||'全員';
- return r.fullName||r.name||'';
-}
-function recTitle(x){
- const r=x.r;
- if(x.type==='休暇') return r.label||r.diary||r.kind||'休暇';
- if(x.type==='出張') return (r.purpose||'')+(r.venue?('／'+r.venue):'');
- return (r.title||'')+(r.place?('／'+r.place):'');
-}
-function recTime(x){
- const r=x.r;
- return [r.start,r.end].filter(Boolean).join('〜');
-}
-function renderCheckList(){
- let arr=allActiveRecords();
- if(checkTab==='unchecked') arr=arr.filter(x=>!x.r.checked);
- if(checkTab==='checked') arr=arr.filter(x=>!!x.r.checked);
- arr.sort((a,b)=>{
-   if(checkTab==='name') return recName(a).localeCompare(recName(b),'ja') || String(a.r.date||'').localeCompare(String(b.r.date||''));
-   if(checkTab==='kind') return a.type.localeCompare(b.type,'ja') || String(a.r.date||'').localeCompare(String(b.r.date||''));
-   return String(a.r.date||'').localeCompare(String(b.r.date||'')) || recName(a).localeCompare(recName(b),'ja');
+ await Excel.run(async context=>{
+   for(const [sheetName,vals,cols] of [['学校日誌用',diary,5],['ポータル用',portal,3]]){
+     const ws=context.workbook.worksheets.getItem(sheetName);
+     ws.getRange('A2:Z2000').clear();
+     if(vals.length>1) ws.getRangeByIndexes(1,0,vals.length-1,cols).values=vals.slice(1);
+   }
+   await context.sync();
  });
- const total=allActiveRecords();
- $('checkSummary').textContent='全 '+total.length+'件　／　未確認 '+total.filter(x=>!x.r.checked).length+'件　／　確認済 '+total.filter(x=>x.r.checked).length+'件';
- $('checkList').innerHTML=arr.length?arr.map(x=>{
-   const r=x.r, done=!!r.checked;
-   return '<div class="checkrow '+(done?'donecheck':'')+'">'+
-     '<label style="display:flex;align-items:center;justify-content:center"><input type="checkbox" class="checkmark" data-source="'+x.source+'" data-i="'+x.i+'" '+(done?'checked':'')+' style="width:25px;height:25px"></label>'+
-     '<div><strong>'+(r.date||'')+'</strong><div class="checkmeta">'+recTime(x)+'</div></div>'+
-     '<div class="checkkind"><strong>'+x.type+'</strong></div>'+
-     '<div class="checkmain"><strong>'+recName(x)+'</strong>　'+recTitle(x)+
-       '<div class="miniops" style="margin-top:5px">'+
-         '<button type="button" class="minibtn checkEdit" data-type="'+x.type+'" data-i="'+x.i+'">修正</button>'+
-         '<button type="button" class="minibtn checkDelete" data-type="'+x.type+'" data-i="'+x.i+'">削除</button>'+
-       '</div>'+
-     '</div>'+
-   '</div>';
- }).join(''):'<div class="status">該当するデータはありません。</div>';
-
- document.querySelectorAll('.checkmark').forEach(b=>b.onchange=()=>{
-   const rows=get(b.dataset.source),i=Number(b.dataset.i);
-   if(!rows[i])return;
-   rows[i]={...rows[i],checked:!!b.checked,checkedAt:b.checked?new Date().toISOString():'',updatedAt:new Date().toISOString()};
-   if(set(b.dataset.source,rows)){renderCheckList();renderRecent();}
- });
- document.querySelectorAll('.checkEdit').forEach(b=>b.onclick=()=>{
-   const i=Number(b.dataset.i),type=b.dataset.type;
-   if(type==='休暇') loadLeaveEdit(i);
-   else if(type==='出張') loadTripEdit(i);
-   else loadScheduleEdit(i);
- });
- document.querySelectorAll('.checkDelete').forEach(b=>b.onclick=()=>{
-   const i=Number(b.dataset.i),type=b.dataset.type;
-   if(type==='休暇') cancelLeave(i);
-   else if(type==='出張') cancelTrip(i);
-   else cancelSchedule(i);
- });
+ msg('学校日誌用・ポータル用を更新しました');
 }
-document.querySelectorAll('.checktab').forEach(b=>b.onclick=()=>{
- document.querySelectorAll('.checktab').forEach(x=>x.classList.remove('active'));
- b.classList.add('active');checkTab=b.dataset.checktab;renderCheckList();
+async function registerLeave(){
+ if(!selectedNames.size) return msg('名前を選んでください');
+ if(!leaveKind&&!leaveAmount) return msg('休暇内容を選んでください');
+ const group=gid(); lastGroupId=group;
+ const kind=leaveKind||'年休';
+ const special=kind==='特休'&&$('specialText').value.trim()?`特休（${$('specialText').value.trim()}）`:kind;
+ const rows=[...selectedNames].map(n=>tableRow('休暇',n,group,{leave:special,amount:leaveAmount}));
+ await addRows(rows); msg(rows.length+'人分の休暇を正本Excelへ登録しました');
+}
+async function registerTrip(){
+ if(!selectedNames.size)return msg('名前を選んでください');
+ const group=gid();lastGroupId=group;
+ const rows=[...selectedNames].map(n=>tableRow('出張',n,group,{purpose:$('purpose').value.trim(),venue:$('venue').value.trim()}));
+ await addRows(rows);msg(rows.length+'人分の出張を正本Excelへ登録しました');
+}
+async function registerPlan(){
+ const group=gid();lastGroupId=group;
+ const rows=[tableRow('予定',$('planTarget').value.trim(),group,{plan:$('planTitle').value.trim(),target:$('planTarget').value.trim(),place:$('planPlace').value.trim()})];
+ await addRows(rows);msg('予定を正本Excelへ登録しました');
+}
+async function editLast(){
+ if(!lastGroupId)return msg('この画面で直前に登録した一括データがありません');
+ const all=await getAllMasterRows();
+ const old=all.filter(r=>String(r[1])===String(lastGroupId));
+ if(!old.length)return msg('修正対象が見つかりません');
+ const type=old[0][3];
+ let rows=[];
+ if(type==='休暇'){
+   const kind=leaveKind||old[0][7]||'年休';
+   rows=[...selectedNames].map(n=>tableRow('休暇',n,lastGroupId,{leave:kind,amount:leaveAmount||old[0][8]}));
+ }else if(type==='出張'){
+   rows=[...selectedNames].map(n=>tableRow('出張',n,lastGroupId,{purpose:$('purpose').value.trim()||old[0][9],venue:$('venue').value.trim()||old[0][10]}));
+ }else return msg('予定は個別修正してください');
+ await replaceGroup(lastGroupId,rows);msg('一括登録を修正しました');
+}
+async function undoDeleted(){
+ if(!lastDeleted.length)return msg('戻せる削除はありません');
+ await addRows(lastDeleted);lastDeleted=[];msg('直前の削除を戻しました');
+}
+function voice(inputId){
+ const input=$(inputId);input.focus();
+ msg('iPadキーボードのマイクで音声入力できます');
+}
+Office.onReady(async info=>{
+ if(info.host!==Office.HostType.Excel) return;
+ msg('Excel正本への書き込み準備完了');
+ $('date').value=new Date().toISOString().slice(0,10);
+ renderNames();
+ makeTimes('sh',[8,9,10,11,12,13,14,15,16],'sh');
+ makeTimes('eh',[8,9,10,11,12,13,14,15,16,17],'eh');
+ makeTimes('sm',[0,10,20,30,40,45,50],'sm');
+ makeTimes('em',[0,10,20,30,40,45,50],'em');
+ makeChoices();
+ $('clearNames').onclick=()=>{selectedNames.clear();document.querySelectorAll('[data-name]').forEach(x=>x.classList.remove('sel'));};
+ $('selectAll').onclick=()=>{STAFF.forEach(x=>selectedNames.add(x.full));document.querySelectorAll('[data-name]').forEach(x=>x.classList.add('sel'));};
+ $('leaveReg').onclick=registerLeave;$('tripReg').onclick=registerTrip;$('planReg').onclick=registerPlan;
+ $('editLastGroup').onclick=editLast;
+ $('deleteLastGroup').onclick=async()=>{if(!lastGroupId)return msg('削除対象がありません');await deleteGroup(lastGroupId);msg('一括登録を削除しました');};
+ $('undoDelete').onclick=undoDeleted;
+ $('backupNow').onclick=createBackup;$('refreshOutputs').onclick=refreshOutputs;$('printSheet').onclick=()=>window.print();
+ document.querySelectorAll('[data-voice]').forEach(b=>b.onclick=()=>voice(b.dataset.voice));
+ // その日の最初の利用時に1回バックアップ
+ const k='teshiro_backup_'+new Date().toISOString().slice(0,10);
+ if(!localStorage.getItem(k)){await createBackup();localStorage.setItem(k,'1');}
 });
-
-function renderRecent(){
- const leaves=get('nenkyuRecords').map((r,i)=>({...r,_type:'休暇',_src:'nenkyuRecords',sourceIndex:i}));
- const trips=get('shucchoRecords').map((r,i)=>({...r,_type:'出張',_src:'shucchoRecords',sourceIndex:i}));
- const plans=get('yoteiRecords').map((r,i)=>({...r,_type:'予定',_src:'yoteiRecords',sourceIndex:i}));
- const all=[...leaves,...trips,...plans].filter(r=>r.status!=='cancelled');
-
- const groups=new Map();
- all.forEach(r=>{
-   let key;
-   if((r._type==='休暇'||r._type==='出張') && r.batchId) key=r._type+'|'+r.batchId;
-   else if(r._type==='休暇') key='休暇|'+[r.date,r.kind,r.label,r.amount,r.start,r.end].join('|');
-   else if(r._type==='出張') key='出張|'+[r.date,r.purpose,r.venue,r.start,r.end].join('|');
-   else key='予定|'+(r.id||r.sourceIndex);
-   if(!groups.has(key))groups.set(key,[]);
-   groups.get(key).push(r);
- });
-
- const grouped=[...groups.values()].map(g=>{
-   const r=g[0];
-   const names=g.map(x=>x.name||x.fullName||'').filter(Boolean).join('・');
-   return {
-     type:r._type,date:r.date||'',time:(r.start||'')+(r.start||r.end?'〜':'')+(r.end||''),
-     title:r._type==='休暇'?(r.label||r.kind||'休暇'):r._type==='出張'?((r.purpose||'')+(r.venue?'／'+r.venue:'')):(r.title||'予定'),
-     names,sourceIndex:r.sourceIndex,count:g.length
-   };
- }).sort((a,b)=>String(b.date).localeCompare(String(a.date))).slice(0,25);
-
- $('recent').innerHTML=grouped.length?grouped.map(r=>{
-   const ops=r.type==='休暇'
-     ? '<div class="miniops"><button type="button" class="minibtn editLeave" data-i="'+r.sourceIndex+'">まとめて修正</button><button type="button" class="minibtn cancelLeave" data-i="'+r.sourceIndex+'">まとめて削除</button></div>'
-     : r.type==='出張'
-       ? '<div class="miniops"><button type="button" class="minibtn editTrip" data-i="'+r.sourceIndex+'">まとめて修正</button><button type="button" class="minibtn cancelTrip" data-i="'+r.sourceIndex+'">まとめて削除</button></div>'
-       : '<div class="miniops"><button type="button" class="minibtn editSchedule" data-i="'+r.sourceIndex+'">修正</button><button type="button" class="minibtn cancelSchedule" data-i="'+r.sourceIndex+'">削除</button></div>';
-   return '<div class="listitem"><div class="itemrow"><div><strong>'+esc(r.date)+'　'+esc(r.type)+'</strong>'+
-     '<div>'+esc(r.title)+'</div>'+
-     (r.names?'<div><strong>'+esc(r.names)+'</strong></div>':'')+
-     (r.time?'<div class="status">'+esc(r.time)+'</div>':'')+
-     (r.count>1?'<div class="status">一括登録 '+r.count+'人</div>':'')+
-     '</div>'+ops+'</div></div>';
- }).join(''):'<div class="status">まだ登録はありません。</div>';
-
- document.querySelectorAll('.editLeave').forEach(btn=>btn.onclick=()=>loadLeaveEdit(Number(btn.dataset.i)));
- document.querySelectorAll('.editTrip').forEach(btn=>btn.onclick=()=>loadTripEdit(Number(btn.dataset.i)));
- document.querySelectorAll('.editSchedule').forEach(btn=>btn.onclick=()=>loadScheduleEdit(Number(btn.dataset.i)));
- document.querySelectorAll('.cancelLeave').forEach(btn=>btn.onclick=()=>cancelLeave(Number(btn.dataset.i)));
- document.querySelectorAll('.cancelTrip').forEach(btn=>btn.onclick=()=>cancelTrip(Number(btn.dataset.i)));
- document.querySelectorAll('.cancelSchedule').forEach(btn=>btn.onclick=()=>cancelSchedule(Number(btn.dataset.i)));
-}
-
-function loadLeaveEdit(index){
- const rows=get('nenkyuRecords'),r=rows[index];if(!r)return;leaveEditIndex=index;
- const same=(x)=>x && x.status!=='cancelled' && x.date===r.date && x.kind===r.kind && String(x.amount||'')===String(r.amount||'') && String(x.start||'')===String(r.start||'') && String(x.end||'')===String(r.end||'') && String(x.label||'')===String(r.label||'');
- leaveEditIndices=r.batchId ? rows.map((x,i)=>x&&x.batchId===r.batchId&&x.status!=='cancelled'?i:-1).filter(i=>i>=0) : rows.map((x,i)=>same(x)?i:-1).filter(i=>i>=0);
- if(!leaveEditIndices.length)leaveEditIndices=[index];
- document.querySelectorAll('.namepick').forEach(x=>x.checked=false);
- leaveEditIndices.forEach(i=>{const rr=rows[i];let si=staff.findIndex(p=>p.join(' ')===(rr.fullName||''));if(si<0)si=staff.findIndex(p=>p[0]===rr.name);if(si>=0){const n=$('n'+si);if(n)n.checked=true;}});
- $('date').value=r.date||$('date').value;const st=parseTime(r.start),et=parseTime(r.end);setRadio('startHour',st.h);setRadio('startMinute',st.m);setRadio('endHour',et.h);setRadio('endMinute',et.m);selectLeaveRadio(r);
- const durVal=(r.oneDay||r.unit==='day')?'1day':String(r.hours||r.amount||'');
- const dp=[...document.querySelectorAll('.leaveDurationPick')].find(x=>x.dataset.hours===durVal);
- if(dp) dp.checked=true;
- if(r.oneDay||r.unit==='day') clearTimeSelection();
- $('leaveReg').textContent='この一括登録をまとめて修正保存';$('leaveEditing').textContent='一括修正中：'+leaveEditIndices.length+'人　※名前の追加・削除もできます　'+(r.date||'')+'　'+(r.label||r.kind||'');$('leaveEditing').classList.add('show');window.scrollTo({top:0,behavior:'smooth'});
-}
-function cancelLeave(index){
- const rows=get('nenkyuRecords'),r=rows[index];if(!r)return;
- const targets=r.batchId
-   ? rows.map((x,i)=>x&&x.batchId===r.batchId&&x.status!=='cancelled'?i:-1).filter(i=>i>=0)
-   : [index];
- const saved=targets.map(i=>({...rows[i]}));
- const msg=targets.length>1 ? 'この一括休暇 '+targets.length+'件をまとめて削除しますか？' : 'この休暇登録を削除しますか？';
- if(!confirm(msg))return;
- rememberDeleted('nenkyuRecords',index,saved);
- targets.forEach(i=>rows[i]={...rows[i],status:'cancelled',updatedAt:new Date().toISOString()});
- if(!set('nenkyuRecords',rows))return;
- leaveEditIndex=null;leaveEditIndices=[];$('leaveReg').textContent='年休・休暇を登録';
- $('leaveEditing').classList.remove('show');$('leaveEditing').textContent='';
- showDone(targets.length+'件の休暇登録を削除しました');
-}
-
-function loadTripEdit(index){
- const rows=get('shucchoRecords'),r=rows[index];if(!r)return;
- tripEditIndex=index;
- const same=(x)=>x && x.status!=='cancelled' && x.date===r.date && String(x.purpose||'')===String(r.purpose||'') && String(x.venue||'')===String(r.venue||'') && String(x.start||'')===String(r.start||'') && String(x.end||'')===String(r.end||'');
- tripEditIndices=r.batchId ? rows.map((x,i)=>x&&x.batchId===r.batchId&&x.status!=='cancelled'?i:-1).filter(i=>i>=0) : rows.map((x,i)=>same(x)?i:-1).filter(i=>i>=0);
- if(!tripEditIndices.length)tripEditIndices=[index];
- document.querySelectorAll('.namepick').forEach(x=>x.checked=false);
- tripEditIndices.forEach(i=>{const rr=rows[i];let si=staff.findIndex(p=>p.join(' ')===(rr.fullName||''));if(si<0)si=staff.findIndex(p=>p[0]===rr.name);if(si>=0){const n=$('n'+si);if(n)n.checked=true;}});
- $('date').value=r.date||$('date').value;
- $('purpose').value=r.purpose||'';
- $('venue').value=r.venue||'';
- const st=parseTime(r.start),et=parseTime(r.end);
- setRadio('startHour',st.h);setRadio('startMinute',st.m);
- setRadio('endHour',et.h);setRadio('endMinute',et.m);
- $('tripReg').textContent='この一括出張をまとめて更新';
- $('tripEditing').textContent='一括修正中：'+tripEditIndices.length+'人　※名前の追加・削除もできます　'+(r.date||'')+'　'+(r.purpose||'')+'／'+(r.venue||'');
- $('tripEditing').classList.add('show');
- window.scrollTo({top:0,behavior:'smooth'});
-}
-function cancelTrip(index){
- const rows=get('shucchoRecords'),r=rows[index];if(!r)return;
- const targets=r.batchId
-   ? rows.map((x,i)=>x&&x.batchId===r.batchId&&x.status!=='cancelled'?i:-1).filter(i=>i>=0)
-   : [index];
- const saved=targets.map(i=>({...rows[i]}));
- const msg=targets.length>1 ? 'この一括出張 '+targets.length+'件をまとめて削除しますか？'
-   : ((r.date||'')+' '+(r.fullName||r.name||'')+' の出張登録を削除しますか？');
- if(!confirm(msg))return;
- rememberDeleted('shucchoRecords',index,saved);
- targets.forEach(i=>rows[i]={...rows[i],status:'cancelled',cancelledAt:new Date().toISOString(),updatedAt:new Date().toISOString()});
- if(!set('shucchoRecords',rows))return;
- tripEditIndex=null;tripEditIndices=[];$('tripReg').textContent='出張を登録';
- $('tripEditing').classList.remove('show');$('tripEditing').textContent='';
- showDone(targets.length+'件の出張登録を削除しました');
-}
-
-$('listBtn').onclick=()=>{renderRecent();window.scrollTo({top:document.body.scrollHeight,behavior:'smooth'})};
-$('excelBtn').onclick=()=>{
- if(typeof XLSX==='undefined'){showDone('Excel機能を読み込めませんでした');return}
-
- const leaveAll=get('nenkyuRecords');
- const tripAll=get('shucchoRecords');
- const planAll=get('yoteiRecords');
-
- function targetText(r){return Array.isArray(r.targets)?r.targets.join('・'):(r.targets||'')}
- function rawRow(type,r){
-   return [
-     r.id||'',type,r.date||'',r.fullName||r.name||'',r.start||'',r.end||'',
-     r.label||r.diary||r.kind||'',r.amount??'',r.unit||'',r.specialLeaveNo||'',
-     r.purpose||'',r.venue||'',r.title||'',targetText(r),r.place||'',r.note||'',
-     r.status||'active',r.checked?'済':'',r.checkedAt||'',r.createdAt||'',r.updatedAt||''
-   ];
- }
- const headers=['ID','区分','日付','氏名','開始','終了','休暇内容','数量','単位','特休・その他','用務','会場','予定名','対象','場所','補足','状態','確認','確認日時','登録日時','更新日時'];
- const all=[
-   ...leaveAll.map(r=>rawRow('休暇',r)),
-   ...tripAll.map(r=>rawRow('出張',r)),
-   ...planAll.map(r=>rawRow('予定',r))
- ].sort((a,b)=>String(a[2]).localeCompare(String(b[2]))||String(a[3]).localeCompare(String(b[3]),'ja'));
-
- const active=all.filter(r=>r[16]!=='cancelled');
- const checked=active.filter(r=>r[17]==='済');
-
- // 正本：その時点の全保存データ。ここは原本確認用。
- const wsBase=XLSX.utils.aoa_to_sheet([headers,...all]);
- // 修正・追加：Excelで直接触るための作業用。操作・修正メモ列を先頭に追加。
- const editHeaders=['操作（修正/追加/取消）','修正メモ',...headers];
- const editRows=active.map(r=>['','',...r]);
- const wsEdit=XLSX.utils.aoa_to_sheet([editHeaders,...editRows]);
- // 確認済み
- const wsChecked=XLSX.utils.aoa_to_sheet([headers,...checked]);
- // 最終表示：日常確認用の見やすい一覧
- const finalHeaders=['日付','区分','氏名・対象','内容・用務','会場・場所','開始','終了','確認'];
- const finalRows=active.map(r=>{
-   const type=r[1], name=type==='予定'?(r[13]||''):r[3];
-   const content=type==='休暇'?r[6]:type==='出張'?r[10]:r[12];
-   const place=type==='出張'?r[11]:type==='予定'?r[14]:'';
-   return [r[2],type,name,content,place,r[4],r[5],r[17]];
- });
- const wsFinal=XLSX.utils.aoa_to_sheet([finalHeaders,...finalRows]);
-
- [wsBase,wsEdit,wsChecked].forEach(ws=>ws['!cols']=[
-   {wch:24},{wch:10},{wch:12},{wch:16},{wch:8},{wch:8},{wch:24},{wch:8},{wch:8},{wch:18},
-   {wch:32},{wch:24},{wch:28},{wch:18},{wch:24},{wch:28},{wch:12},{wch:8},{wch:21},{wch:21},{wch:21}
- ]);
- wsEdit['!cols']=[{wch:18},{wch:28},...wsBase['!cols']];
- wsFinal['!cols']=[{wch:12},{wch:10},{wch:18},{wch:34},{wch:26},{wch:8},{wch:8},{wch:8}];
-
- const wb=XLSX.utils.book_new();
- XLSX.utils.book_append_sheet(wb,wsBase,'正本');
- XLSX.utils.book_append_sheet(wb,wsEdit,'修正・追加');
- XLSX.utils.book_append_sheet(wb,wsChecked,'確認済み');
- XLSX.utils.book_append_sheet(wb,wsFinal,'最終表示');
-
- const d=new Date();
- const stamp=d.getFullYear()+String(d.getMonth()+1).padStart(2,'0')+String(d.getDate()).padStart(2,'0');
- XLSX.writeFile(wb,'休暇出張予定_'+stamp+'.xlsx',{bookType:'xlsx'});
- showDone('Excelを出力しました。4シート（正本／修正・追加／確認済み／最終表示）です');
-};
-restoreLatestBackups();
-renderRecent();renderCheckList();
-restoreFromIndexedDB().then(changed=>{
-  if(changed){renderRecent();renderCheckList();}
-});
-(function(){
-  if(!storageAvailable()){
-    $('portalSync').textContent='この開き方では登録保存が使えません。Safariで開く必要があります。';
-    $('portalSync').style.color='#b55757';
-  }else{
-    const n=get('nenkyuRecords').length+get('shucchoRecords').length+get('yoteiRecords').length;
-    $('portalSync').textContent='保存機能：利用可能／登録済み '+n+'件';
-    $('portalSync').style.color='#3f7a54';
-  }
-})();
-
-/* Google Drive保存ボタンは削除済み */
-
-$('backupDataBtn').onclick=()=>{
-  const payload={
-    exportedAt:new Date().toISOString(),
-    nenkyuRecords:get('nenkyuRecords'),
-    shucchoRecords:get('shucchoRecords'),
-    yoteiRecords:get('yoteiRecords')
-  };
-  const blob=new Blob([JSON.stringify(payload,null,2)],{type:'application/json'});
-  const a=document.createElement('a');
-  a.href=URL.createObjectURL(blob);
-  a.download='休暇出張予定_バックアップ_'+new Date().toISOString().slice(0,10)+'.json';
-  document.body.appendChild(a);
-  a.click();
-  a.remove();
-  setTimeout(()=>URL.revokeObjectURL(a.href),1000);
-};
-
-
-
-if($('recoverDataBtn')) $('recoverDataBtn').onclick=()=>{
-  const a=get('nenkyuRecords'),b=get('shucchoRecords'),c=get('yoteiRecords');
-  renderRecent();renderCheckList();
-  showDone('復旧確認：休暇 '+a.filter(x=>x.status!=='cancelled').length+'件／出張 '+b.filter(x=>x.status!=='cancelled').length+'件／予定 '+c.filter(x=>x.status!=='cancelled').length+'件。重複は同一内容を1件にまとめています。');
-};
-
-hydrateFromDrive().then(()=>{try{renderRecent();renderCheckList();}catch(e){}});
-
-(function setupDictationButtons(){
-  const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
-  function bind(btnId,inputId){
-    const btn=$(btnId),input=$(inputId); if(!btn||!input)return;
-    btn.onclick=()=>{
-      if(SR){
-        try{
-          const rec=new SR();rec.lang='ja-JP';rec.interimResults=false;rec.maxAlternatives=1;
-          btn.textContent='🎤 聞いています';
-          rec.onresult=e=>{input.value=e.results[0][0].transcript;};
-          rec.onend=()=>btn.textContent='🎤 音声';
-          rec.onerror=()=>{btn.textContent='🎤 音声';input.focus();};
-          rec.start();
-        }catch(e){input.focus();}
-      }else{
-        input.focus();
-        showDone('入力欄を開きました。iPadキーボードのマイクを押して音声入力してください');
-      }
-    };
-  }
-  bind('purposeVoice','purpose');
-  bind('venueVoice','venue');
-})();
-
 </script></body></html>
