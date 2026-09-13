@@ -54,11 +54,12 @@
 </style>
 <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
 </head><body><div class="wrap">
-<div class="top"><h1>休暇・出張・予定 かんたん入力</h1><span style="font-size:11px;font-weight:800;color:#3f7a54">Excel専用／iPad書き出し・読込修正版 v7</span><strong>日付</strong><input id="date" type="date" style="height:40px;border:2px solid #d9a697;border-radius:10px;padding:0 9px;font-size:18px;font-weight:800">
+<div class="top"><h1>休暇・出張・予定 かんたん入力</h1><span style="font-size:11px;font-weight:800;color:#3f7a54">Excel専用／iPad書き出し・読込修正版 v8</span><strong>日付</strong><input id="date" type="date" style="height:40px;border:2px solid #d9a697;border-radius:10px;padding:0 9px;font-size:18px;font-weight:800">
 <div class="actions"><button id="listBtn" class="topbtn" type="button">登録一覧</button><button id="excelBtn" class="topbtn" type="button" onclick="window.exportExcelIpadV3()">Excel正本を書き出す</button><div style="display:inline-flex;align-items:center;gap:6px;flex-wrap:wrap">
 <label for="excelImportFile" class="topbtn" style="display:inline-flex;align-items:center;justify-content:center;cursor:pointer">修正したExcelを読み込む</label>
 <input id="excelImportFile" type="file" accept=".xlsx,.xls,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel"
 style="font-size:14px;max-width:290px">
+<button id="excelImportRunBtn" class="topbtn" type="button" onclick="window.importExcelV7(document.getElementById('excelImportFile'))">このファイルを読み込む</button>
 </div><button id="backupDataBtn" class="topbtn" type="button">バックアップ</button><button id="recoverDataBtn" class="topbtn" type="button">入力済みデータを復旧</button><button id="undoChoiceBtn" class="topbtn" type="button">↩ 入力を1つ戻す</button><button id="resetInputBtn" class="topbtn" type="button">入力内容をリセット</button><button id="undoDeleteBtn" class="topbtn" type="button">↩ 直前の削除を戻す</button></div></div>
 <div id="importStatusFixed" style="display:none;position:sticky;top:0;z-index:9999;background:#fff3cc;border:2px solid #d6b85e;border-radius:10px;padding:10px;margin:6px 0;font-weight:900;font-size:15px"></div>
 
@@ -1240,7 +1241,6 @@ window.importExcelV7 = function(input){
  };
  reader.readAsArrayBuffer(file);
 };
-document.getElementById('excelImportFile').addEventListener('change', function(){ window.importExcelV7(this); });
 restoreLatestBackups();
 renderRecent();renderCheckList();
 restoreFromIndexedDB().then(changed=>{
