@@ -215,7 +215,7 @@ window.CAT_SHOW_LIST = function(){
 </script>
 
 </head><body><div class="wrap">
-<div class="top"><h1>休暇・出張・予定 かんたん入力</h1><span style="font-size:11px;font-weight:800;color:#3f7a54">Excel専用／iPad書き出し・読込修正版 v11</span><strong>日付</strong><input id="date" type="date" style="height:40px;border:2px solid #d9a697;border-radius:10px;padding:0 9px;font-size:18px;font-weight:800">
+<div class="top"><h1>休暇・出張・予定 かんたん入力</h1><span style="font-size:11px;font-weight:800;color:#3f7a54">Excel専用／iPad書き出し・読込修正版 v12</span><strong>日付</strong><input id="date" type="date" style="height:40px;border:2px solid #d9a697;border-radius:10px;padding:0 9px;font-size:18px;font-weight:800">
 <div class="actions"><button id="listBtn" class="topbtn" type="button" onclick="window.CAT_SHOW_LIST()">登録一覧</button><button id="excelBtn" class="topbtn" type="button" onclick="window.exportExcelIpadV3()">Excel正本を書き出す</button><div style="display:inline-flex;align-items:center;gap:6px;flex-wrap:wrap">
 <label for="excelImportFile" class="topbtn" style="display:inline-flex;align-items:center;justify-content:center;cursor:pointer">修正したExcelを読み込む</label>
 <input id="excelImportFile" type="file" accept=".xlsx,.xls,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel"
@@ -909,9 +909,26 @@ $('tripReg').onclick=()=>{
    showDone(count+'人分の出張をまとめて修正しました：'+p+'／'+v);
  }else{
    const batchId='trip-'+Date.now()+'-'+Math.random().toString(36).slice(2,8);
-   names.forEach(n=>rows.push({id:newId('trip'),batchId,date:$('date').value,name:n.name,fullName:n.full,purpose:p,venue:v,start:jp(t.sh,t.sm),end:jp(t.eh,t.em),status:'active',updatedAt:new Date().toISOString()}));
+   const newIds=[];
+   names.forEach(n=>{
+     const rec={id:newId('trip'),batchId,date:$('date').value,name:n.name,fullName:n.full,purpose:p,venue:v,start:jp(t.sh,t.sm),end:jp(t.eh,t.em),status:'active',updatedAt:new Date().toISOString()};
+     newIds.push(rec.id);
+     rows.push(rec);
+   });
    if(!set('shucchoRecords',rows)) return;
-   showDone(names.length+'人分の出張を登録しました：'+p+'／'+v);$('portalSync').textContent='保存済み：この端末のブラウザに登録を保持しています。';
+
+   const savedNow=get('shucchoRecords');
+   const savedCount=newIds.filter(id=>savedNow.some(r=>String(r.id)===String(id) && r.status!=='cancelled')).length;
+   if(savedCount!==newIds.length){
+     showDone('出張の保存確認に失敗しました。登録内容は画面に残しています。');
+     return;
+   }
+
+   try{renderRecent();}catch(e){}
+   try{renderCheckList();}catch(e){}
+
+   showDone(names.length+'人分の出張を登録・保存しました：'+p+'／'+v);
+   if($('portalSync'))$('portalSync').textContent='保存確認済み：この端末のブラウザに登録されています。';
  }
 };
 
