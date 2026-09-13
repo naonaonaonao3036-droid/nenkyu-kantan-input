@@ -160,9 +160,63 @@ window.CAT_IMPORT_EXCEL = function(input){
 };
 </script>
 
+
+<script>
+/* v11: 登録一覧を本体スクリプトから完全分離 */
+window.CAT_SHOW_LIST = function(){
+  try{
+    let overlay=document.getElementById('catListOverlay');
+    if(!overlay){
+      overlay=document.createElement('div');
+      overlay.id='catListOverlay';
+      overlay.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.35);z-index:99999;padding:18px;overflow:auto';
+      const card=document.createElement('div');
+      card.style.cssText='max-width:900px;margin:0 auto;background:white;border-radius:14px;padding:12px;box-shadow:0 8px 30px rgba(0,0,0,.22)';
+      card.innerHTML='<div style="display:flex;align-items:center;gap:8px;position:sticky;top:0;background:#fff;padding-bottom:8px"><strong style="font-size:20px">登録一覧</strong><button id="catListClose" style="margin-left:auto;height:40px;border:1px solid #ddd;background:#fff;border-radius:9px;padding:0 14px;font-weight:800">閉じる</button></div><div id="catListBody"></div>';
+      overlay.appendChild(card);
+      document.body.appendChild(overlay);
+      document.getElementById('catListClose').onclick=()=>overlay.remove();
+      overlay.onclick=(e)=>{if(e.target===overlay)overlay.remove();};
+    }
+
+    const body=document.getElementById('catListBody');
+    const read=(k)=>{
+      try{
+        const v=JSON.parse(localStorage.getItem(k)||localStorage.getItem('teshiro_2026_'+k)||'[]');
+        return Array.isArray(v)?v:[];
+      }catch(e){return []}
+    };
+    const leaves=read('nenkyuRecords').filter(r=>r && r.status!=='cancelled').map(r=>({...r,_type:'休暇'}));
+    const trips=read('shucchoRecords').filter(r=>r && r.status!=='cancelled').map(r=>({...r,_type:'出張'}));
+    const plans=read('yoteiRecords').filter(r=>r && r.status!=='cancelled').map(r=>({...r,_type:'予定'}));
+    const all=[...leaves,...trips,...plans].sort((a,b)=>String(b.date||'').localeCompare(String(a.date||''))||String(a._type).localeCompare(String(b._type),'ja'));
+
+    if(!all.length){
+      body.innerHTML='<div style="padding:20px;font-weight:800">登録データがありません。</div>';
+      return;
+    }
+
+    const esc=(s)=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+    body.innerHTML=all.map(r=>{
+      const name=esc(r.fullName||r.name||r.targets||'');
+      const time=[r.start,r.end].filter(Boolean).map(esc).join('〜');
+      let main='';
+      if(r._type==='休暇') main=[r.label||r.kind||'休暇',r.amount||'',name].filter(Boolean).map(esc).join(' ');
+      else if(r._type==='出張') main=[r.purpose||'出張',r.venue||'',name].filter(Boolean).map(esc).join(' ／ ');
+      else main=[r.title||'予定',r.targets||'',r.place||''].filter(Boolean).map(esc).join(' ／ ');
+      return '<div style="border:1px solid #e7ddd8;border-radius:10px;padding:9px;margin:7px 0;background:#fff">'+
+        '<div style="font-size:12px;color:#766"><b>'+esc(r.date||'日付なし')+'</b>　'+esc(r._type)+(time?'　'+time:'')+'</div>'+
+        '<div style="font-size:15px;font-weight:800;margin-top:3px">'+main+'</div></div>';
+    }).join('');
+  }catch(e){
+    alert('登録一覧エラー：'+(e&&e.message?e.message:String(e)));
+  }
+};
+</script>
+
 </head><body><div class="wrap">
-<div class="top"><h1>休暇・出張・予定 かんたん入力</h1><span style="font-size:11px;font-weight:800;color:#3f7a54">Excel専用／iPad書き出し・読込修正版 v10</span><strong>日付</strong><input id="date" type="date" style="height:40px;border:2px solid #d9a697;border-radius:10px;padding:0 9px;font-size:18px;font-weight:800">
-<div class="actions"><button id="listBtn" class="topbtn" type="button">登録一覧</button><button id="excelBtn" class="topbtn" type="button" onclick="window.exportExcelIpadV3()">Excel正本を書き出す</button><div style="display:inline-flex;align-items:center;gap:6px;flex-wrap:wrap">
+<div class="top"><h1>休暇・出張・予定 かんたん入力</h1><span style="font-size:11px;font-weight:800;color:#3f7a54">Excel専用／iPad書き出し・読込修正版 v11</span><strong>日付</strong><input id="date" type="date" style="height:40px;border:2px solid #d9a697;border-radius:10px;padding:0 9px;font-size:18px;font-weight:800">
+<div class="actions"><button id="listBtn" class="topbtn" type="button" onclick="window.CAT_SHOW_LIST()">登録一覧</button><button id="excelBtn" class="topbtn" type="button" onclick="window.exportExcelIpadV3()">Excel正本を書き出す</button><div style="display:inline-flex;align-items:center;gap:6px;flex-wrap:wrap">
 <label for="excelImportFile" class="topbtn" style="display:inline-flex;align-items:center;justify-content:center;cursor:pointer">修正したExcelを読み込む</label>
 <input id="excelImportFile" type="file" accept=".xlsx,.xls,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel"
 style="font-size:14px;max-width:290px">
