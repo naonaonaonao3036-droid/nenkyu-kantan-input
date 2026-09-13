@@ -1113,23 +1113,68 @@ function buildSchoolDiary(master){
 }
 function buildPortal(master){return master.map(row=>{const [id,gid,date,type,name,start,end,leave,amount,purpose,venue,plan,target]=row;const time=start&&end?start+'〜'+end:'';let disp='';if(type==='休暇')disp=[(leave||'')+(amount||''),name,time].filter(Boolean).join(' ');else if(type==='出張')disp=[purpose,name,time].filter(Boolean).join(' ');else disp=[plan,target,time].filter(Boolean).join(' ');return [date,type,disp]}).sort((a,b)=>String(a[0]).localeCompare(String(b[0]))||String(a[1]).localeCompare(String(b[1]))||String(a[2]).localeCompare(String(b[2]),'ja'))}
 
-$('excelBtn').onclick=()=>{
- if(typeof XLSX==='undefined'){showDone('Excel機能を読み込めませんでした');return}
- const master=excelMasterRows();
- const masterHeaders=['ID','まとめキー','日付','区分','氏名','開始','終了','休暇内容','取得時間','用務','会場','予定名','対象','場所','補足','確認','登録日時','更新日時'];
- const diaryHeaders=['日付','区分','学校日誌表示','開始','終了'];
- const portalHeaders=['日付','区分','ポータル表示'];
- const diary=buildSchoolDiary(master),portal=buildPortal(master),backupDate=new Date().toISOString().slice(0,10),backup=master.map(r=>[backupDate,...r]);
- const wb=XLSX.utils.book_new();
- const wsDiary=XLSX.utils.aoa_to_sheet([diaryHeaders,...diary]);
- const wsMaster=XLSX.utils.aoa_to_sheet([masterHeaders,...master]);
- const wsPortal=XLSX.utils.aoa_to_sheet([portalHeaders,...portal]);
- const wsBackup=XLSX.utils.aoa_to_sheet([['バックアップ日',...masterHeaders],...backup]);
- const wsPrint=XLSX.utils.aoa_to_sheet([diaryHeaders,...diary]);
- wsDiary['!cols']=[{wch:12},{wch:10},{wch:70},{wch:9},{wch:9}];wsMaster['!cols']=[{wch:22},{wch:42},{wch:12},{wch:10},{wch:18},{wch:9},{wch:9},{wch:28},{wch:10},{wch:34},{wch:28},{wch:28},{wch:18},{wch:22},{wch:24},{wch:8},{wch:20},{wch:20}];wsPortal['!cols']=[{wch:12},{wch:10},{wch:75}];wsBackup['!cols']=[{wch:12},...wsMaster['!cols']];wsPrint['!cols']=wsDiary['!cols'];
- XLSX.utils.book_append_sheet(wb,wsDiary,'学校日誌用');XLSX.utils.book_append_sheet(wb,wsMaster,'正本');XLSX.utils.book_append_sheet(wb,wsPortal,'ポータル用');XLSX.utils.book_append_sheet(wb,wsBackup,'バックアップ');XLSX.utils.book_append_sheet(wb,wsPrint,'印刷用');
- const d=new Date(),stamp=d.getFullYear()+String(d.getMonth()+1).padStart(2,'0')+String(d.getDate()).padStart(2,'0');
- XLSX.writeFile(wb,'休暇出張予定_正本_'+stamp+'.xlsx',{bookType:'xlsx'});showDone('Excel正本を作りました。学校日誌用は同じ日・用務・会場・時間なら1行にまとめています');
+$('excelBtn').onclick=async()=>{
+ try{
+  if(typeof XLSX==='undefined'){showDone('Excel機能を読み込めませんでした');return}
+  showDone('Excel正本を作成中です…');
+  const master=excelMasterRows();
+  const masterHeaders=['ID','まとめキー','日付','区分','氏名','開始','終了','休暇内容','取得時間','用務','会場','予定名','対象','場所','補足','確認','登録日時','更新日時'];
+  const diaryHeaders=['日付','区分','学校日誌表示','開始','終了'];
+  const portalHeaders=['日付','区分','ポータル表示'];
+  const diary=buildSchoolDiary(master),portal=buildPortal(master),backupDate=new Date().toISOString().slice(0,10),backup=master.map(r=>[backupDate,...r]);
+  const wb=XLSX.utils.book_new();
+  const wsDiary=XLSX.utils.aoa_to_sheet([diaryHeaders,...diary]);
+  const wsMaster=XLSX.utils.aoa_to_sheet([masterHeaders,...master]);
+  const wsPortal=XLSX.utils.aoa_to_sheet([portalHeaders,...portal]);
+  const wsBackup=XLSX.utils.aoa_to_sheet([['バックアップ日',...masterHeaders],...backup]);
+  const wsPrint=XLSX.utils.aoa_to_sheet([diaryHeaders,...diary]);
+  wsDiary['!cols']=[{wch:12},{wch:10},{wch:70},{wch:9},{wch:9}];
+  wsMaster['!cols']=[{wch:22},{wch:42},{wch:12},{wch:10},{wch:18},{wch:9},{wch:9},{wch:28},{wch:10},{wch:34},{wch:28},{wch:28},{wch:18},{wch:22},{wch:24},{wch:8},{wch:20},{wch:20}];
+  wsPortal['!cols']=[{wch:12},{wch:10},{wch:75}];
+  wsBackup['!cols']=[{wch:12},...wsMaster['!cols']];
+  wsPrint['!cols']=wsDiary['!cols'];
+  XLSX.utils.book_append_sheet(wb,wsDiary,'学校日誌用');
+  XLSX.utils.book_append_sheet(wb,wsMaster,'正本');
+  XLSX.utils.book_append_sheet(wb,wsPortal,'ポータル用');
+  XLSX.utils.book_append_sheet(wb,wsBackup,'バックアップ');
+  XLSX.utils.book_append_sheet(wb,wsPrint,'印刷用');
+
+  const d=new Date(),stamp=d.getFullYear()+String(d.getMonth()+1).padStart(2,'0')+String(d.getDate()).padStart(2,'0');
+  const filename='休暇出張予定_正本_'+stamp+'.xlsx';
+
+  // iPad/Safari向け：writeFileではなくFile+共有シートを優先
+  const data=XLSX.write(wb,{bookType:'xlsx',type:'array'});
+  const blob=new Blob([data],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
+  const file=new File([blob],filename,{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
+
+  if(navigator.share && navigator.canShare && navigator.canShare({files:[file]})){
+    await navigator.share({
+      files:[file],
+      title:'Excel正本',
+      text:'休暇出張予定のExcel正本'
+    });
+    showDone('Excel正本を作りました。共有画面から「ファイルに保存」またはExcelを選んでください');
+    return;
+  }
+
+  // 共有が使えない端末向けのダウンロード
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url;
+  a.download=filename;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  setTimeout(()=>URL.revokeObjectURL(url),15000);
+  showDone('Excel正本を作りました。ダウンロードされたファイルを開いてください');
+ }catch(e){
+  console.error(e);
+  if(e && e.name==='AbortError'){
+    showDone('Excel作成は完了しています。共有画面を閉じました');
+  }else{
+    showDone('Excel書き出しに失敗しました：'+(e&&e.message?e.message:'不明なエラー'));
+  }
+ }
 };
 $('excelImportBtn').onclick=()=>$('excelImportFile').click();
 $('excelImportFile').onchange=async()=>{const file=$('excelImportFile').files&&$('excelImportFile').files[0];if(!file)return;try{const buf=await file.arrayBuffer();const wb=XLSX.read(buf,{type:'array'});const s=wb.SheetNames.includes('正本')?'正本':wb.SheetNames[0];const rows=XLSX.utils.sheet_to_json(wb.Sheets[s],{defval:''});if(!rows.length){showDone('正本データがありません');return}if(!confirm('このExcelの「正本」を猫のデータとして読み込みます。現在の猫データは先にバックアップします。よろしいですか？'))return;doBackup();const leaves=[],trips=[],plans=[];rows.forEach(o=>{const type=String(o['区分']||'').trim();const base={id:String(o['ID']||newId(type==='休暇'?'leave':type==='出張'?'trip':'plan')),batchId:String(o['まとめキー']||''),date:String(o['日付']||''),name:String(o['氏名']||''),fullName:String(o['氏名']||''),start:String(o['開始']||''),end:String(o['終了']||''),status:'active',checked:String(o['確認']||'')==='済',createdAt:String(o['登録日時']||''),updatedAt:String(o['更新日時']||new Date().toISOString())};if(type==='休暇')leaves.push({...base,kind:String(o['休暇内容']||''),label:String(o['休暇内容']||''),amount:o['取得時間']??''});else if(type==='出張')trips.push({...base,purpose:String(o['用務']||''),venue:String(o['会場']||'')});else if(type==='予定')plans.push({...base,title:String(o['予定名']||''),targets:String(o['対象']||''),place:String(o['場所']||''),note:String(o['補足']||'')})});set('nenkyuRecords',leaves);set('shucchoRecords',trips);set('yoteiRecords',plans);renderRecent();renderCheckList();showDone('修正したExcelの正本を猫へ読み込みました')}catch(e){showDone('Excelの読み込みに失敗しました')}finally{$('excelImportFile').value=''}};
