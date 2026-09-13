@@ -54,11 +54,12 @@
 </style>
 <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
 </head><body><div class="wrap">
-<div class="top"><h1>休暇・出張・予定 かんたん入力</h1><span style="font-size:11px;font-weight:800;color:#3f7a54">Excel専用／iPad書き出し・読込修正版 v6</span><strong>日付</strong><input id="date" type="date" style="height:40px;border:2px solid #d9a697;border-radius:10px;padding:0 9px;font-size:18px;font-weight:800">
-<div class="actions"><button id="listBtn" class="topbtn" type="button">登録一覧</button><button id="excelBtn" class="topbtn" type="button" onclick="window.exportExcelIpadV3()">Excel正本を書き出す</button><label class="topbtn" style="display:inline-flex;align-items:center;justify-content:center;cursor:pointer;position:relative;overflow:hidden">
-修正したExcelを読み込む
-<input id="excelImportFile" type="file" accept=".xlsx,.xls" style="position:absolute;inset:0;width:100%;height:100%;opacity:0;cursor:pointer">
-</label><button id="backupDataBtn" class="topbtn" type="button">バックアップ</button><button id="recoverDataBtn" class="topbtn" type="button">入力済みデータを復旧</button><button id="undoChoiceBtn" class="topbtn" type="button">↩ 入力を1つ戻す</button><button id="resetInputBtn" class="topbtn" type="button">入力内容をリセット</button><button id="undoDeleteBtn" class="topbtn" type="button">↩ 直前の削除を戻す</button></div></div>
+<div class="top"><h1>休暇・出張・予定 かんたん入力</h1><span style="font-size:11px;font-weight:800;color:#3f7a54">Excel専用／iPad書き出し・読込修正版 v7</span><strong>日付</strong><input id="date" type="date" style="height:40px;border:2px solid #d9a697;border-radius:10px;padding:0 9px;font-size:18px;font-weight:800">
+<div class="actions"><button id="listBtn" class="topbtn" type="button">登録一覧</button><button id="excelBtn" class="topbtn" type="button" onclick="window.exportExcelIpadV3()">Excel正本を書き出す</button><div style="display:inline-flex;align-items:center;gap:6px;flex-wrap:wrap">
+<label for="excelImportFile" class="topbtn" style="display:inline-flex;align-items:center;justify-content:center;cursor:pointer">修正したExcelを読み込む</label>
+<input id="excelImportFile" type="file" accept=".xlsx,.xls,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel"
+style="font-size:14px;max-width:290px">
+</div><button id="backupDataBtn" class="topbtn" type="button">バックアップ</button><button id="recoverDataBtn" class="topbtn" type="button">入力済みデータを復旧</button><button id="undoChoiceBtn" class="topbtn" type="button">↩ 入力を1つ戻す</button><button id="resetInputBtn" class="topbtn" type="button">入力内容をリセット</button><button id="undoDeleteBtn" class="topbtn" type="button">↩ 直前の削除を戻す</button></div></div>
 <div id="importStatusFixed" style="display:none;position:sticky;top:0;z-index:9999;background:#fff3cc;border:2px solid #d6b85e;border-radius:10px;padding:10px;margin:6px 0;font-weight:900;font-size:15px"></div>
 
 <section class="panel"><div class="title">① 名前（複数選択できます）</div>
@@ -1180,52 +1181,48 @@ $('excelBtn').onclick=async()=>{
   }
  }
 };
-$('excelImportFile').onchange=()=>{
- const input=$('excelImportFile');
- const file=input.files&&input.files[0];
- const box=$('importStatusFixed');
- const say=(t)=>{if(box){box.textContent=t;box.style.display='block';} try{showDone(t)}catch(e){}};
+window.importExcelV7 = function(input){
+ const file=input && input.files && input.files[0];
+ const box=document.getElementById('importStatusFixed');
+ const say=(t)=>{
+   if(box){box.textContent=t;box.style.display='block';}
+   try{showDone(t)}catch(e){}
+   alert(t);
+ };
  if(!file){say('ファイルが選ばれていません');return;}
- say('Excelを選択しました。読み込み中です…');
+ if(box){box.textContent='選択済み：'+file.name+'／読み込み中…';box.style.display='block';}
 
  const reader=new FileReader();
- reader.onerror=()=>{say('Excelファイルを開けませんでした。OneDriveで一度開いて保存してから、もう一度選んでください');input.value='';};
- reader.onload=()=>{
+ reader.onerror=()=>{say('Excelファイルを開けませんでした');input.value='';};
+ reader.onload=function(){
   try{
-   const buf=reader.result;
-   if(typeof XLSX==='undefined'){say('Excel読込機能の読み込みに失敗しました。ページを更新してください');input.value='';return;}
-   const wb=XLSX.read(buf,{type:'array'});
+   if(typeof XLSX==='undefined'){say('Excel読込機能が読み込まれていません。ページを更新してください');input.value='';return;}
+   const wb=XLSX.read(reader.result,{type:'array'});
    const s=wb.SheetNames.includes('正本')?'正本':wb.SheetNames[0];
    if(!s){say('Excelにシートがありません');input.value='';return;}
    const rows=XLSX.utils.sheet_to_json(wb.Sheets[s],{defval:''});
    if(!rows.length){say('「正本」にデータがありません');input.value='';return;}
 
-   // 読み込み前に自動バックアップ
    try{doBackup();}catch(e){}
-
    const leaves=[],trips=[],plans=[];
    rows.forEach(o=>{
-    const type=String(o['区分']||'').trim();
-    const base={
-      id:String(o['ID']||newId(type==='休暇'?'leave':type==='出張'?'trip':'plan')),
-      batchId:String(o['まとめキー']||''),
-      date:String(o['日付']||''),
-      name:String(o['氏名']||''),
-      fullName:String(o['氏名']||''),
-      start:String(o['開始']||''),
-      end:String(o['終了']||''),
-      status:'active',
-      checked:String(o['確認']||'')==='済',
-      createdAt:String(o['登録日時']||''),
-      updatedAt:String(o['更新日時']||new Date().toISOString())
-    };
-    if(type==='休暇'){
-      leaves.push({...base,kind:String(o['休暇内容']||''),label:String(o['休暇内容']||''),amount:o['取得時間']??''});
-    }else if(type==='出張'){
-      trips.push({...base,purpose:String(o['用務']||''),venue:String(o['会場']||'')});
-    }else if(type==='予定'){
-      plans.push({...base,title:String(o['予定名']||''),targets:String(o['対象']||''),place:String(o['場所']||''),note:String(o['補足']||'')});
-    }
+     const type=String(o['区分']||'').trim();
+     const base={
+       id:String(o['ID']||newId(type==='休暇'?'leave':type==='出張'?'trip':'plan')),
+       batchId:String(o['まとめキー']||''),
+       date:String(o['日付']||''),
+       name:String(o['氏名']||''),
+       fullName:String(o['氏名']||''),
+       start:String(o['開始']||''),
+       end:String(o['終了']||''),
+       status:'active',
+       checked:String(o['確認']||'')==='済',
+       createdAt:String(o['登録日時']||''),
+       updatedAt:String(o['更新日時']||new Date().toISOString())
+     };
+     if(type==='休暇') leaves.push({...base,kind:String(o['休暇内容']||''),label:String(o['休暇内容']||''),amount:o['取得時間']??''});
+     else if(type==='出張') trips.push({...base,purpose:String(o['用務']||''),venue:String(o['会場']||'')});
+     else if(type==='予定') plans.push({...base,title:String(o['予定名']||''),targets:String(o['対象']||''),place:String(o['場所']||''),note:String(o['補足']||'')});
    });
 
    set('nenkyuRecords',leaves);
@@ -1243,6 +1240,7 @@ $('excelImportFile').onchange=()=>{
  };
  reader.readAsArrayBuffer(file);
 };
+document.getElementById('excelImportFile').addEventListener('change', function(){ window.importExcelV7(this); });
 restoreLatestBackups();
 renderRecent();renderCheckList();
 restoreFromIndexedDB().then(changed=>{
