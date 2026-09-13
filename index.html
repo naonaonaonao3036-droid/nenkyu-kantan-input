@@ -53,13 +53,120 @@
 
 </style>
 <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
+<script>
+/* v10: main app scriptから完全分離したiPad用Excel読込 */
+window.CAT_IMPORT_EXCEL = function(input){
+  const box = document.getElementById('importStatusFixed');
+  const say = (t)=>{
+    if(box){ box.textContent=t; box.style.display='block'; }
+    try{ alert(t); }catch(e){}
+  };
+
+  try{
+    say('読込ボタンは動いています');
+    const file = input && input.files && input.files[0];
+    if(!file){ say('ファイルが選ばれていません'); return; }
+
+    if(box){
+      box.textContent='選択済み：'+file.name+'／Excelを読み込み中…';
+      box.style.display='block';
+    }
+
+    const reader = new FileReader();
+    reader.onerror = function(){
+      say('ファイルを開けませんでした');
+    };
+    reader.onload = function(){
+      try{
+        if(typeof XLSX === 'undefined'){
+          say('Excel読込ライブラリが読み込まれていません。ページを更新してください');
+          return;
+        }
+        const wb = XLSX.read(reader.result,{type:'array'});
+        const sheetName = wb.SheetNames.includes('正本') ? '正本' : wb.SheetNames[0];
+        if(!sheetName){ say('Excelにシートがありません'); return; }
+
+        const rows = XLSX.utils.sheet_to_json(wb.Sheets[sheetName],{defval:''});
+        if(!rows.length){ say('正本にデータがありません'); return; }
+
+        const leaves=[], trips=[], plans=[];
+        const iso=()=>new Date().toISOString();
+        const newid=(p)=>p+'-'+Date.now()+'-'+Math.random().toString(36).slice(2,9);
+
+        rows.forEach(o=>{
+          const type=String(o['区分']||'').trim();
+          const base={
+            id:String(o['ID']||newid(type==='休暇'?'leave':type==='出張'?'trip':'plan')),
+            batchId:String(o['まとめキー']||''),
+            date:String(o['日付']||''),
+            name:String(o['氏名']||''),
+            fullName:String(o['氏名']||''),
+            start:String(o['開始']||''),
+            end:String(o['終了']||''),
+            status:'active',
+            checked:String(o['確認']||'')==='済',
+            createdAt:String(o['登録日時']||''),
+            updatedAt:String(o['更新日時']||iso())
+          };
+          if(type==='休暇'){
+            leaves.push({...base,
+              kind:String(o['休暇内容']||''),
+              label:String(o['休暇内容']||''),
+              amount:o['取得時間']??''
+            });
+          }else if(type==='出張'){
+            trips.push({...base,
+              purpose:String(o['用務']||''),
+              venue:String(o['会場']||'')
+            });
+          }else if(type==='予定'){
+            plans.push({...base,
+              title:String(o['予定名']||''),
+              targets:String(o['対象']||''),
+              place:String(o['場所']||''),
+              note:String(o['補足']||'')
+            });
+          }
+        });
+
+        // 読み込み前の簡易バックアップ
+        ['nenkyuRecords','shucchoRecords','yoteiRecords'].forEach(k=>{
+          const cur=localStorage.getItem(k);
+          if(cur) localStorage.setItem('backup_before_excel_'+k+'_'+Date.now(),cur);
+        });
+
+        const save=(k,arr)=>{
+          const raw=JSON.stringify(arr);
+          localStorage.setItem(k,raw);
+          localStorage.setItem('teshiro_2026_'+k,raw);
+          localStorage.setItem('backup_'+k+'_latest',raw);
+        };
+        save('nenkyuRecords',leaves);
+        save('shucchoRecords',trips);
+        save('yoteiRecords',plans);
+
+        say('読込成功：休暇 '+leaves.length+'件／出張 '+trips.length+'件／予定 '+plans.length+'件');
+        setTimeout(()=>location.reload(),800);
+      }catch(e){
+        console.error(e);
+        say('Excel読込エラー：'+(e&&e.message?e.message:String(e)));
+      }
+    };
+    reader.readAsArrayBuffer(file);
+  }catch(e){
+    console.error(e);
+    say('読込処理エラー：'+(e&&e.message?e.message:String(e)));
+  }
+};
+</script>
+
 </head><body><div class="wrap">
-<div class="top"><h1>休暇・出張・予定 かんたん入力</h1><span style="font-size:11px;font-weight:800;color:#3f7a54">Excel専用／iPad書き出し・読込修正版 v9</span><strong>日付</strong><input id="date" type="date" style="height:40px;border:2px solid #d9a697;border-radius:10px;padding:0 9px;font-size:18px;font-weight:800">
+<div class="top"><h1>休暇・出張・予定 かんたん入力</h1><span style="font-size:11px;font-weight:800;color:#3f7a54">Excel専用／iPad書き出し・読込修正版 v10</span><strong>日付</strong><input id="date" type="date" style="height:40px;border:2px solid #d9a697;border-radius:10px;padding:0 9px;font-size:18px;font-weight:800">
 <div class="actions"><button id="listBtn" class="topbtn" type="button">登録一覧</button><button id="excelBtn" class="topbtn" type="button" onclick="window.exportExcelIpadV3()">Excel正本を書き出す</button><div style="display:inline-flex;align-items:center;gap:6px;flex-wrap:wrap">
 <label for="excelImportFile" class="topbtn" style="display:inline-flex;align-items:center;justify-content:center;cursor:pointer">修正したExcelを読み込む</label>
 <input id="excelImportFile" type="file" accept=".xlsx,.xls,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel"
 style="font-size:14px;max-width:290px">
-<button id="excelImportRunBtn" class="topbtn" type="button" onclick="window.importExcelV7(document.getElementById('excelImportFile'))">このファイルを読み込む</button>
+<button id="excelImportRunBtn" class="topbtn" type="button" onclick="window.CAT_IMPORT_EXCEL(document.getElementById('excelImportFile'))">このファイルを読み込む</button>
 </div><button id="backupDataBtn" class="topbtn" type="button">バックアップ</button><button id="recoverDataBtn" class="topbtn" type="button">入力済みデータを復旧</button><button id="undoChoiceBtn" class="topbtn" type="button">↩ 入力を1つ戻す</button><button id="resetInputBtn" class="topbtn" type="button">入力内容をリセット</button><button id="undoDeleteBtn" class="topbtn" type="button">↩ 直前の削除を戻す</button></div></div>
 <div id="importStatusFixed" style="display:none;position:sticky;top:0;z-index:9999;background:#fff3cc;border:2px solid #d6b85e;border-radius:10px;padding:10px;margin:6px 0;font-weight:900;font-size:15px"></div>
 
