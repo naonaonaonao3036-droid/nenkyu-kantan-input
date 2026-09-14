@@ -1,3 +1,6 @@
+<!doctype html><html lang="ja"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+<title>休暇・出張・予定 かんたん入力</title>
 <style>
 :root{--bg:#fffaf7;--line:#e7ddd8;--ink:#3e3532;--muted:#84756f;--sel:#fde9e2;--ok:#eaf6ec;--warn:#fff7db}
 *{box-sizing:border-box}body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif;background:var(--bg);color:var(--ink)}
@@ -212,7 +215,7 @@ window.CAT_SHOW_LIST = function(){
 </script>
 
 </head><body><div class="wrap">
-<div class="top"><h1>休暇・出張・予定 かんたん入力</h1><span style="font-size:11px;font-weight:800;color:#3f7a54">Excel専用／時刻なし登録対応 v18</span><strong>日付</strong><input id="date" type="date" style="height:40px;border:2px solid #d9a697;border-radius:10px;padding:0 9px;font-size:18px;font-weight:800">
+<div class="top"><h1>休暇・出張・予定 かんたん入力</h1><span style="font-size:11px;font-weight:800;color:#3f7a54">Excel専用／年休・出張 時刻なし登録対応 v19</span><strong>日付</strong><input id="date" type="date" style="height:40px;border:2px solid #d9a697;border-radius:10px;padding:0 9px;font-size:18px;font-weight:800">
 <div class="actions"><button id="listBtn" class="topbtn" type="button" onclick="window.CAT_SHOW_LIST()">登録一覧</button><button id="excelBtn" class="topbtn" type="button" onclick="window.exportExcelIpadV3()">Excel正本を書き出す</button><div style="display:inline-flex;align-items:center;gap:6px;flex-wrap:wrap">
 <label for="excelImportFile" class="topbtn" style="display:inline-flex;align-items:center;justify-content:center;cursor:pointer">修正したExcelを読み込む</label>
 <input id="excelImportFile" type="file" accept=".xlsx,.xls,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel"
@@ -270,7 +273,7 @@ style="font-size:14px;max-width:290px">
 <div class="field"><label>会場名</label><div style="display:grid;grid-template-columns:1fr auto;gap:5px"><input id="venue" inputmode="text" lang="ja" autocomplete="off" placeholder="例：緑丘小学校"><button type="button" id="venueVoice" class="topbtn">🎤 音声</button></div></div>
 <button id="tripReg" class="reg" type="button">出張を登録</button>
 <div id="tripEditing" class="editingbar"></div>
-<div class="status">「直近の登録」の修正を押すと、その出張を読み込んで上書きできます。</div>
+<div class="status">開始・終了時刻は空欄でも登録できます。時刻を入れる場合だけ開始・終了を両方選択してください。</div>
 </section>
 </div>
 
@@ -1689,10 +1692,17 @@ window.CAT_SAVE_TRIP_V13 = function(){
     if(!purpose||!venue){tell('用務と会場名を入力してください');return;}
     const pick=(name)=>document.querySelector('input[name="'+name+'"]:checked');
     const sh=pick('startHour'), sm=pick('startMinute'), eh=pick('endHour'), em=pick('endMinute');
-    if(!sh||!sm||!eh||!em){tell('開始・終了時刻を確認してください');return;}
-    const smins=Number(sh.value)*60+Number(sm.value), emins=Number(eh.value)*60+Number(em.value);
-    if(emins<=smins){tell('終了時刻を確認してください');return;}
-    const fmt=(h,m)=>String(h).padStart(2,'0')+':'+String(m).padStart(2,'0');
+    let start='', end='';
+    const anyTime=!!(sh||sm||eh||em);
+    const fullTime=!!(sh&&sm&&eh&&em);
+    if(anyTime && !fullTime){tell('時刻を入れる場合は、開始・終了を両方選んでください');return;}
+    if(fullTime){
+      const smins=Number(sh.value)*60+Number(sm.value), emins=Number(eh.value)*60+Number(em.value);
+      if(emins<=smins){tell('終了時刻を確認してください');return;}
+      const fmt=(h,m)=>String(h).padStart(2,'0')+':'+String(m).padStart(2,'0');
+      start=fmt(sh.value,sm.value);
+      end=fmt(eh.value,em.value);
+    }
 
     const rows=window.CAT_READ_TRIPS_V13();
     const batchId='trip-'+Date.now()+'-'+Math.random().toString(36).slice(2,8);
@@ -1705,7 +1715,7 @@ window.CAT_SAVE_TRIP_V13 = function(){
       newIds.push(id);
       rows.push({
         id,batchId,date,name:surname,fullName:full,purpose,venue,
-        start:fmt(sh.value,sm.value),end:fmt(eh.value,em.value),
+        start,end,
         status:'active',createdAt:new Date().toISOString(),updatedAt:new Date().toISOString()
       });
     });
@@ -1739,7 +1749,7 @@ window.CAT_RENDER_RECENT_V13 = function(){
   const esc=(s)=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   box.innerHTML=trips.map(r=>'<div class="listitem"><strong>'+esc(r.date||'')+'　出張</strong>'+
     '<div>'+esc(r.purpose||'')+'／'+esc(r.venue||'')+'</div>'+
-    '<div>'+esc(r.fullName||r.name||'')+'　'+esc(r.start||'')+'〜'+esc(r.end||'')+'</div></div>').join('');
+    '<div>'+esc(r.fullName||r.name||'')+((r.start&&r.end)?('　'+esc(r.start)+'〜'+esc(r.end)):'')+'</div></div>').join('');
 };
 
 window.addEventListener('load',()=>{
