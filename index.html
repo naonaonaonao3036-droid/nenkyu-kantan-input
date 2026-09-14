@@ -215,7 +215,7 @@ window.CAT_SHOW_LIST = function(){
 </script>
 
 </head><body><div class="wrap">
-<div class="top"><h1>休暇・出張・予定 かんたん入力</h1><span style="font-size:11px;font-weight:800;color:#3f7a54">Excel専用／iPad書き出し・読込修正版 v13</span><strong>日付</strong><input id="date" type="date" style="height:40px;border:2px solid #d9a697;border-radius:10px;padding:0 9px;font-size:18px;font-weight:800">
+<div class="top"><h1>休暇・出張・予定 かんたん入力</h1><span style="font-size:11px;font-weight:800;color:#3f7a54">Excel専用／iPad書き出し・読込修正版 v14</span><strong>日付</strong><input id="date" type="date" style="height:40px;border:2px solid #d9a697;border-radius:10px;padding:0 9px;font-size:18px;font-weight:800">
 <div class="actions"><button id="listBtn" class="topbtn" type="button" onclick="window.CAT_SHOW_LIST()">登録一覧</button><button id="excelBtn" class="topbtn" type="button" onclick="window.exportExcelIpadV3()">Excel正本を書き出す</button><div style="display:inline-flex;align-items:center;gap:6px;flex-wrap:wrap">
 <label for="excelImportFile" class="topbtn" style="display:inline-flex;align-items:center;justify-content:center;cursor:pointer">修正したExcelを読み込む</label>
 <input id="excelImportFile" type="file" accept=".xlsx,.xls,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel"
@@ -1740,6 +1740,158 @@ window.addEventListener('load',()=>{
   const b=document.getElementById('tripReg');
   if(b) b.onclick=window.CAT_SAVE_TRIP_V13;
   window.CAT_RENDER_RECENT_V13();
+});
+</script>
+
+
+<script>
+/* v14: 年休・休暇登録を本体スクリプトから完全分離 */
+window.CAT_READ_LEAVES_V14 = function(){
+  const read=(k)=>{
+    try{
+      const v=JSON.parse(localStorage.getItem(k)||'[]');
+      return Array.isArray(v)?v:[];
+    }catch(e){return []}
+  };
+  const all=[...read('nenkyuRecords'),...read('teshiro_2026_nenkyuRecords')];
+  const seen=new Set(), out=[];
+  for(const r of all){
+    const key=String(r.id||[r.date,r.fullName||r.name,r.label,r.start,r.end].join('|'));
+    if(seen.has(key)) continue;
+    seen.add(key); out.push(r);
+  }
+  return out;
+};
+
+window.CAT_SAVE_LEAVE_V14 = function(){
+  const tell=(t)=>{
+    const d=document.getElementById('done');
+    if(d){d.innerHTML='✓ <strong>'+t+'</strong>';d.classList.add('show');}
+    try{alert(t);}catch(e){}
+  };
+  try{
+    const selected=[...document.querySelectorAll('.namepick:checked')];
+    if(!selected.length){tell('名前を選んでください');return;}
+
+    const date=(document.getElementById('date')||{}).value||'';
+    if(!date){tell('日付を選んでください');return;}
+
+    const leave=document.querySelector('.leavepick:checked');
+    if(!leave){tell('休暇の種類を選んでください');return;}
+
+    const amountPick=document.querySelector('.nenkyuHourPick:checked');
+    if(!amountPick){tell('①〜⑧または1日を選んでください');return;}
+
+    const raw=String(amountPick.dataset.hours||'');
+    const oneDay=raw==='1day';
+    const hours=oneDay ? 0 : Number(raw||0);
+    const marks=['','①','②','③','④','⑤','⑥','⑦','⑧'];
+    const mark=oneDay ? '1日' : (marks[hours]||String(hours));
+    const kind=String(leave.dataset.kind||leave.dataset.label||'年休');
+    let label='';
+
+    if(kind==='特休'){
+      const manual=((document.getElementById('specialLeaveNo')||{}).value||'').trim();
+      if(!manual){tell('特休の（　）に内容を入力してください');return;}
+      label='特休（'+manual+'）'+mark;
+    }else if(kind==='年休'){
+      label='年休'+mark;
+    }else if(kind==='厚生'){
+      label='厚生'+mark;
+    }else if(kind==='職専免'){
+      label='職専免'+mark;
+    }else if(kind==='子看'){
+      label='子看'+mark;
+    }else{
+      label=String(leave.dataset.label||kind)+(mark||'');
+    }
+
+    const pick=(name)=>document.querySelector('input[name="'+name+'"]:checked');
+    let start='', end='';
+    if(!oneDay){
+      const sh=pick('startHour'), sm=pick('startMinute'), eh=pick('endHour'), em=pick('endMinute');
+      if(!sh||!sm||!eh||!em){tell('開始・終了時刻を選んでください');return;}
+      const smins=Number(sh.value)*60+Number(sm.value);
+      const emins=Number(eh.value)*60+Number(em.value);
+      if(emins<=smins){tell('終了時刻を確認してください');return;}
+      const fmt=(h,m)=>String(h).padStart(2,'0')+':'+String(m).padStart(2,'0');
+      start=fmt(sh.value,sm.value); end=fmt(eh.value,em.value);
+    }
+
+    const rows=window.CAT_READ_LEAVES_V14();
+    const batchId='leave-'+Date.now()+'-'+Math.random().toString(36).slice(2,8);
+    const newIds=[];
+    const staff=window.CAT_STAFF_V13||[];
+    const special=((document.getElementById('specialLeaveNo')||{}).value||'').trim();
+
+    selected.forEach(x=>{
+      const i=Number(x.dataset.i);
+      const full=staff[i]||('職員'+i);
+      const surname=full.split(' ')[0];
+      const id='leave-'+Date.now()+'-'+Math.random().toString(36).slice(2,9);
+      newIds.push(id);
+      rows.push({
+        id,batchId,date,name:surname,fullName:full,start,end,
+        kind,amount:oneDay?'1日':mark,unit:oneDay?'day':'hour',
+        hours:oneDay?0:hours,oneDay,label,
+        specialLeaveNo:kind==='特休'?special:'',
+        portal:surname+'　'+(start&&end?(start+'〜'+end+'　'):'')+label,
+        diary:surname+'　'+label,
+        status:'active',createdAt:new Date().toISOString(),updatedAt:new Date().toISOString()
+      });
+    });
+
+    const json=JSON.stringify(rows);
+    localStorage.setItem('nenkyuRecords',json);
+    localStorage.setItem('teshiro_2026_nenkyuRecords',json);
+    localStorage.setItem('backup_nenkyuRecords_latest',json);
+    localStorage.setItem('backup_nenkyuRecords_'+new Date().toISOString().slice(0,10),json);
+
+    const verify=window.CAT_READ_LEAVES_V14();
+    const ok=newIds.every(id=>verify.some(r=>String(r.id)===id));
+    if(!ok){tell('保存確認に失敗しました');return;}
+
+    window.CAT_RENDER_RECENT_V14();
+    tell(selected.length+'人分の「'+label+'」を登録・保存しました');
+  }catch(e){
+    console.error(e);
+    alert('年休・休暇登録エラー：'+(e&&e.message?e.message:String(e)));
+  }
+};
+
+window.CAT_RENDER_RECENT_V14 = function(){
+  const box=document.getElementById('recent');
+  if(!box) return;
+  const esc=(s)=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  const leaves=window.CAT_READ_LEAVES_V14()
+    .filter(r=>r&&r.status!=='cancelled')
+    .map(r=>({...r,_type:'休暇'}));
+  const trips=(window.CAT_READ_TRIPS_V13?window.CAT_READ_TRIPS_V13():[])
+    .filter(r=>r&&r.status!=='cancelled')
+    .map(r=>({...r,_type:'出張'}));
+  const all=[...leaves,...trips]
+    .sort((a,b)=>String(b.updatedAt||b.createdAt||'').localeCompare(String(a.updatedAt||a.createdAt||'')))
+    .slice(0,25);
+
+  if(!all.length){box.textContent='まだ登録はありません。';return;}
+  box.innerHTML=all.map(r=>{
+    const head=esc(r.date||'')+'　'+esc(r._type);
+    const who=esc(r.fullName||r.name||'');
+    const time=(r.start&&r.end)?esc(r.start)+'〜'+esc(r.end):'';
+    const main=r._type==='休暇'
+      ? esc(r.label||r.kind||'休暇')
+      : esc((r.purpose||'出張')+'／'+(r.venue||''));
+    return '<div class="listitem"><strong>'+head+'</strong><div>'+main+'</div><div>'+who+(time?'　'+time:'')+'</div></div>';
+  }).join('');
+};
+
+// 出張保存後も年休・出張をまとめて履歴表示
+window.CAT_RENDER_RECENT_V13 = window.CAT_RENDER_RECENT_V14;
+
+window.addEventListener('load',()=>{
+  const b=document.getElementById('leaveReg');
+  if(b) b.onclick=window.CAT_SAVE_LEAVE_V14;
+  window.CAT_RENDER_RECENT_V14();
 });
 </script>
 
