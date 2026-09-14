@@ -215,7 +215,7 @@ window.CAT_SHOW_LIST = function(){
 </script>
 
 </head><body><div class="wrap">
-<div class="top"><h1>休暇・出張・予定 かんたん入力</h1><span style="font-size:11px;font-weight:800;color:#3f7a54">Excel専用／iPad書き出し・読込修正版 v14</span><strong>日付</strong><input id="date" type="date" style="height:40px;border:2px solid #d9a697;border-radius:10px;padding:0 9px;font-size:18px;font-weight:800">
+<div class="top"><h1>休暇・出張・予定 かんたん入力</h1><span style="font-size:11px;font-weight:800;color:#3f7a54">Excel専用／iPad書き出し・読込修正版 v15</span><strong>日付</strong><input id="date" type="date" style="height:40px;border:2px solid #d9a697;border-radius:10px;padding:0 9px;font-size:18px;font-weight:800">
 <div class="actions"><button id="listBtn" class="topbtn" type="button" onclick="window.CAT_SHOW_LIST()">登録一覧</button><button id="excelBtn" class="topbtn" type="button" onclick="window.exportExcelIpadV3()">Excel正本を書き出す</button><div style="display:inline-flex;align-items:center;gap:6px;flex-wrap:wrap">
 <label for="excelImportFile" class="topbtn" style="display:inline-flex;align-items:center;justify-content:center;cursor:pointer">修正したExcelを読み込む</label>
 <input id="excelImportFile" type="file" accept=".xlsx,.xls,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel"
@@ -1892,6 +1892,38 @@ window.addEventListener('load',()=>{
   const b=document.getElementById('leaveReg');
   if(b) b.onclick=window.CAT_SAVE_LEAVE_V14;
   window.CAT_RENDER_RECENT_V14();
+});
+</script>
+
+
+<script>
+/* v15: 選択解除を確実化 */
+window.CAT_CLEAR_SELECTION_V15 = function(){
+  try{
+    document.querySelectorAll('.namepick:checked').forEach(x=>x.checked=false);
+    document.querySelectorAll('input[name="startHour"]:checked,input[name="startMinute"]:checked,input[name="endHour"]:checked,input[name="endMinute"]:checked').forEach(x=>x.checked=false);
+    document.querySelectorAll('.leavepick:checked,.nenkyuHourPick:checked').forEach(x=>x.checked=false);
+    const sp=document.getElementById('specialLeaveNo');
+    if(sp) sp.value='';
+    const sb=document.getElementById('specialLeaveBox');
+    if(sb) sb.style.display='none';
+    const done=document.getElementById('done');
+    if(done){done.innerHTML='✓ <strong>選択を解除しました</strong>';done.classList.add('show');}
+  }catch(e){
+    alert('選択解除エラー：'+(e&&e.message?e.message:String(e)));
+  }
+};
+
+window.addEventListener('load',()=>{
+  const clearBtn=document.getElementById('clear');
+  if(clearBtn) clearBtn.onclick=window.CAT_CLEAR_SELECTION_V15;
+
+  const timeReset=document.getElementById('timeReset');
+  if(timeReset) timeReset.onclick=()=>{
+    document.querySelectorAll('input[name="startHour"]:checked,input[name="startMinute"]:checked,input[name="endHour"]:checked,input[name="endMinute"]:checked').forEach(x=>x.checked=false);
+    const d=document.getElementById('done');
+    if(d){d.innerHTML='✓ <strong>時刻の選択を解除しました</strong>';d.classList.add('show');}
+  };
 });
 </script>
 
