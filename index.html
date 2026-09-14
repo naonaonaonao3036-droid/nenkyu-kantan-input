@@ -215,7 +215,7 @@ window.CAT_SHOW_LIST = function(){
 </script>
 
 </head><body><div class="wrap">
-<div class="top"><h1>休暇・出張・予定 かんたん入力</h1><span style="font-size:11px;font-weight:800;color:#3f7a54">Excel専用／iPad書き出し・読込修正版 v15</span><strong>日付</strong><input id="date" type="date" style="height:40px;border:2px solid #d9a697;border-radius:10px;padding:0 9px;font-size:18px;font-weight:800">
+<div class="top"><h1>休暇・出張・予定 かんたん入力</h1><span style="font-size:11px;font-weight:800;color:#3f7a54">Excel専用／iPad書き出し・読込修正版 v16</span><strong>日付</strong><input id="date" type="date" style="height:40px;border:2px solid #d9a697;border-radius:10px;padding:0 9px;font-size:18px;font-weight:800">
 <div class="actions"><button id="listBtn" class="topbtn" type="button" onclick="window.CAT_SHOW_LIST()">登録一覧</button><button id="excelBtn" class="topbtn" type="button" onclick="window.exportExcelIpadV3()">Excel正本を書き出す</button><div style="display:inline-flex;align-items:center;gap:6px;flex-wrap:wrap">
 <label for="excelImportFile" class="topbtn" style="display:inline-flex;align-items:center;justify-content:center;cursor:pointer">修正したExcelを読み込む</label>
 <input id="excelImportFile" type="file" accept=".xlsx,.xls,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel"
@@ -253,7 +253,7 @@ style="font-size:14px;max-width:290px">
 <input class="pick nenkyuHourPick" type="radio" name="nenkyuAmount" id="nhDay" data-hours="1day"><label class="optionbtn" for="nhDay">1日</label>
 </div></div>
 
-<div id="specialLeaveBox" class="specialleave" style="display:none"><label>特休（　　　　）※ここを手入力</label><input id="specialLeaveNo" type="text" inputmode="text" lang="ja" autocomplete="off" autocapitalize="off" placeholder="例：3号・育児時間・看護など"></div>
+<div id="specialLeaveBox" class="specialleave" style="display:none"><label>特休の号・内容</label><input id="specialLeaveNo" type="text" inputmode="text" lang="ja" autocomplete="off" autocapitalize="off" placeholder="例：15号・3号・育児時間・看護など"><div class="status">「15号」のようにそのまま入力してください。</div></div>
 <button id="leaveReg" class="reg" type="button">年休・休暇を登録</button>
 <div id="leaveEditing" class="editingbar"></div>
 <div class="status">①〜⑧／1日だけなら自動で「年休」。厚生＋③→厚生③、職専免＋③→職専免③、特休＋手入力＋③→特休（手入力）③。同じ日に複数回登録できます。</div>
@@ -1924,6 +1924,29 @@ window.addEventListener('load',()=>{
     const d=document.getElementById('done');
     if(d){d.innerHTML='✓ <strong>時刻の選択を解除しました</strong>';d.classList.add('show');}
   };
+});
+</script>
+
+
+<script>
+/* v16: 特休の「○号」入力欄を独立表示 */
+window.CAT_UPDATE_SPECIAL_LEAVE_V16 = function(){
+  const box=document.getElementById('specialLeaveBox');
+  if(!box) return;
+  const pick=document.querySelector('.leavepick:checked');
+  const isSpecial=!!(pick && String(pick.dataset.kind||'')==='特休');
+  box.style.display=isSpecial?'block':'none';
+  if(!isSpecial){
+    const inp=document.getElementById('specialLeaveNo');
+    if(inp) inp.value='';
+  }
+};
+
+window.addEventListener('load',()=>{
+  document.querySelectorAll('.leavepick').forEach(x=>{
+    x.addEventListener('change',window.CAT_UPDATE_SPECIAL_LEAVE_V16);
+  });
+  window.CAT_UPDATE_SPECIAL_LEAVE_V16();
 });
 </script>
 
