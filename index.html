@@ -215,7 +215,7 @@ window.CAT_SHOW_LIST = function(){
 </script>
 
 </head><body><div class="wrap">
-<div class="top"><h1>休暇・出張・予定 かんたん入力</h1><span style="font-size:11px;font-weight:800;color:#3f7a54">Excel専用／iPad書き出し・読込修正版 v12</span><strong>日付</strong><input id="date" type="date" style="height:40px;border:2px solid #d9a697;border-radius:10px;padding:0 9px;font-size:18px;font-weight:800">
+<div class="top"><h1>休暇・出張・予定 かんたん入力</h1><span style="font-size:11px;font-weight:800;color:#3f7a54">Excel専用／iPad書き出し・読込修正版 v13</span><strong>日付</strong><input id="date" type="date" style="height:40px;border:2px solid #d9a697;border-radius:10px;padding:0 9px;font-size:18px;font-weight:800">
 <div class="actions"><button id="listBtn" class="topbtn" type="button" onclick="window.CAT_SHOW_LIST()">登録一覧</button><button id="excelBtn" class="topbtn" type="button" onclick="window.exportExcelIpadV3()">Excel正本を書き出す</button><div style="display:inline-flex;align-items:center;gap:6px;flex-wrap:wrap">
 <label for="excelImportFile" class="topbtn" style="display:inline-flex;align-items:center;justify-content:center;cursor:pointer">修正したExcelを読み込む</label>
 <input id="excelImportFile" type="file" accept=".xlsx,.xls,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel"
@@ -1643,6 +1643,104 @@ window.exportExcelIpadV3 = async function(){
     tell('書き出しエラー：'+(e&&e.message?e.message:String(e)));
   }
 };
+</script>
+
+
+<script>
+/* v13: 出張登録を本体スクリプトから完全分離 */
+window.CAT_STAFF_V13 = ["和田 亘", "瀬尾 奈緒美", "佐藤 かおり", "岡田 真緒", "兼藤 佳奈", "向井 杏奴", "井上 真維", "池田 真菜", "出口 知子", "千葉 月乃", "萩原 優", "傍田 美華", "井上 日向子", "播本 太平", "石原 繭子", "緒方 香織", "清水 遥斗", "阿部野 由佳", "浦上 直輝", "藤江 一雅", "藤田 壮真", "丹田 英里", "矢羽々 由佳", "芳賀 麻衣子", "柳田 啓子", "小田 祐希乃", "和田 亜弥乃", "村上 ユミ", "藤本 洋平", "足立 かおり", "原井 さおり", "大下 順子", "早瀬 彩花", "西川 順子", "皿谷 久恵", "岸本 千香子", "山本 三恵子", "藤井 真理子", "笠原 奈都江", "佐藤 裕子", "羽原 和子", "谷 奈津子", "金森 法子", "松下 由佳"];
+
+window.CAT_READ_TRIPS_V13 = function(){
+  const read=(k)=>{
+    try{
+      const v=JSON.parse(localStorage.getItem(k)||'[]');
+      return Array.isArray(v)?v:[];
+    }catch(e){return [];}
+  };
+  const all=[...read('shucchoRecords'),...read('teshiro_2026_shucchoRecords')];
+  const seen=new Set(), out=[];
+  for(const r of all){
+    const key=String(r.id||[r.date,r.fullName||r.name,r.purpose,r.venue,r.start,r.end].join('|'));
+    if(seen.has(key)) continue;
+    seen.add(key); out.push(r);
+  }
+  return out;
+};
+
+window.CAT_SAVE_TRIP_V13 = function(){
+  const tell=(t)=>{
+    const d=document.getElementById('done');
+    if(d){d.innerHTML='✓ <strong>'+t+'</strong>';d.classList.add('show');}
+    try{alert(t);}catch(e){}
+  };
+  try{
+    const selected=[...document.querySelectorAll('.namepick:checked')];
+    if(!selected.length){tell('名前を選んでください');return;}
+    const date=(document.getElementById('date')||{}).value||'';
+    const purpose=((document.getElementById('purpose')||{}).value||'').trim();
+    const venue=((document.getElementById('venue')||{}).value||'').trim();
+    if(!date){tell('日付を選んでください');return;}
+    if(!purpose||!venue){tell('用務と会場名を入力してください');return;}
+    const pick=(name)=>document.querySelector('input[name="'+name+'"]:checked');
+    const sh=pick('startHour'), sm=pick('startMinute'), eh=pick('endHour'), em=pick('endMinute');
+    if(!sh||!sm||!eh||!em){tell('開始・終了時刻を確認してください');return;}
+    const smins=Number(sh.value)*60+Number(sm.value), emins=Number(eh.value)*60+Number(em.value);
+    if(emins<=smins){tell('終了時刻を確認してください');return;}
+    const fmt=(h,m)=>String(h).padStart(2,'0')+':'+String(m).padStart(2,'0');
+
+    const rows=window.CAT_READ_TRIPS_V13();
+    const batchId='trip-'+Date.now()+'-'+Math.random().toString(36).slice(2,8);
+    const newIds=[];
+    selected.forEach(x=>{
+      const i=Number(x.dataset.i);
+      const full=window.CAT_STAFF_V13[i]||('職員'+i);
+      const surname=full.split(' ')[0];
+      const id='trip-'+Date.now()+'-'+Math.random().toString(36).slice(2,9);
+      newIds.push(id);
+      rows.push({
+        id,batchId,date,name:surname,fullName:full,purpose,venue,
+        start:fmt(sh.value,sm.value),end:fmt(eh.value,em.value),
+        status:'active',createdAt:new Date().toISOString(),updatedAt:new Date().toISOString()
+      });
+    });
+
+    const raw=JSON.stringify(rows);
+    localStorage.setItem('shucchoRecords',raw);
+    localStorage.setItem('teshiro_2026_shucchoRecords',raw);
+    localStorage.setItem('backup_shucchoRecords_latest',raw);
+    localStorage.setItem('backup_shucchoRecords_'+new Date().toISOString().slice(0,10),raw);
+
+    const verify=window.CAT_READ_TRIPS_V13();
+    const ok=newIds.every(id=>verify.some(r=>String(r.id)===id));
+    if(!ok){tell('保存確認に失敗しました');return;}
+
+    window.CAT_RENDER_RECENT_V13();
+    tell(selected.length+'人分の出張を登録・保存しました');
+  }catch(e){
+    console.error(e);
+    alert('出張登録エラー：'+(e&&e.message?e.message:String(e)));
+  }
+};
+
+window.CAT_RENDER_RECENT_V13 = function(){
+  const box=document.getElementById('recent');
+  if(!box) return;
+  const trips=window.CAT_READ_TRIPS_V13()
+    .filter(r=>r&&r.status!=='cancelled')
+    .sort((a,b)=>String(b.updatedAt||'').localeCompare(String(a.updatedAt||'')))
+    .slice(0,20);
+  if(!trips.length){box.textContent='まだ登録はありません。';return;}
+  const esc=(s)=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  box.innerHTML=trips.map(r=>'<div class="listitem"><strong>'+esc(r.date||'')+'　出張</strong>'+
+    '<div>'+esc(r.purpose||'')+'／'+esc(r.venue||'')+'</div>'+
+    '<div>'+esc(r.fullName||r.name||'')+'　'+esc(r.start||'')+'〜'+esc(r.end||'')+'</div></div>').join('');
+};
+
+window.addEventListener('load',()=>{
+  const b=document.getElementById('tripReg');
+  if(b) b.onclick=window.CAT_SAVE_TRIP_V13;
+  window.CAT_RENDER_RECENT_V13();
+});
 </script>
 
 </body></html>
