@@ -215,7 +215,7 @@ window.CAT_SHOW_LIST = function(){
 </script>
 
 </head><body><div class="wrap">
-<div class="top"><h1>休暇・出張・予定 かんたん入力</h1><span style="font-size:11px;font-weight:800;color:#3f7a54">Excel専用／年休1日時刻変更対応 v21</span><strong>日付</strong><input id="date" type="date" style="height:40px;border:2px solid #d9a697;border-radius:10px;padding:0 9px;font-size:18px;font-weight:800">
+<div class="top"><h1>休暇・出張・予定 かんたん入力</h1><span style="font-size:11px;font-weight:800;color:#3f7a54">Excel専用／1日ボタン解除対応 v22</span><strong>日付</strong><input id="date" type="date" style="height:40px;border:2px solid #d9a697;border-radius:10px;padding:0 9px;font-size:18px;font-weight:800">
 <div class="actions"><button id="listBtn" class="topbtn" type="button" onclick="window.CAT_SHOW_LIST()">登録一覧</button><button id="excelBtn" class="topbtn" type="button" onclick="window.exportExcelIpadV3()">Excel正本を書き出す</button><div style="display:inline-flex;align-items:center;gap:6px;flex-wrap:wrap">
 <label for="excelImportFile" class="topbtn" style="display:inline-flex;align-items:center;justify-content:center;cursor:pointer">修正したExcelを読み込む</label>
 <input id="excelImportFile" type="file" accept=".xlsx,.xls,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel"
@@ -2062,3 +2062,286 @@ window.CAT_SAVE_LEAVE_V17 = function(){
     const newIds=[];
 
     dates.forEach(date=>{
+      const batchId='leave-'+Date.now()+'-'+Math.random().toString(36).slice(2,8);
+      selected.forEach(x=>{
+        const i=Number(x.dataset.i);
+        const full=staff[i]||('職員'+i);
+        const surname=full.split(' ')[0];
+        const id='leave-'+Date.now()+'-'+Math.random().toString(36).slice(2,9);
+        newIds.push(id);
+        rows.push({
+          id,batchId,date,name:surname,fullName:full,start,end,
+          kind,amount:oneDay?'1日':mark,unit:oneDay?'day':'hour',
+          hours:oneDay?0:hours,oneDay,label,
+          specialLeaveNo:kind==='特休'?special:'',
+          portal:surname+'　'+(start&&end?(start+'〜'+end+'　'):'')+label,
+          diary:surname+'　'+label,
+          status:'active',createdAt:new Date().toISOString(),updatedAt:new Date().toISOString()
+        });
+      });
+    });
+
+    const json=JSON.stringify(rows);
+    localStorage.setItem('nenkyuRecords',json);
+    localStorage.setItem('teshiro_2026_nenkyuRecords',json);
+    localStorage.setItem('backup_nenkyuRecords_latest',json);
+    localStorage.setItem('backup_nenkyuRecords_'+new Date().toISOString().slice(0,10),json);
+
+    const verify=(window.CAT_READ_LEAVES_V14?window.CAT_READ_LEAVES_V14():[]);
+    const ok=newIds.every(id=>verify.some(r=>String(r.id)===id));
+    if(!ok){tell('保存確認に失敗しました');return;}
+
+    if(window.CAT_RENDER_RECENT_V14) window.CAT_RENDER_RECENT_V14();
+    tell(dates.length+'日 × '+selected.length+'人分の「'+label+'」を登録・保存しました');
+
+    // 複数日だけ解除（名前・休暇種別は残す）
+    window.CAT_MULTI_DATES_V17=[];
+    window.CAT_RENDER_DATES_V17();
+  }catch(e){
+    console.error(e);
+    alert('複数日登録エラー：'+(e&&e.message?e.message:String(e)));
+  }
+};
+
+window.addEventListener('load',()=>{
+  // 全員選択を確実化
+  const allBtn=document.getElementById('all');
+  if(allBtn) allBtn.onclick=()=>{
+    document.querySelectorAll('.namepick').forEach(x=>x.checked=true);
+    const d=document.getElementById('done');
+    if(d){d.innerHTML='✓ <strong>全員を選択しました</strong>';d.classList.add('show');}
+  };
+
+  const addBtn=document.getElementById('addCurrentDateBtn');
+  if(addBtn) addBtn.onclick=()=>{
+    const date=(document.getElementById('date')||{}).value||'';
+    if(!date){alert('上の日付を選んでください');return;}
+    if(!window.CAT_MULTI_DATES_V17.includes(date)){
+      window.CAT_MULTI_DATES_V17.push(date);
+      window.CAT_MULTI_DATES_V17.sort();
+    }
+    window.CAT_RENDER_DATES_V17();
+  };
+
+  const clearDates=document.getElementById('clearMultiDatesBtn');
+  if(clearDates) clearDates.onclick=()=>{
+    window.CAT_MULTI_DATES_V17=[];
+    window.CAT_RENDER_DATES_V17();
+  };
+
+  // 年休登録はv17を優先
+  const leaveBtn=document.getElementById('leaveReg');
+  if(leaveBtn) leaveBtn.onclick=window.CAT_SAVE_LEAVE_V17;
+
+  window.CAT_RENDER_DATES_V17();
+});
+</script>
+
+
+<script>
+window.CAT_TRIP_EDIT_BATCH_V20=null;
+
+window.CAT_CLEAR_TIME_V20=function(){
+  document.querySelectorAll('input[name="startHour"],input[name="startMinute"],input[name="endHour"],input[name="endMinute"]').forEach(x=>x.checked=false);
+};
+window.CAT_SET_TIME_V20=function(h1,m1,h2,m2){
+  ['sh'+h1,'sm'+m1,'eh'+h2,'em'+m2].forEach(id=>{const el=document.getElementById(id);if(el)el.checked=true;});
+};
+
+window.CAT_SETUP_ONE_DAY_V20=function(){
+  const one=document.getElementById('nhDay');
+  const lab=document.querySelector('label[for="nhDay"]');
+  if(!one||!lab)return;
+  lab.addEventListener('click',e=>{
+    e.preventDefault();
+    const was=one.checked;
+    document.querySelectorAll('.nenkyuHourPick').forEach(x=>x.checked=false);
+    if(was){
+      one.checked=false; window.CAT_CLEAR_TIME_V20();
+    }else{
+      one.checked=true; window.CAT_SET_TIME_V20(8,20,16,50);
+    }
+  },true);
+};
+
+window.CAT_GROUP_TRIPS_V20=function(){
+  const trips=(window.CAT_READ_TRIPS_V13?window.CAT_READ_TRIPS_V13():[]).filter(r=>r&&r.status!=='cancelled');
+  const m=new Map();
+  trips.forEach(r=>{
+    const k=r.batchId||r.id||[r.date,r.purpose,r.venue,r.start,r.end].join('|');
+    if(!m.has(k))m.set(k,[]);
+    m.get(k).push(r);
+  });
+  return [...m.entries()].map(([key,rows])=>({key,rows}));
+};
+
+window.CAT_RENDER_RECENT_V20=function(){
+  const box=document.getElementById('recent'); if(!box)return;
+  const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  const leaves=(window.CAT_READ_LEAVES_V14?window.CAT_READ_LEAVES_V14():[])
+    .filter(r=>r&&r.status!=='cancelled')
+    .map(r=>({type:'休暇',date:r.date,text:r.label||r.kind||'休暇',names:[r.fullName||r.name||''],start:r.start||'',end:r.end||'',updatedAt:r.updatedAt||r.createdAt||''}));
+  const trips=window.CAT_GROUP_TRIPS_V20().map(g=>{
+    const r=g.rows[0]||{};
+    return {type:'出張',date:r.date,text:(r.purpose||'出張')+'／'+(r.venue||''),names:g.rows.map(x=>x.fullName||x.name||''),start:r.start||'',end:r.end||'',updatedAt:r.updatedAt||r.createdAt||'',batch:g.key};
+  });
+  const all=[...leaves,...trips].sort((a,b)=>String(b.updatedAt).localeCompare(String(a.updatedAt))).slice(0,30);
+  box.innerHTML=all.length?all.map(r=>{
+    const time=(r.start&&r.end)?('　'+esc(r.start)+'〜'+esc(r.end)):'';
+    const ops=r.type==='出張'?'<div class="miniops"><button class="minibtn tripEditV20" data-batch="'+esc(r.batch)+'">修正</button><button class="minibtn tripDeleteV20" data-batch="'+esc(r.batch)+'">削除</button></div>':'';
+    return '<div class="listitem"><div class="itemrow"><div><strong>'+esc(r.date||'')+'　'+esc(r.type)+'</strong><div>'+esc(r.text)+'</div><div>'+esc(r.names.join('・'))+time+'</div></div>'+ops+'</div></div>';
+  }).join(''):'まだ登録はありません。';
+  box.querySelectorAll('.tripEditV20').forEach(b=>b.onclick=()=>window.CAT_EDIT_TRIP_V20(b.dataset.batch));
+  box.querySelectorAll('.tripDeleteV20').forEach(b=>b.onclick=()=>window.CAT_DELETE_TRIP_V20(b.dataset.batch));
+};
+
+window.CAT_EDIT_TRIP_V20=function(batch){
+  const g=window.CAT_GROUP_TRIPS_V20().find(x=>String(x.key)===String(batch));
+  if(!g||!g.rows.length){alert('対象の出張が見つかりません');return;}
+  const r=g.rows[0]; window.CAT_TRIP_EDIT_BATCH_V20=batch;
+  document.querySelectorAll('.namepick').forEach(x=>x.checked=false);
+  const staff=window.CAT_STAFF_V13||[];
+  g.rows.forEach(row=>{
+    const i=staff.indexOf(row.fullName||row.name||'');
+    if(i>=0){const el=document.querySelector('.namepick[data-i="'+i+'"]');if(el)el.checked=true;}
+  });
+  if(document.getElementById('date'))document.getElementById('date').value=r.date||'';
+  if(document.getElementById('purpose'))document.getElementById('purpose').value=r.purpose||'';
+  if(document.getElementById('venue'))document.getElementById('venue').value=r.venue||'';
+  window.CAT_CLEAR_TIME_V20();
+  if(r.start&&r.end){
+    const [sh,sm]=String(r.start).split(':'); const [eh,em]=String(r.end).split(':');
+    window.CAT_SET_TIME_V20(Number(sh),Number(sm),Number(eh),Number(em));
+  }
+  const btn=document.getElementById('tripReg'); if(btn)btn.textContent='出張を修正保存';
+  const bar=document.getElementById('tripEditing'); if(bar){bar.textContent='この出張を修正中';bar.classList.add('show');}
+};
+
+window.CAT_DELETE_TRIP_V20=function(batch){
+  if(!confirm('この出張を削除しますか？'))return;
+  const rows=(window.CAT_READ_TRIPS_V13?window.CAT_READ_TRIPS_V13():[]);
+  const now=new Date().toISOString();
+  rows.forEach(r=>{
+    const k=r.batchId||r.id||[r.date,r.purpose,r.venue,r.start,r.end].join('|');
+    if(String(k)===String(batch)){r.status='cancelled';r.updatedAt=now;}
+  });
+  const raw=JSON.stringify(rows);
+  localStorage.setItem('shucchoRecords',raw);
+  localStorage.setItem('teshiro_2026_shucchoRecords',raw);
+  localStorage.setItem('backup_shucchoRecords_latest',raw);
+  window.CAT_RENDER_RECENT_V20();
+};
+
+window.CAT_SAVE_TRIP_V20=function(){
+  const tell=t=>{const d=document.getElementById('done');if(d){d.innerHTML='✓ <strong>'+t+'</strong>';d.classList.add('show');}try{alert(t);}catch(e){}};
+  try{
+    const selected=[...document.querySelectorAll('.namepick:checked')];
+    if(!selected.length){tell('名前を選んでください');return;}
+    const date=(document.getElementById('date')||{}).value||'';
+    const purpose=((document.getElementById('purpose')||{}).value||'').trim();
+    const venue=((document.getElementById('venue')||{}).value||'').trim();
+    if(!date){tell('日付を選んでください');return;}
+    if(!purpose||!venue){tell('用務と会場名を入力してください');return;}
+    const pick=name=>document.querySelector('input[name="'+name+'"]:checked');
+    const sh=pick('startHour'),sm=pick('startMinute'),eh=pick('endHour'),em=pick('endMinute');
+    let start='',end='';
+    const any=!!(sh||sm||eh||em),full=!!(sh&&sm&&eh&&em);
+    if(any&&!full){tell('時刻を入れる場合は開始・終了を両方選んでください');return;}
+    if(full){
+      const s=Number(sh.value)*60+Number(sm.value),e=Number(eh.value)*60+Number(em.value);
+      if(e<=s){tell('終了時刻を確認してください');return;}
+      const fmt=(h,m)=>String(h).padStart(2,'0')+':'+String(m).padStart(2,'0');
+      start=fmt(sh.value,sm.value);end=fmt(eh.value,em.value);
+    }
+    let rows=(window.CAT_READ_TRIPS_V13?window.CAT_READ_TRIPS_V13():[]);
+    const staff=window.CAT_STAFF_V13||[];
+    const now=new Date().toISOString(),editing=window.CAT_TRIP_EDIT_BATCH_V20;
+    if(editing){
+      rows.forEach(r=>{const k=r.batchId||r.id||[r.date,r.purpose,r.venue,r.start,r.end].join('|');if(String(k)===String(editing)){r.status='cancelled';r.updatedAt=now;}});
+    }
+    const batchId=editing||('trip-'+Date.now()+'-'+Math.random().toString(36).slice(2,8));
+    selected.forEach(x=>{
+      const i=Number(x.dataset.i),fullName=staff[i]||('職員'+i),name=fullName.split(' ')[0];
+      rows.push({id:'trip-'+Date.now()+'-'+Math.random().toString(36).slice(2,9),batchId,date,name,fullName,purpose,venue,start,end,status:'active',createdAt:now,updatedAt:now});
+    });
+    const raw=JSON.stringify(rows);
+    localStorage.setItem('shucchoRecords',raw);
+    localStorage.setItem('teshiro_2026_shucchoRecords',raw);
+    localStorage.setItem('backup_shucchoRecords_latest',raw);
+    window.CAT_TRIP_EDIT_BATCH_V20=null;
+    const btn=document.getElementById('tripReg');if(btn)btn.textContent='出張を登録';
+    const bar=document.getElementById('tripEditing');if(bar){bar.classList.remove('show');bar.textContent='';}
+    window.CAT_RENDER_RECENT_V20();
+    tell(editing?'出張を修正保存しました':selected.length+'人分の出張を登録・保存しました');
+  }catch(e){console.error(e);alert('出張登録エラー：'+(e&&e.message?e.message:String(e)));}
+};
+
+window.CAT_SAVE_LEAVE_V20=function(){
+  // 「1日」は押した時に8:20〜16:50を初期値にするだけ。
+  // 保存時には、ユーザーが変更した開始・終了時刻をそのまま使う。
+  const original=window.CAT_SAVE_LEAVE_V17||window.CAT_SAVE_LEAVE_V14;
+  return original();
+};
+
+window.addEventListener('load',()=>{
+  window.CAT_SETUP_ONE_DAY_V20();
+  const trip=document.getElementById('tripReg');if(trip)trip.onclick=window.CAT_SAVE_TRIP_V20;
+  const leave=document.getElementById('leaveReg');if(leave)leave.onclick=window.CAT_SAVE_LEAVE_V20;
+  window.CAT_RENDER_RECENT_V20();
+});
+</script>
+
+
+<script>
+/* v22: 「1日」ボタンを再タップで確実に解除 */
+window.CAT_SETUP_ONE_DAY_V22 = function(){
+  const one=document.getElementById('nhDay');
+  const lab=document.querySelector('label[for="nhDay"]');
+  if(!one || !lab) return;
+
+  // 既存イベントの影響を避けるため、ラベルを複製して新しいイベントだけにする
+  const fresh=lab.cloneNode(true);
+  lab.parentNode.replaceChild(fresh,lab);
+
+  fresh.addEventListener('click',function(e){
+    e.preventDefault();
+    e.stopPropagation();
+
+    if(one.checked){
+      one.checked=false;
+      // 1日で自動設定された時刻も解除
+      if(typeof window.CAT_CLEAR_TIME_V20==='function'){
+        window.CAT_CLEAR_TIME_V20();
+      }else{
+        document.querySelectorAll(
+          'input[name="startHour"],input[name="startMinute"],input[name="endHour"],input[name="endMinute"]'
+        ).forEach(x=>x.checked=false);
+      }
+      const d=document.getElementById('done');
+      if(d){d.innerHTML='✓ <strong>1日を解除しました</strong>';d.classList.add('show');}
+      return;
+    }
+
+    document.querySelectorAll('.nenkyuHourPick').forEach(x=>x.checked=false);
+    one.checked=true;
+
+    if(typeof window.CAT_SET_TIME_V20==='function'){
+      window.CAT_SET_TIME_V20(8,20,16,50);
+    }else{
+      ['sh8','sm20','eh16','em50'].forEach(id=>{
+        const el=document.getElementById(id);
+        if(el) el.checked=true;
+      });
+    }
+
+    const d=document.getElementById('done');
+    if(d){d.innerHTML='✓ <strong>1日を選択しました（初期時刻 8:20〜16:50）</strong>';d.classList.add('show');}
+  },true);
+};
+
+window.addEventListener('load',()=>{
+  window.CAT_SETUP_ONE_DAY_V22();
+});
+</script>
+
+</body></html>
