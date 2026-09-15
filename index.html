@@ -172,6 +172,37 @@ body{font-size:12px}
   .staffgroup-grid{grid-template-columns:repeat(10,minmax(0,1fr))}
 }
 
+
+/* ===== v27 横幅をさらに圧縮 ===== */
+.wrap{
+  max-width:980px !important;
+  margin:0 auto !important;
+  padding-left:4px !important;
+  padding-right:4px !important;
+}
+.staffgroup{
+  grid-template-columns:66px 1fr !important;
+}
+.staffgroup-grid{
+  display:grid !important;
+  grid-template-columns:repeat(auto-fit,minmax(42px,52px)) !important;
+  justify-content:start !important;
+  gap:1px !important;
+}
+.staffgroup-grid .btnlabel{
+  width:52px !important;
+  min-width:42px !important;
+  max-width:52px !important;
+  padding:1px !important;
+  font-size:9px !important;
+}
+@media(max-width:900px){
+  .wrap{max-width:760px !important}
+  .staffgroup{grid-template-columns:60px 1fr !important}
+  .staffgroup-grid{grid-template-columns:repeat(auto-fit,minmax(40px,48px)) !important}
+  .staffgroup-grid .btnlabel{width:48px !important;max-width:48px !important}
+}
+
 </style>
 <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
 <script>
@@ -336,7 +367,7 @@ window.CAT_SHOW_LIST = function(){
 </script>
 
 </head><body><div class="wrap">
-<div class="top"><h1>休暇・出張・予定 かんたん入力</h1><span style="font-size:11px;font-weight:800;color:#3f7a54">Excel専用／名前1行グループ v26</span><strong>日付</strong><input id="date" type="date" style="height:40px;border:2px solid #d9a697;border-radius:10px;padding:0 9px;font-size:18px;font-weight:800">
+<div class="top"><h1>休暇・出張・予定 かんたん入力</h1><span style="font-size:11px;font-weight:800;color:#3f7a54">Excel専用／横幅圧縮・Excel最新データ対応 v27</span><strong>日付</strong><input id="date" type="date" style="height:40px;border:2px solid #d9a697;border-radius:10px;padding:0 9px;font-size:18px;font-weight:800">
 <div class="actions"><button id="listBtn" class="topbtn" type="button" onclick="window.CAT_SHOW_LIST()">登録一覧</button><button id="backupDataBtn" class="topbtn" type="button">バックアップ</button><details style="display:inline-block"><summary class="topbtn" style="list-style:none;display:flex;align-items:center;cursor:pointer">その他</summary><div style="position:absolute;right:6px;background:#fff;border:1px solid var(--line);padding:6px;border-radius:8px;z-index:50;display:flex;gap:4px;flex-wrap:wrap;max-width:90vw"><button id="excelBtn" class="topbtn" type="button" onclick="window.exportExcelIpadV3()">Excel正本を書き出す</button><div style="display:inline-flex;align-items:center;gap:6px;flex-wrap:wrap">
 <label for="excelImportFile" class="topbtn" style="display:inline-flex;align-items:center;justify-content:center;cursor:pointer">修正したExcelを読み込む</label>
 <input id="excelImportFile" type="file" accept=".xlsx,.xls,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel"
@@ -1635,21 +1666,61 @@ window.exportExcelIpadV3 = async function(){
     tell('Excelを作成中です…');
     if(typeof XLSX==='undefined'){ tell('Excel機能の読み込みに失敗しました。ページを更新してもう一度押してください'); return; }
 
-    function readAny(names){
+    function readMerged(names){
+      const all=[];
       for(const n of names){
         try{
-          const v=JSON.parse(localStorage.getItem(n)||'null');
-          if(Array.isArray(v) && v.length) return v;
+          const v=JSON.parse(localStorage.getItem(n)||'[]');
+          if(Array.isArray(v)) all.push(...v);
         }catch(e){}
       }
-      return [];
+
+      // 同じIDは一番新しいupdatedAtを採用。
+      // IDがない古いデータは内容シグネチャで重複除去。
+      const byKey=new Map();
+      const sig=(r)=>[
+        r.date||'',r.fullName||r.name||'',
+        r.kind||r.purpose||r.title||'',r.label||'',
+        r.amount||'',r.unit||'',r.start||'',r.end||'',
+        r.venue||r.place||'',
+        Array.isArray(r.targets)?r.targets.join('・'):(r.targets||''),
+        r.specialLeaveNo||'',r.note||''
+      ].join('|');
+
+      for(const r of all){
+        if(!r) continue;
+        const key=r.id ? 'id:'+String(r.id) : 'sig:'+sig(r);
+        const prev=byKey.get(key);
+        if(!prev){
+          byKey.set(key,r);
+          continue;
+        }
+        const a=String(prev.updatedAt||prev.createdAt||'');
+        const b=String(r.updatedAt||r.createdAt||'');
+        if(b>=a) byKey.set(key,r);
+      }
+      return [...byKey.values()];
     }
-    const leaves=readAny(['teshiro_2026_nenkyuRecords','nenkyuRecords','backup_nenkyuRecords_latest']);
-    const trips=readAny(['teshiro_2026_shucchoRecords','shucchoRecords','backup_shucchoRecords_latest']);
-    const plans=readAny(['teshiro_2026_yoteiRecords','yoteiRecords','backup_yoteiRecords_latest']);
+
+    const leaves=readMerged(['teshiro_2026_nenkyuRecords','nenkyuRecords','backup_nenkyuRecords_latest']);
+    const trips=readMerged(['teshiro_2026_shucchoRecords','shucchoRecords','backup_shucchoRecords_latest']);
+    const plans=readMerged(['teshiro_2026_yoteiRecords','yoteiRecords','backup_yoteiRecords_latest']);
 
     const active=a=>a.filter(r=>r && r.status!=='cancelled');
     const L=active(leaves), T=active(trips), P=active(plans);
+
+    const localYmd=()=>{
+      const d=new Date();
+      return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+    };
+    const todayYmd=localYmd();
+    const todayCount=[...L,...T,...P].filter(r=>String(r.date||'')===todayYmd).length;
+    const totalCount=L.length+T.length+P.length;
+    const exportStatus=document.getElementById('importStatusFixed');
+    if(exportStatus){
+      exportStatus.textContent='Excel書き出し対象：全'+totalCount+'件（本日 '+todayCount+'件）';
+      exportStatus.style.display='block';
+    }
 
     const masterHeaders=['ID','まとめキー','日付','区分','氏名','開始','終了','休暇内容','取得時間','用務','会場','予定名','対象','場所','補足','確認','登録日時','更新日時'];
     const master=[];
@@ -1729,7 +1800,7 @@ window.exportExcelIpadV3 = async function(){
       else portal.push([date,'予定',[title,target,time].filter(Boolean).join(' ')]);
     }
 
-    const today=new Date().toISOString().slice(0,10);
+    const today=localYmd();
     const backup=[['バックアップ日',...masterHeaders],...master.map(r=>[today,...r])];
 
     const wb=XLSX.utils.book_new();
