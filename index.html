@@ -51,6 +51,14 @@
   .mingrid{grid-template-columns:repeat(6,minmax(0,1fr))}
 }
 
+
+.staffgroups{display:block}
+.staffgroup{border:1px solid var(--line);border-radius:10px;padding:6px;margin-top:6px;background:#fff}
+.staffgroup-title{font-size:12px;font-weight:900;margin-bottom:5px;display:flex;align-items:center;gap:6px}
+.staffgroup-grid{display:grid;grid-template-columns:repeat(8,minmax(0,1fr));gap:3px}
+.staffgroup-select{margin-left:auto;height:30px;border:1px solid var(--line);border-radius:8px;background:#fff;font-size:11px;font-weight:800;padding:0 8px}
+@media(max-width:700px){.staffgroup-grid{grid-template-columns:repeat(5,minmax(0,1fr))}}
+
 </style>
 <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
 <script>
@@ -215,7 +223,7 @@ window.CAT_SHOW_LIST = function(){
 </script>
 
 </head><body><div class="wrap">
-<div class="top"><h1>休暇・出張・予定 かんたん入力</h1><span style="font-size:11px;font-weight:800;color:#3f7a54">Excel専用／1日ボタン解除対応 v22</span><strong>日付</strong><input id="date" type="date" style="height:40px;border:2px solid #d9a697;border-radius:10px;padding:0 9px;font-size:18px;font-weight:800">
+<div class="top"><h1>休暇・出張・予定 かんたん入力</h1><span style="font-size:11px;font-weight:800;color:#3f7a54">Excel専用／職員グループ分け v23</span><strong>日付</strong><input id="date" type="date" style="height:40px;border:2px solid #d9a697;border-radius:10px;padding:0 9px;font-size:18px;font-weight:800">
 <div class="actions"><button id="listBtn" class="topbtn" type="button" onclick="window.CAT_SHOW_LIST()">登録一覧</button><button id="excelBtn" class="topbtn" type="button" onclick="window.exportExcelIpadV3()">Excel正本を書き出す</button><div style="display:inline-flex;align-items:center;gap:6px;flex-wrap:wrap">
 <label for="excelImportFile" class="topbtn" style="display:inline-flex;align-items:center;justify-content:center;cursor:pointer">修正したExcelを読み込む</label>
 <input id="excelImportFile" type="file" accept=".xlsx,.xls,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel"
@@ -234,7 +242,7 @@ style="font-size:14px;max-width:290px">
 </section>
 
 <section class="panel"><div class="title">① 名前（複数選択できます）</div>
-<div class="namegrid"><input class="pick namepick" type="checkbox" id="n0" data-i="0"><label class="btnlabel" for="n0">和田<span class="sub">亘</span></label><input class="pick namepick" type="checkbox" id="n1" data-i="1"><label class="btnlabel" for="n1">瀬尾</label><input class="pick namepick" type="checkbox" id="n2" data-i="2"><label class="btnlabel" for="n2">佐藤<span class="sub">かおり</span></label><input class="pick namepick" type="checkbox" id="n3" data-i="3"><label class="btnlabel" for="n3">岡田</label><input class="pick namepick" type="checkbox" id="n4" data-i="4"><label class="btnlabel" for="n4">兼藤</label><input class="pick namepick" type="checkbox" id="n5" data-i="5"><label class="btnlabel" for="n5">向井</label><input class="pick namepick" type="checkbox" id="n6" data-i="6"><label class="btnlabel" for="n6">井上<span class="sub">真維</span></label><input class="pick namepick" type="checkbox" id="n7" data-i="7"><label class="btnlabel" for="n7">池田</label><input class="pick namepick" type="checkbox" id="n8" data-i="8"><label class="btnlabel" for="n8">出口</label><input class="pick namepick" type="checkbox" id="n9" data-i="9"><label class="btnlabel" for="n9">千葉</label><input class="pick namepick" type="checkbox" id="n10" data-i="10"><label class="btnlabel" for="n10">萩原</label><input class="pick namepick" type="checkbox" id="n11" data-i="11"><label class="btnlabel" for="n11">傍田</label><input class="pick namepick" type="checkbox" id="n12" data-i="12"><label class="btnlabel" for="n12">井上<span class="sub">日向子</span></label><input class="pick namepick" type="checkbox" id="n13" data-i="13"><label class="btnlabel" for="n13">播本</label><input class="pick namepick" type="checkbox" id="n14" data-i="14"><label class="btnlabel" for="n14">石原</label><input class="pick namepick" type="checkbox" id="n15" data-i="15"><label class="btnlabel" for="n15">緒方</label><input class="pick namepick" type="checkbox" id="n16" data-i="16"><label class="btnlabel" for="n16">清水</label><input class="pick namepick" type="checkbox" id="n17" data-i="17"><label class="btnlabel" for="n17">阿部野</label><input class="pick namepick" type="checkbox" id="n18" data-i="18"><label class="btnlabel" for="n18">浦上</label><input class="pick namepick" type="checkbox" id="n19" data-i="19"><label class="btnlabel" for="n19">藤江</label><input class="pick namepick" type="checkbox" id="n20" data-i="20"><label class="btnlabel" for="n20">藤田</label><input class="pick namepick" type="checkbox" id="n21" data-i="21"><label class="btnlabel" for="n21">丹田</label><input class="pick namepick" type="checkbox" id="n22" data-i="22"><label class="btnlabel" for="n22">矢羽々</label><input class="pick namepick" type="checkbox" id="n23" data-i="23"><label class="btnlabel" for="n23">芳賀</label><input class="pick namepick" type="checkbox" id="n24" data-i="24"><label class="btnlabel" for="n24">柳田</label><input class="pick namepick" type="checkbox" id="n25" data-i="25"><label class="btnlabel" for="n25">小田</label><input class="pick namepick" type="checkbox" id="n26" data-i="26"><label class="btnlabel" for="n26">和田<span class="sub">亜弥乃</span></label><input class="pick namepick" type="checkbox" id="n27" data-i="27"><label class="btnlabel" for="n27">村上</label><input class="pick namepick" type="checkbox" id="n28" data-i="28"><label class="btnlabel" for="n28">藤本</label><input class="pick namepick" type="checkbox" id="n29" data-i="29"><label class="btnlabel" for="n29">足立</label><input class="pick namepick" type="checkbox" id="n30" data-i="30"><label class="btnlabel" for="n30">原井</label><input class="pick namepick" type="checkbox" id="n31" data-i="31"><label class="btnlabel" for="n31">大下</label><input class="pick namepick" type="checkbox" id="n32" data-i="32"><label class="btnlabel" for="n32">早瀬</label><input class="pick namepick" type="checkbox" id="n33" data-i="33"><label class="btnlabel" for="n33">西川</label><input class="pick namepick" type="checkbox" id="n34" data-i="34"><label class="btnlabel" for="n34">皿谷</label><input class="pick namepick" type="checkbox" id="n35" data-i="35"><label class="btnlabel" for="n35">岸本</label><input class="pick namepick" type="checkbox" id="n36" data-i="36"><label class="btnlabel" for="n36">山本</label><input class="pick namepick" type="checkbox" id="n37" data-i="37"><label class="btnlabel" for="n37">藤井</label><input class="pick namepick" type="checkbox" id="n38" data-i="38"><label class="btnlabel" for="n38">笠原</label><input class="pick namepick" type="checkbox" id="n39" data-i="39"><label class="btnlabel" for="n39">佐藤<span class="sub">裕子</span></label><input class="pick namepick" type="checkbox" id="n40" data-i="40"><label class="btnlabel" for="n40">羽原</label><input class="pick namepick" type="checkbox" id="n41" data-i="41"><label class="btnlabel" for="n41">谷</label><input class="pick namepick" type="checkbox" id="n42" data-i="42"><label class="btnlabel" for="n42">金森</label><input class="pick namepick" type="checkbox" id="n43" data-i="43"><label class="btnlabel" for="n43">松下</label></div>
+<div class="namegrid"><input class="pick namepick" type="checkbox" id="n0" data-i="0"><label class="btnlabel" for="n0">和田<span class="sub">亘</span></label><input class="pick namepick" type="checkbox" id="n1" data-i="1"><label class="btnlabel" for="n1">瀬尾</label><input class="pick namepick" type="checkbox" id="n2" data-i="2"><label class="btnlabel" for="n2">佐藤<span class="sub">かおり</span></label><input class="pick namepick" type="checkbox" id="n3" data-i="3"><label class="btnlabel" for="n3">岡田</label><input class="pick namepick" type="checkbox" id="n4" data-i="4"><label class="btnlabel" for="n4">兼藤</label><input class="pick namepick" type="checkbox" id="n5" data-i="5"><label class="btnlabel" for="n5">向井</label><input class="pick namepick" type="checkbox" id="n6" data-i="6"><label class="btnlabel" for="n6">井上<span class="sub">真維</span></label><input class="pick namepick" type="checkbox" id="n7" data-i="7"><label class="btnlabel" for="n7">池田</label><input class="pick namepick" type="checkbox" id="n8" data-i="8"><label class="btnlabel" for="n8">出口</label><input class="pick namepick" type="checkbox" id="n9" data-i="9"><label class="btnlabel" for="n9">千葉</label><input class="pick namepick" type="checkbox" id="n10" data-i="10"><label class="btnlabel" for="n10">萩原</label><input class="pick namepick" type="checkbox" id="n11" data-i="11"><label class="btnlabel" for="n11">傍田</label><input class="pick namepick" type="checkbox" id="n12" data-i="12"><label class="btnlabel" for="n12">井上<span class="sub">日向子</span></label><input class="pick namepick" type="checkbox" id="n13" data-i="13"><label class="btnlabel" for="n13">播本</label><input class="pick namepick" type="checkbox" id="n14" data-i="14"><label class="btnlabel" for="n14">石原</label><input class="pick namepick" type="checkbox" id="n15" data-i="15"><label class="btnlabel" for="n15">緒方</label><input class="pick namepick" type="checkbox" id="n16" data-i="16"><label class="btnlabel" for="n16">清水</label><input class="pick namepick" type="checkbox" id="n17" data-i="17"><label class="btnlabel" for="n17">阿部野</label><input class="pick namepick" type="checkbox" id="n18" data-i="18"><label class="btnlabel" for="n18">浦上</label><input class="pick namepick" type="checkbox" id="n19" data-i="19"><label class="btnlabel" for="n19">藤江</label><input class="pick namepick" type="checkbox" id="n20" data-i="20"><label class="btnlabel" for="n20">藤田</label><input class="pick namepick" type="checkbox" id="n21" data-i="21"><label class="btnlabel" for="n21">丹田</label><input class="pick namepick" type="checkbox" id="n22" data-i="22"><label class="btnlabel" for="n22">矢羽々</label><input class="pick namepick" type="checkbox" id="n23" data-i="23"><label class="btnlabel" for="n23">芳賀</label><input class="pick namepick" type="checkbox" id="n24" data-i="24"><label class="btnlabel" for="n24">柳田</label><input class="pick namepick" type="checkbox" id="n25" data-i="25"><label class="btnlabel" for="n25">小田</label><input class="pick namepick" type="checkbox" id="n26" data-i="26"><label class="btnlabel" for="n26">和田<span class="sub">亜弥乃</span></label><input class="pick namepick" type="checkbox" id="n27" data-i="27"><label class="btnlabel" for="n27">村上</label><input class="pick namepick" type="checkbox" id="n28" data-i="28"><label class="btnlabel" for="n28">藤本</label><input class="pick namepick" type="checkbox" id="n29" data-i="29"><label class="btnlabel" for="n29">足立</label><input class="pick namepick" type="checkbox" id="n30" data-i="30"><label class="btnlabel" for="n30">原井</label><input class="pick namepick" type="checkbox" id="n31" data-i="31"><label class="btnlabel" for="n31">大下</label><input class="pick namepick" type="checkbox" id="n32" data-i="32"><label class="btnlabel" for="n32">早瀬</label><input class="pick namepick" type="checkbox" id="n33" data-i="33"><label class="btnlabel" for="n33">西川</label><input class="pick namepick" type="checkbox" id="n34" data-i="34"><label class="btnlabel" for="n34">皿谷</label><input class="pick namepick" type="checkbox" id="n35" data-i="35"><label class="btnlabel" for="n35">岸本</label><input class="pick namepick" type="checkbox" id="n36" data-i="36"><label class="btnlabel" for="n36">山本</label><input class="pick namepick" type="checkbox" id="n37" data-i="37"><label class="btnlabel" for="n37">藤井</label><input class="pick namepick" type="checkbox" id="n38" data-i="38"><label class="btnlabel" for="n38">笠原</label><input class="pick namepick" type="checkbox" id="n39" data-i="39"><label class="btnlabel" for="n39">佐藤<span class="sub">裕子</span></label><input class="pick namepick" type="checkbox" id="n40" data-i="40"><label class="btnlabel" for="n40">羽原</label><input class="pick namepick" type="checkbox" id="n41" data-i="41"><label class="btnlabel" for="n41">谷</label><input class="pick namepick" type="checkbox" id="n42" data-i="42"><label class="btnlabel" for="n42">金森</label><input class="pick namepick" type="checkbox" id="n43" data-i="43"><label class="btnlabel" for="n43">松下</label><input class="pick namepick" type="checkbox" id="n44" data-i="44"><label class="btnlabel" for="n44">岡野</label></div>
 <div style="display:flex;gap:6px;margin-top:5px"><button id="all" class="topbtn" type="button">全員選択</button><button id="clear" class="topbtn" type="button">選択解除</button></div></section>
 
 <section class="panel"><div class="title">② 時刻（開始と終了を別々に選択）</div>
@@ -1657,7 +1665,7 @@ window.exportExcelIpadV3 = async function(){
 
 <script>
 /* v13: 出張登録を本体スクリプトから完全分離 */
-window.CAT_STAFF_V13 = ["和田 亘", "瀬尾 奈緒美", "佐藤 かおり", "岡田 真緒", "兼藤 佳奈", "向井 杏奴", "井上 真維", "池田 真菜", "出口 知子", "千葉 月乃", "萩原 優", "傍田 美華", "井上 日向子", "播本 太平", "石原 繭子", "緒方 香織", "清水 遥斗", "阿部野 由佳", "浦上 直輝", "藤江 一雅", "藤田 壮真", "丹田 英里", "矢羽々 由佳", "芳賀 麻衣子", "柳田 啓子", "小田 祐希乃", "和田 亜弥乃", "村上 ユミ", "藤本 洋平", "足立 かおり", "原井 さおり", "大下 順子", "早瀬 彩花", "西川 順子", "皿谷 久恵", "岸本 千香子", "山本 三恵子", "藤井 真理子", "笠原 奈都江", "佐藤 裕子", "羽原 和子", "谷 奈津子", "金森 法子", "松下 由佳"];
+window.CAT_STAFF_V13 = ["和田 亘", "瀬尾 奈緒美", "佐藤 かおり", "岡田 真緒", "兼藤 佳奈", "向井 杏奴", "井上 真維", "池田 真菜", "出口 知子", "千葉 月乃", "萩原 優", "傍田 美華", "井上 日向子", "播本 太平", "石原 繭子", "緒方 香織", "清水 遥斗", "阿部野 由佳", "浦上 直輝", "藤江 一雅", "藤田 壮真", "丹田 英里", "矢羽々 由佳", "芳賀 麻衣子", "柳田 啓子", "小田 祐希乃", "和田 亜弥乃", "村上 ユミ", "藤本 洋平", "足立 かおり", "原井 さおり", "大下 順子", "早瀬 彩花", "西川 順子", "皿谷 久恵", "岸本 千香子", "山本 三恵子", "藤井 真理子", "笠原 奈都江", "佐藤 裕子", "羽原 和子", "谷 奈津子", "金森 法子", "松下 由佳", "岡野"];
 
 window.CAT_READ_TRIPS_V13 = function(){
   const read=(k)=>{
@@ -2342,6 +2350,68 @@ window.CAT_SETUP_ONE_DAY_V22 = function(){
 window.addEventListener('load',()=>{
   window.CAT_SETUP_ONE_DAY_V22();
 });
+</script>
+
+
+<script>
+/* v23: 職員名をグループ表示 */
+window.CAT_GROUP_STAFF_V23=function(){
+  const root=document.querySelector('section.panel .namegrid');
+  if(!root || root.dataset.grouped==='1') return;
+
+  const pairs={};
+  [...root.querySelectorAll('.namepick')].forEach(inp=>{
+    const i=Number(inp.dataset.i);
+    const lab=root.querySelector('label[for="'+inp.id+'"]');
+    if(lab) pairs[i]={inp,lab};
+  });
+
+  const groups=[
+    {title:'総務', idx:[0,1,3,4]},
+    {title:'教諭（通常）', idx:[6,7,8,9,10,11,12,13,14,15,16,17,18,19,20]},
+    {title:'担任（特支）', idx:[21,22,23,24,25,26,27,44]},
+    {title:'専科等', idx:[2,5,28,35]},
+    {title:'介助', idx:[29,30,31,32,33,34]},
+    {title:'短時間等', idx:[37,38,39,42]},
+    {title:'その他', idx:[36,40,41,43]}
+  ];
+
+  root.innerHTML='';
+  root.className='staffgroups';
+  root.dataset.grouped='1';
+
+  groups.forEach(g=>{
+    const wrap=document.createElement('div');
+    wrap.className='staffgroup';
+
+    const title=document.createElement('div');
+    title.className='staffgroup-title';
+    title.appendChild(document.createTextNode(g.title));
+
+    const sel=document.createElement('button');
+    sel.type='button';
+    sel.className='staffgroup-select';
+    sel.textContent='この組を選択';
+    sel.onclick=()=>{
+      g.idx.forEach(i=>{if(pairs[i]) pairs[i].inp.checked=true;});
+    };
+    title.appendChild(sel);
+
+    const grid=document.createElement('div');
+    grid.className='staffgroup-grid';
+    g.idx.forEach(i=>{
+      if(!pairs[i]) return;
+      grid.appendChild(pairs[i].inp);
+      grid.appendChild(pairs[i].lab);
+    });
+
+    wrap.appendChild(title);
+    wrap.appendChild(grid);
+    root.appendChild(wrap);
+  });
+};
+
+window.addEventListener('load',()=>window.CAT_GROUP_STAFF_V23());
 </script>
 
 </body></html>
