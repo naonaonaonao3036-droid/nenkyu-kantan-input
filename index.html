@@ -59,6 +59,49 @@
 .staffgroup-select{margin-left:auto;height:30px;border:1px solid var(--line);border-radius:8px;background:#fff;font-size:11px;font-weight:800;padding:0 8px}
 @media(max-width:700px){.staffgroup-grid{grid-template-columns:repeat(5,minmax(0,1fr))}}
 
+
+/* ===== v24 コンパクト入力 ===== */
+body{font-size:12px}
+.wrap{padding:4px}
+.top{position:sticky;top:0;z-index:30;background:var(--bg);padding:3px 0;gap:4px}
+.top h1{font-size:15px}
+.panel{padding:4px;margin-top:4px;border-radius:8px}
+.title{font-size:12px;margin-bottom:3px}
+.topbtn,.reg{height:34px;min-height:34px;padding:0 8px;font-size:11px}
+.btnlabel,.timebtn,.optionbtn{min-height:30px;font-size:11px;padding:2px}
+.field input{height:34px;font-size:14px}
+.namegrid,.staffgroup-grid{grid-template-columns:repeat(10,minmax(0,1fr));gap:2px}
+.staffgroup{padding:4px;margin-top:3px}
+.staffgroup-title{font-size:11px;margin-bottom:3px}
+.staffgroup-select{height:26px;font-size:10px;padding:0 6px}
+.timeblock{grid-template-columns:1fr 1fr;gap:5px}
+.timegrid{grid-template-columns:repeat(10,minmax(0,1fr));gap:2px}
+.mingrid{grid-template-columns:repeat(12,minmax(0,1fr));gap:2px;margin-top:2px}
+.leavegrid{grid-template-columns:repeat(6,minmax(0,1fr));gap:2px}
+.choicecols{grid-template-columns:1fr 1fr;gap:4px}
+.specialleave{padding:4px;margin-top:4px}
+.status{font-size:10px;margin-top:2px}
+.done{padding:7px;font-size:13px}
+.scheduleTargets{gap:3px;margin:4px 0}
+.scheduleTargets label{padding:4px 6px;font-size:10px}
+.listitem{padding:5px;margin-top:3px}
+.checkrow{padding:4px;margin-top:3px}
+#multiDatePanel{padding:4px}
+#multiDateList{margin-top:4px!important}
+.actions{gap:3px}
+.sub{font-size:8px}
+@media(max-width:900px){
+  .choicecols{grid-template-columns:1fr 1fr}
+  .timeblock{grid-template-columns:1fr 1fr}
+  .leavegrid{grid-template-columns:repeat(5,minmax(0,1fr))}
+  .staffgroup-grid{grid-template-columns:repeat(8,minmax(0,1fr))}
+}
+@media(max-width:700px){
+  .choicecols{grid-template-columns:1fr}
+  .timeblock{grid-template-columns:1fr 1fr}
+  .staffgroup-grid{grid-template-columns:repeat(6,minmax(0,1fr))}
+}
+
 </style>
 <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
 <script>
@@ -223,13 +266,13 @@ window.CAT_SHOW_LIST = function(){
 </script>
 
 </head><body><div class="wrap">
-<div class="top"><h1>休暇・出張・予定 かんたん入力</h1><span style="font-size:11px;font-weight:800;color:#3f7a54">Excel専用／職員グループ分け v23</span><strong>日付</strong><input id="date" type="date" style="height:40px;border:2px solid #d9a697;border-radius:10px;padding:0 9px;font-size:18px;font-weight:800">
-<div class="actions"><button id="listBtn" class="topbtn" type="button" onclick="window.CAT_SHOW_LIST()">登録一覧</button><button id="excelBtn" class="topbtn" type="button" onclick="window.exportExcelIpadV3()">Excel正本を書き出す</button><div style="display:inline-flex;align-items:center;gap:6px;flex-wrap:wrap">
+<div class="top"><h1>休暇・出張・予定 かんたん入力</h1><span style="font-size:11px;font-weight:800;color:#3f7a54">Excel専用／コンパクト入力 v24</span><strong>日付</strong><input id="date" type="date" style="height:40px;border:2px solid #d9a697;border-radius:10px;padding:0 9px;font-size:18px;font-weight:800">
+<div class="actions"><button id="listBtn" class="topbtn" type="button" onclick="window.CAT_SHOW_LIST()">登録一覧</button><button id="backupDataBtn" class="topbtn" type="button">バックアップ</button><details style="display:inline-block"><summary class="topbtn" style="list-style:none;display:flex;align-items:center;cursor:pointer">その他</summary><div style="position:absolute;right:6px;background:#fff;border:1px solid var(--line);padding:6px;border-radius:8px;z-index:50;display:flex;gap:4px;flex-wrap:wrap;max-width:90vw"><button id="excelBtn" class="topbtn" type="button" onclick="window.exportExcelIpadV3()">Excel正本を書き出す</button><div style="display:inline-flex;align-items:center;gap:6px;flex-wrap:wrap">
 <label for="excelImportFile" class="topbtn" style="display:inline-flex;align-items:center;justify-content:center;cursor:pointer">修正したExcelを読み込む</label>
 <input id="excelImportFile" type="file" accept=".xlsx,.xls,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel"
 style="font-size:14px;max-width:290px">
 <button id="excelImportRunBtn" class="topbtn" type="button" onclick="window.CAT_IMPORT_EXCEL(document.getElementById('excelImportFile'))">このファイルを読み込む</button>
-</div><button id="backupDataBtn" class="topbtn" type="button">バックアップ</button><button id="recoverDataBtn" class="topbtn" type="button">入力済みデータを復旧</button><button id="undoChoiceBtn" class="topbtn" type="button">↩ 入力を1つ戻す</button><button id="resetInputBtn" class="topbtn" type="button">入力内容をリセット</button><button id="undoDeleteBtn" class="topbtn" type="button">↩ 直前の削除を戻す</button></div></div>
+</div><button id="recoverDataBtn" class="topbtn" type="button">入力済みデータを復旧</button><button id="undoChoiceBtn" class="topbtn" type="button">↩ 入力を1つ戻す</button><button id="resetInputBtn" class="topbtn" type="button">入力内容をリセット</button><button id="undoDeleteBtn" class="topbtn" type="button">↩ 直前の削除を戻す</button></div></details></div></div>
 <div id="importStatusFixed" style="display:none;position:sticky;top:0;z-index:9999;background:#fff3cc;border:2px solid #d6b85e;border-radius:10px;padding:10px;margin:6px 0;font-weight:900;font-size:15px"></div>
 <section class="panel" id="multiDatePanel">
   <div class="title">複数日登録（年休・休暇用）</div>
@@ -316,9 +359,9 @@ style="font-size:14px;max-width:290px">
 <div class="status">予定もこの画面で確定してから、あとで新ポータルへ集約します。</div>
 </section>
 
-<section class="panel"><div class="title">⑥ 直近の登録</div><div id="recent" class="status">まだ登録はありません。</div></section>
+<details class="panel"><summary class="title" style="cursor:pointer">⑥ 直近の登録</summary><div id="recent" class="status">まだ登録はありません。</div></details>
 
-<section class="panel"><div class="title">⑦ 確認一覧</div>
+<details class="panel"><summary class="title" style="cursor:pointer">⑦ 確認一覧</summary>
 <div class="checktabs">
 <button type="button" class="topbtn checktab active" data-checktab="date">日付順</button>
 <button type="button" class="topbtn checktab" data-checktab="name">名前順</button>
@@ -328,7 +371,7 @@ style="font-size:14px;max-width:290px">
 </div>
 <div id="checkSummary" class="status"></div>
 <div id="checkList"></div>
-</section>
+</details>
 
 </div>
 
@@ -2391,7 +2434,7 @@ window.CAT_GROUP_STAFF_V23=function(){
     const sel=document.createElement('button');
     sel.type='button';
     sel.className='staffgroup-select';
-    sel.textContent='この組を選択';
+    sel.textContent='組選択';
     sel.onclick=()=>{
       g.idx.forEach(i=>{if(pairs[i]) pairs[i].inp.checked=true;});
     };
