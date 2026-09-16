@@ -203,6 +203,12 @@ body{font-size:12px}
   .staffgroup-grid .btnlabel{width:48px !important;max-width:48px !important}
 }
 
+
+/* ===== v28 入力後の修正を見つけやすく ===== */
+#recent .listitem{padding:5px 6px}
+#recent .minibtn{height:30px;padding:0 8px;font-size:10px}
+#recent .miniops{gap:3px}
+
 </style>
 <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
 <script>
@@ -367,7 +373,7 @@ window.CAT_SHOW_LIST = function(){
 </script>
 
 </head><body><div class="wrap">
-<div class="top"><h1>休暇・出張・予定 かんたん入力</h1><span style="font-size:11px;font-weight:800;color:#3f7a54">Excel専用／横幅圧縮・Excel最新データ対応 v27</span><strong>日付</strong><input id="date" type="date" style="height:40px;border:2px solid #d9a697;border-radius:10px;padding:0 9px;font-size:18px;font-weight:800">
+<div class="top"><h1>休暇・出張・予定 かんたん入力</h1><span style="font-size:11px;font-weight:800;color:#3f7a54">Excel専用／入力後の修正対応 v28</span><strong>日付</strong><input id="date" type="date" style="height:40px;border:2px solid #d9a697;border-radius:10px;padding:0 9px;font-size:18px;font-weight:800">
 <div class="actions"><button id="listBtn" class="topbtn" type="button" onclick="window.CAT_SHOW_LIST()">登録一覧</button><button id="backupDataBtn" class="topbtn" type="button">バックアップ</button><details style="display:inline-block"><summary class="topbtn" style="list-style:none;display:flex;align-items:center;cursor:pointer">その他</summary><div style="position:absolute;right:6px;background:#fff;border:1px solid var(--line);padding:6px;border-radius:8px;z-index:50;display:flex;gap:4px;flex-wrap:wrap;max-width:90vw"><button id="excelBtn" class="topbtn" type="button" onclick="window.exportExcelIpadV3()">Excel正本を書き出す</button><div style="display:inline-flex;align-items:center;gap:6px;flex-wrap:wrap">
 <label for="excelImportFile" class="topbtn" style="display:inline-flex;align-items:center;justify-content:center;cursor:pointer">修正したExcelを読み込む</label>
 <input id="excelImportFile" type="file" accept=".xlsx,.xls,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel"
@@ -460,7 +466,7 @@ style="font-size:14px;max-width:290px">
 <div class="status">予定もこの画面で確定してから、あとで新ポータルへ集約します。</div>
 </section>
 
-<details class="panel"><summary class="title" style="cursor:pointer">⑥ 直近の登録</summary><div id="recent" class="status">まだ登録はありません。</div></details>
+<details class="panel" open><summary class="title" style="cursor:pointer">⑥ 入力後の修正・削除</summary><div id="recent" class="status">まだ登録はありません。</div></details>
 
 <details class="panel"><summary class="title" style="cursor:pointer">⑦ 確認一覧</summary>
 <div class="checktabs">
@@ -1352,9 +1358,9 @@ function renderRecent(){
 
  $('recent').innerHTML=grouped.length?grouped.map(r=>{
    const ops=r.type==='休暇'
-     ? '<div class="miniops"><button type="button" class="minibtn editLeave" data-i="'+r.sourceIndex+'">まとめて修正</button><button type="button" class="minibtn cancelLeave" data-i="'+r.sourceIndex+'">まとめて削除</button></div>'
+     ? '<div class="miniops"><button type="button" class="minibtn editLeave" data-i="'+r.sourceIndex+'">修正</button><button type="button" class="minibtn cancelLeave" data-i="'+r.sourceIndex+'">削除</button></div>'
      : r.type==='出張'
-       ? '<div class="miniops"><button type="button" class="minibtn editTrip" data-i="'+r.sourceIndex+'">まとめて修正</button><button type="button" class="minibtn cancelTrip" data-i="'+r.sourceIndex+'">まとめて削除</button></div>'
+       ? '<div class="miniops"><button type="button" class="minibtn editTrip" data-i="'+r.sourceIndex+'">修正</button><button type="button" class="minibtn cancelTrip" data-i="'+r.sourceIndex+'">削除</button></div>'
        : '<div class="miniops"><button type="button" class="minibtn editSchedule" data-i="'+r.sourceIndex+'">修正</button><button type="button" class="minibtn cancelSchedule" data-i="'+r.sourceIndex+'">削除</button></div>';
    return '<div class="listitem"><div class="itemrow"><div><strong>'+esc(r.date)+'　'+esc(r.type)+'</strong>'+
      '<div>'+esc(r.title)+'</div>'+
@@ -1384,7 +1390,7 @@ function loadLeaveEdit(index){
  const dp=[...document.querySelectorAll('.leaveDurationPick')].find(x=>x.dataset.hours===durVal);
  if(dp) dp.checked=true;
  if(r.oneDay||r.unit==='day') clearTimeSelection();
- $('leaveReg').textContent='この一括登録をまとめて修正保存';$('leaveEditing').textContent='一括修正中：'+leaveEditIndices.length+'人　※名前の追加・削除もできます　'+(r.date||'')+'　'+(r.label||r.kind||'');$('leaveEditing').classList.add('show');window.scrollTo({top:0,behavior:'smooth'});
+ $('leaveReg').textContent='修正内容を保存';$('leaveEditing').textContent='修正中：'+leaveEditIndices.length+'人　※日付・名前・時間・休暇内容を直せます　'+(r.date||'')+'　'+(r.label||r.kind||'');$('leaveEditing').classList.add('show');window.scrollTo({top:0,behavior:'smooth'});
 }
 function cancelLeave(index){
  const rows=get('nenkyuRecords'),r=rows[index];if(!r)return;
@@ -1416,8 +1422,8 @@ function loadTripEdit(index){
  const st=parseTime(r.start),et=parseTime(r.end);
  setRadio('startHour',st.h);setRadio('startMinute',st.m);
  setRadio('endHour',et.h);setRadio('endMinute',et.m);
- $('tripReg').textContent='この一括出張をまとめて更新';
- $('tripEditing').textContent='一括修正中：'+tripEditIndices.length+'人　※名前の追加・削除もできます　'+(r.date||'')+'　'+(r.purpose||'')+'／'+(r.venue||'');
+ $('tripReg').textContent='修正内容を保存';
+ $('tripEditing').textContent='修正中：'+tripEditIndices.length+'人　※日付・名前・用務・会場・時間を直せます　'+(r.date||'')+'　'+(r.purpose||'')+'／'+(r.venue||'');
  $('tripEditing').classList.add('show');
  window.scrollTo({top:0,behavior:'smooth'});
 }
