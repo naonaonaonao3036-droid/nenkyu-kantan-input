@@ -2,68 +2,108 @@
 <html lang="ja">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
 <title>手城小 かんたん入力</title>
 
 <style>
+:root{
+  --bg:#fffaf7;
+  --line:#e5d8d2;
+  --pink:#fde9e2;
+  --accent:#d79d88;
+  --ink:#3d3532;
+}
+*{box-sizing:border-box}
+
 body{
   margin:0;
-  background:#fffaf7;
+  background:var(--bg);
+  color:var(--ink);
   font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif;
-  color:#3d3532;
 }
-.wrap{max-width:800px;margin:auto;padding:10px}
+
+.wrap{
+  max-width:820px;
+  margin:auto;
+  padding:10px 10px 80px;
+}
+
 .menu{
   display:grid;
   grid-template-columns:repeat(3,1fr);
   gap:7px;
+  position:sticky;
+  top:0;
+  background:var(--bg);
+  padding:5px 0;
+  z-index:10;
 }
+
 .menu button{
-  height:58px;
-  border:2px solid #e5d8d2;
+  height:56px;
+  border:2px solid var(--line);
   border-radius:12px;
   background:white;
   font-size:18px;
   font-weight:bold;
 }
+
 .menu button.active{
-  background:#fde9e2;
-  border-color:#d79d88;
+  background:var(--pink);
+  border-color:var(--accent);
 }
+
 .card{
   background:white;
-  border:1px solid #e5d8d2;
+  border:1px solid var(--line);
   border-radius:12px;
   padding:10px;
   margin-top:8px;
 }
-.hidden{display:none}
-.title{font-weight:bold;margin-bottom:7px}
+
+.hidden{display:none!important}
+
+.title{
+  font-weight:bold;
+  margin-bottom:7px;
+}
 
 .search{
   display:grid;
   grid-template-columns:1fr auto;
   gap:6px;
 }
-input{
-  height:46px;
+
+input,textarea{
+  width:100%;
+  min-height:46px;
   border:1px solid #ddd;
   border-radius:10px;
-  padding:0 10px;
+  padding:8px 10px;
   font-size:17px;
+  background:white;
 }
+
+textarea{
+  min-height:75px;
+}
+
 .small{
+  min-height:44px;
   border:1px solid #ddd;
   border-radius:10px;
   background:white;
+  padding:0 12px;
   font-weight:bold;
 }
+
 .names,.opts{
   display:grid;
   grid-template-columns:repeat(5,1fr);
   gap:5px;
   margin-top:7px;
 }
+
 .name,.opt{
   min-height:42px;
   border:1px solid #ddd;
@@ -71,23 +111,31 @@ input{
   background:white;
   font-weight:bold;
 }
+
 .sel{
-  background:#fde9e2!important;
-  border:2px solid #d79d88!important;
+  background:var(--pink)!important;
+  border:2px solid var(--accent)!important;
 }
 
 .calhead{
   display:flex;
-  justify-content:space-between;
   align-items:center;
+  justify-content:space-between;
 }
+
 .cal{
   display:grid;
   grid-template-columns:repeat(7,1fr);
   gap:4px;
   margin-top:6px;
 }
-.dow{text-align:center;font-size:11px;font-weight:bold}
+
+.dow{
+  text-align:center;
+  font-size:11px;
+  font-weight:bold;
+}
+
 .day{
   height:42px;
   border:1px solid #ddd;
@@ -95,37 +143,75 @@ input{
   background:white;
   font-weight:bold;
 }
+
 .blank{visibility:hidden}
 
-.review{
-  background:#fff6f1;
-  border-radius:10px;
-  padding:10px;
-  font-weight:bold;
-  line-height:1.6;
+.chips{
+  display:flex;
+  flex-wrap:wrap;
+  gap:5px;
+  margin-top:6px;
 }
-.register{
-  width:100%;
-  height:55px;
-  margin-top:8px;
-  border:2px solid #d79d88;
-  border-radius:12px;
-  background:#fde9e2;
-  font-size:18px;
-  font-weight:bold;
-}
-.chips{margin-top:6px}
+
 .chip{
   display:inline-block;
   padding:5px 8px;
-  margin:2px;
   border-radius:20px;
-  background:#fde9e2;
+  background:var(--pink);
   font-size:12px;
   font-weight:bold;
 }
+
+.field{
+  margin-top:8px;
+}
+
+.field label{
+  display:block;
+  font-size:12px;
+  font-weight:bold;
+  margin-bottom:4px;
+}
+
+.two{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:7px;
+}
+
+.review{
+  background:#fff6f1;
+  border:1px solid var(--line);
+  border-radius:10px;
+  padding:10px;
+  line-height:1.6;
+  font-weight:bold;
+}
+
+.register{
+  width:100%;
+  min-height:56px;
+  margin-top:8px;
+  border:2px solid var(--accent);
+  border-radius:12px;
+  background:var(--pink);
+  font-size:18px;
+  font-weight:bold;
+}
+
+.note{
+  font-size:12px;
+  color:#786d68;
+  margin-top:5px;
+}
+
 @media(max-width:650px){
-  .names,.opts{grid-template-columns:repeat(4,1fr)}
+  .names,.opts{
+    grid-template-columns:repeat(4,1fr);
+  }
+  .two{
+    grid-template-columns:1fr;
+  }
 }
 </style>
 </head>
@@ -140,11 +226,12 @@ input{
 </div>
 
 <div id="start" class="card">
-  休暇・出張・予定を選んでください。
+  <div class="title">入力するものを選んでください</div>
+  上の「休暇・出張・予定」を押してください。
 </div>
 
 <div id="dateCard" class="card hidden">
-  <div class="title">日付</div>
+  <div class="title">日付（複数日はそのままタップ）</div>
 
   <div class="calhead">
     <button id="prev" class="small">◀</button>
@@ -153,63 +240,129 @@ input{
   </div>
 
   <div id="calendar" class="cal"></div>
-  <div id="selectedDates" class="chips"></div>
+  <div id="dateChips" class="chips"></div>
 </div>
 
 <div id="nameCard" class="card hidden">
   <div class="title">名前</div>
 
   <div class="search">
-    <input id="search" placeholder="例：せ → 瀬尾　わ → 和田">
-    <button id="clear" class="small">クリア</button>
+    <input id="nameSearch"
+           placeholder="例：せ → 瀬尾　わ → 和田">
+    <button id="clearName" class="small">クリア</button>
   </div>
 
   <div id="nameResults" class="names"></div>
-  <div id="chosenNames" class="chips"></div>
+  <div id="nameChips" class="chips"></div>
+
+  <div class="note">
+    わ → 和田（校長）・和田亜　
+    い → 井上真・井上日・池田・石原　
+    ふ → 藤江・藤田・藤本・藤井
+  </div>
+</div>
+
+<div id="timeCard" class="card hidden">
+  <div class="title">時刻（必要なときだけ）</div>
+
+  <div class="two">
+    <div class="field">
+      <label>開始</label>
+      <input id="startTime" type="time">
+    </div>
+
+    <div class="field">
+      <label>終了</label>
+      <input id="endTime" type="time">
+    </div>
+  </div>
 </div>
 
 <div id="leaveCard" class="card hidden">
   <div class="title">休暇入力</div>
+
   <div id="leaveKinds" class="opts"></div>
+
+  <div id="specialNoBox" class="field hidden">
+    <label>特休は何号？</label>
+    <input id="specialNo"
+           placeholder="例：7号">
+  </div>
+
+  <div class="field">
+    <label>取得時間</label>
+  </div>
+
   <div id="amounts" class="opts"></div>
 </div>
 
 <div id="tripCard" class="card hidden">
   <div class="title">出張入力</div>
-  <input id="purpose" placeholder="用務" style="width:100%">
-  <input id="venue" placeholder="会場" style="width:100%;margin-top:6px">
+
+  <div class="field">
+    <label>用務</label>
+    <textarea id="purpose"
+              placeholder="例：市内一斉研修"></textarea>
+  </div>
+
+  <div class="field">
+    <label>会場</label>
+    <input id="venue"
+           placeholder="例：緑丘小学校">
+  </div>
 </div>
 
 <div id="planCard" class="card hidden">
   <div class="title">予定入力</div>
-  <input id="planTitle" placeholder="予定" style="width:100%">
-  <input id="planTarget" placeholder="対象" style="width:100%;margin-top:6px">
-  <input id="planPlace" placeholder="場所" style="width:100%;margin-top:6px">
+
+  <div class="field">
+    <label>予定</label>
+    <textarea id="planTitle"
+              placeholder="例：読み聞かせ"></textarea>
+  </div>
+
+  <div class="field">
+    <label>対象</label>
+    <input id="planTarget"
+           placeholder="例：1年・6年・ひま">
+  </div>
+
+  <div class="field">
+    <label>場所</label>
+    <input id="planPlace"
+           placeholder="場所">
+  </div>
 </div>
 
 <div id="reviewCard" class="card hidden">
   <div class="title">登録前の確認</div>
-  <div id="review" class="review"></div>
-  <button id="register" class="register">登録</button>
+  <div id="review" class="review">
+    入力するとここに表示します。
+  </div>
+
+  <button id="register"
+          class="register">
+    登録
+  </button>
 </div>
 
 </div>
 
 <script>
 const staff=[
-["和田（校長）","和田 亘",["わ","わだ"]],
-["瀬尾","瀬尾 奈緒美",["せ","せお"]],
+["和田（校長）","和田 亘",["わ","わだ","こうちょう"]],
+["瀬尾","瀬尾 奈緒美",["せ","せお","なおみ"]],
 ["佐藤","佐藤 かおり",["さ","さとう"]],
 ["岡田","岡田 真緒",["お","おかだ"]],
 ["兼藤","兼藤 佳奈",["か","かねとう"]],
 ["向井","向井 杏奴",["む","むかい"]],
-["井上真","井上 真維",["い","いのうえ"]],
+["井上真","井上 真維",["い","いのうえ","まい"]],
 ["池田","池田 真菜",["い","いけだ"]],
 ["出口","出口 知子",["で","でぐち"]],
 ["千葉","千葉 月乃",["ち","ちば"]],
 ["萩原","萩原 優",["は","はぎわら"]],
 ["傍田","傍田 美華",["そ","そばた"]],
-["井上日","井上 日向子",["い","いのうえ"]],
+["井上日","井上 日向子",["い","いのうえ","ひなこ"]],
 ["播本","播本 太平",["は","はりもと"]],
 ["石原","石原 繭子",["い","いしはら"]],
 ["緒方","緒方 香織",["お","おがた"]],
@@ -223,7 +376,7 @@ const staff=[
 ["芳賀","芳賀 麻衣子",["は","はが"]],
 ["柳田","柳田 啓子",["や","やなぎだ"]],
 ["小田","小田 祐希乃",["お","おだ"]],
-["和田亜","和田 亜弥乃",["わ","わだ"]],
+["和田亜","和田 亜弥乃",["わ","わだ","あやの"]],
 ["村上","村上 ユミ",["む","むらかみ"]],
 ["藤本","藤本 洋平",["ふ","ふじもと"]],
 ["足立","足立 かおり",["あ","あだち"]],
@@ -254,306 +407,32 @@ let currentMonth=new Date();
 const $=id=>document.getElementById(id);
 
 function setMode(m){
+
   mode=m;
 
-  document.querySelectorAll(".menu button").forEach(b=>{
-    b.classList.toggle("active",b.dataset.mode===m);
+  document
+  .querySelectorAll(".menu button")
+  .forEach(b=>{
+    b.classList.toggle(
+      "active",
+      b.dataset.mode===m
+    );
   });
 
   $("start").classList.add("hidden");
+
   $("dateCard").classList.remove("hidden");
   $("reviewCard").classList.remove("hidden");
 
-  $("nameCard").classList.toggle("hidden",m==="plan");
-  $("leaveCard").classList.toggle("hidden",m!=="leave");
-  $("tripCard").classList.toggle("hidden",m!=="trip");
-  $("planCard").classList.toggle("hidden",m!=="plan");
-
-  reset();
-}
-
-document.querySelectorAll(".menu button").forEach(b=>{
-  b.onclick=()=>setMode(b.dataset.mode);
-});
-
-function searchNames(){
-  const q=$("search").value.trim();
-
-  $("nameResults").innerHTML="";
-
-  if(!q)return;
-
-  staff.forEach(s=>{
-    if(s[0].includes(q)||s[1].includes(q)||s[2].some(x=>x.includes(q))){
-      const b=document.createElement("button");
-      b.className="name";
-      b.textContent=s[0];
-
-      if(names.has(s[1]))b.classList.add("sel");
-
-      b.onclick=()=>{
-        if(names.has(s[1])){
-          names.delete(s[1]);
-        }else{
-          names.add(s[1]);
-        }
-
-        $("search").value="";
-        $("nameResults").innerHTML="";
-        showChosenNames();
-        updateReview();
-      };
-
-      $("nameResults").appendChild(b);
-    }
-  });
-}
-
-$("search").oninput=searchNames;
-
-$("clear").onclick=()=>{
-  $("search").value="";
-  $("nameResults").innerHTML="";
-};
-
-function showChosenNames(){
-  $("chosenNames").innerHTML=[...names]
-  .map(n=>{
-    const s=staff.find(x=>x[1]===n);
-    return `<span class="chip">${s?s[0]:n}</span>`;
-  }).join("");
-}
-
-function dateKey(y,m,d){
-  return y+"-"+String(m+1).padStart(2,"0")+"-"+String(d).padStart(2,"0");
-}
-
-function renderCalendar(){
-
-  const y=currentMonth.getFullYear();
-  const m=currentMonth.getMonth();
-
-  $("month").textContent=`${y}年 ${m+1}月`;
-
-  $("calendar").innerHTML=
-  ["日","月","火","水","木","金","土"]
-  .map(x=>`<div class="dow">${x}</div>`).join("");
-
-  const first=new Date(y,m,1).getDay();
-  const last=new Date(y,m+1,0).getDate();
-
-  for(let i=0;i<first;i++){
-    $("calendar").insertAdjacentHTML("beforeend",'<button class="day blank"></button>');
-  }
-
-  for(let d=1;d<=last;d++){
-
-    const key=dateKey(y,m,d);
-    const b=document.createElement("button");
-
-    b.className="day";
-    b.textContent=d;
-
-    if(dates.has(key))b.classList.add("sel");
-
-    b.onclick=()=>{
-
-      if(dates.has(key)){
-        dates.delete(key);
-      }else{
-        dates.add(key);
-      }
-
-      renderCalendar();
-      updateReview();
-    };
-
-    $("calendar").appendChild(b);
-  }
-
-  $("selectedDates").innerHTML=[...dates]
-  .sort()
-  .map(d=>{
-    const p=d.split("-");
-    return `<span class="chip">${Number(p[1])}/${Number(p[2])}</span>`;
-  }).join("");
-}
-
-$("prev").onclick=()=>{
-  currentMonth=new Date(
-    currentMonth.getFullYear(),
-    currentMonth.getMonth()-1,
-    1
+  $("nameCard").classList.toggle(
+    "hidden",
+    m==="plan"
   );
-  renderCalendar();
-};
 
-$("next").onclick=()=>{
-  currentMonth=new Date(
-    currentMonth.getFullYear(),
-    currentMonth.getMonth()+1,
-    1
+  $("timeCard").classList.toggle(
+    "hidden",
+    m==="plan"
   );
-  renderCalendar();
-};
 
-const leaveKinds=[
-"年休",
-"職専免",
-"夏季休暇",
-"夏季厚生",
-"夏季研修",
-"子看",
-"特休",
-"短期介護"
-];
-
-leaveKinds.forEach(k=>{
-  const b=document.createElement("button");
-  b.className="opt";
-  b.textContent=k;
-
-  b.onclick=()=>{
-
-    leaveKind=k;
-
-    document.querySelectorAll("#leaveKinds .opt")
-    .forEach(x=>x.classList.remove("sel"));
-
-    b.classList.add("sel");
-
-    updateReview();
-  };
-
-  $("leaveKinds").appendChild(b);
-});
-
-["①","②","③","④","⑤","⑥","⑦","⑧","1日"]
-.forEach(a=>{
-
-  const b=document.createElement("button");
-  b.className="opt";
-  b.textContent=a;
-
-  b.onclick=()=>{
-
-    amount=a;
-
-    document.querySelectorAll("#amounts .opt")
-    .forEach(x=>x.classList.remove("sel"));
-
-    b.classList.add("sel");
-
-    updateReview();
-  };
-
-  $("amounts").appendChild(b);
-});
-
-["purpose","venue","planTitle","planTarget","planPlace"]
-.forEach(id=>{
-  $(id).oninput=updateReview;
-});
-
-function updateReview(){
-
-  const arr=[];
-
-  if(mode==="leave")arr.push("休暇");
-  if(mode==="trip")arr.push("出張");
-  if(mode==="plan")arr.push("予定");
-
-  if(dates.size){
-    arr.push("日付："+[...dates].sort().join("・"));
-  }
-
-  if(mode!=="plan"&&names.size){
-    arr.push(
-      "名前："+[...names]
-      .map(n=>{
-        const s=staff.find(x=>x[1]===n);
-        return s?s[0]:n;
-      })
-      .join("・")
-    );
-  }
-
-  if(mode==="leave"){
-    if(leaveKind)arr.push("休暇："+leaveKind);
-    if(amount)arr.push("取得："+amount);
-  }
-
-  if(mode==="trip"){
-    if($("purpose").value)arr.push("用務："+$("purpose").value);
-    if($("venue").value)arr.push("会場："+$("venue").value);
-  }
-
-  if(mode==="plan"){
-    if($("planTitle").value)arr.push("予定："+$("planTitle").value);
-    if($("planTarget").value)arr.push("対象："+$("planTarget").value);
-    if($("planPlace").value)arr.push("場所："+$("planPlace").value);
-  }
-
-  $("review").textContent=
-  arr.length ? arr.join("　｜　") : "入力してください";
-}
-
-function reset(){
-
-  dates.clear();
-  names.clear();
-
-  leaveKind="";
-  amount="";
-
-  $("search").value="";
-  $("nameResults").innerHTML="";
-
-  ["purpose","venue","planTitle","planTarget","planPlace"]
-  .forEach(id=>$(id).value="");
-
-  document.querySelectorAll(".opt")
-  .forEach(x=>x.classList.remove("sel"));
-
-  showChosenNames();
-  renderCalendar();
-  updateReview();
-}
-
-$("register").onclick=()=>{
-
-  if(!dates.size){
-    alert("日付を選んでください");
-    return;
-  }
-
-  if(mode!=="plan"&&!names.size){
-    alert("名前を選んでください");
-    return;
-  }
-
-  if(mode==="leave"&&!leaveKind){
-    alert("休暇を選んでください");
-    return;
-  }
-
-  if(mode==="trip"&&!$("purpose").value){
-    alert("用務を入力してください");
-    return;
-  }
-
-  if(mode==="plan"&&!$("planTitle").value){
-    alert("予定を入力してください");
-    return;
-  }
-
-  alert("登録しました");
-
-  reset();
-};
-
-renderCalendar();
-</script>
-
-</body>
-</html>
+  $("leaveCard").classList.toggle(
+    "
