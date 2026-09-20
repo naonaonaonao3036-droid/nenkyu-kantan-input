@@ -2593,4 +2593,208 @@ window.CAT_SETUP_ONE_DAY_V22 = function(){
         window.CAT_CLEAR_TIME_V20();
       }else{
         document.querySelectorAll(
-          'input[name="startHour"],input[name="startMinute"],input[name=
+          'input[name="startHour"],input[name="startMinute"],input[name="endHour"],input[name="endMinute"]'
+        ).forEach(x=>x.checked=false);
+      }
+      const d=document.getElementById('done');
+      if(d){d.innerHTML='✓ <strong>1日を解除しました</strong>';d.classList.add('show');}
+      return;
+    }
+
+    document.querySelectorAll('.nenkyuHourPick').forEach(x=>x.checked=false);
+    one.checked=true;
+
+    if(typeof window.CAT_SET_TIME_V20==='function'){
+      window.CAT_SET_TIME_V20(8,20,16,50);
+    }else{
+      ['sh8','sm20','eh16','em50'].forEach(id=>{
+        const el=document.getElementById(id);
+        if(el) el.checked=true;
+      });
+    }
+
+    const d=document.getElementById('done');
+    if(d){d.innerHTML='✓ <strong>1日を選択しました（初期時刻 8:20〜16:50）</strong>';d.classList.add('show');}
+  },true);
+};
+
+window.addEventListener('load',()=>{
+  window.CAT_SETUP_ONE_DAY_V22();
+});
+</script>
+
+
+<script>
+/* v23: 職員名をグループ表示 */
+window.CAT_GROUP_STAFF_V23=function(){
+  const root=document.querySelector('section.panel .namegrid');
+  if(!root || root.dataset.grouped==='1') return;
+
+  const pairs={};
+  [...root.querySelectorAll('.namepick')].forEach(inp=>{
+    const i=Number(inp.dataset.i);
+    const lab=root.querySelector('label[for="'+inp.id+'"]');
+    if(lab) pairs[i]={inp,lab};
+  });
+
+  const groups=[
+    {title:'総務', idx:[0,1,3,4]},
+    {title:'教諭（通常）', idx:[6,7,8,9,10,11,12,13,14,15,16,17,18,19,20]},
+    {title:'担任（特支）', idx:[21,22,23,24,25,26,27,44]},
+    {title:'専科・短時間等', idx:[2,5,28,35,37,38,39,42]},
+    {title:'介助・その他', idx:[29,30,31,32,33,34,36,40,41,43]}
+  ];
+
+  root.innerHTML='';
+  root.className='staffgroups';
+  root.dataset.grouped='1';
+
+  groups.forEach(g=>{
+    const wrap=document.createElement('div');
+    wrap.className='staffgroup';
+
+    const title=document.createElement('div');
+    title.className='staffgroup-title';
+    title.appendChild(document.createTextNode(g.title));
+
+    const sel=document.createElement('button');
+    sel.type='button';
+    sel.className='staffgroup-select';
+    sel.textContent='選択';
+    sel.onclick=()=>{
+      g.idx.forEach(i=>{if(pairs[i]) pairs[i].inp.checked=true;});
+    };
+    title.appendChild(sel);
+
+    const grid=document.createElement('div');
+    grid.className='staffgroup-grid';
+    g.idx.forEach(i=>{
+      if(!pairs[i]) return;
+      grid.appendChild(pairs[i].inp);
+      grid.appendChild(pairs[i].lab);
+    });
+
+    wrap.appendChild(title);
+    wrap.appendChild(grid);
+    root.appendChild(wrap);
+  });
+};
+
+window.addEventListener('load',()=>window.CAT_GROUP_STAFF_V23());
+</script>
+
+
+<script>
+(function(){
+  const alias={
+    0:["わ","わだ","こうちょう"],1:["せ","せお","なおみ"],2:["さ","さとう","かおり"],3:["お","おかだ","まお"],4:["か","かねとう","かな"],5:["む","むかい","あんぬ"],
+    6:["い","いのうえ","まい"],7:["い","いけだ","まな"],8:["で","でぐち","ともこ"],9:["ち","ちば","つきの"],10:["は","はぎわら","ゆう"],11:["そ","そばた","みか"],
+    12:["い","いのうえ","ひなこ"],13:["は","はりもと","たいへい"],14:["い","いしはら","まゆこ"],15:["お","おがた","かおり"],16:["し","しみず","はると"],
+    17:["あ","あべの","ゆか"],18:["う","うらかみ","なおき"],19:["ふ","ふじえ","かずまさ"],20:["ふ","ふじた","そうま"],21:["た","たんだ","えり"],
+    22:["や","やはば","ゆか"],23:["は","はが","まいこ"],24:["や","やなぎだ","けいこ"],25:["お","おだ","ゆきの"],26:["わ","わだ","あやの"],
+    27:["む","むらかみ","ゆみ"],28:["ふ","ふじもと","ようへい"],29:["あ","あだち","かおり"],30:["は","はらい","さおり"],31:["お","おおした","じゅんこ"],
+    32:["は","はやせ","あやか"],33:["に","にしかわ","じゅんこ"],34:["さ","さらがい","ひさえ"],35:["き","きしもと","ちかこ"],36:["や","やまもと","みえこ"],
+    37:["ふ","ふじい","まりこ"],38:["か","かさはら","なつえ"],39:["さ","さとう","ゆうこ"],40:["は","はばら","かずこ"],41:["た","たに","なつこ"],
+    42:["か","かなもり","のりこ"],43:["ま","まつした","ゆか"],44:["お","おかの"]
+  };
+
+  const norm=s=>(s||"").toString().trim().replace(/\s+/g,"").toLowerCase()
+    .replace(/[ァ-ヶ]/g,ch=>String.fromCharCode(ch.charCodeAt(0)-0x60));
+
+  const ids=["multiDatePanel","catNamePanel","catTimePanel","catLeavePanel","catTripPanel","catSchedulePanel"];
+  const hideAll=()=>ids.forEach(id=>{const e=document.getElementById(id);if(e)e.style.display="none";});
+  const show=id=>{const e=document.getElementById(id);if(e)e.style.display="block";};
+
+  function filterNames(){
+    const s=document.getElementById("catNameSearch"); if(!s)return;
+    const q=norm(s.value);
+    document.querySelectorAll(".namepick").forEach(ch=>{
+      const lab=document.querySelector('label[for="'+ch.id+'"]'); if(!lab)return;
+      const i=Number(ch.dataset.i);
+      const full=(window.CAT_STAFF_V13&&window.CAT_STAFF_V13[i])||"";
+      const vals=[lab.textContent||"",full].concat(alias[i]||[]).map(norm);
+      const visible=!!ch.checked || (!!q && vals.some(v=>v.includes(q)));
+      ch.style.display=visible?"":"none";
+      lab.style.display=visible?"":"none";
+    });
+  }
+
+  function setMode(mode){
+    hideAll();
+    document.querySelectorAll("#catModeBar button").forEach(b=>b.classList.toggle("active",b.dataset.catmode===mode));
+    const h=document.getElementById("catModeHint"); if(h)h.style.display="none";
+
+    if(mode==="leave"){show("multiDatePanel");show("catNamePanel");show("catTimePanel");show("catLeavePanel");}
+    if(mode==="trip"){show("catNamePanel");show("catTimePanel");show("catTripPanel");}
+    if(mode==="schedule"){show("catSchedulePanel");}
+
+    const s=document.getElementById("catNameSearch");
+    if(s && mode!=="schedule"){s.value="";filterNames();setTimeout(()=>s.focus(),20);}
+  }
+
+  let calDate=new Date();
+  function iso(y,m,d){return y+"-"+String(m+1).padStart(2,"0")+"-"+String(d).padStart(2,"0");}
+  function renderCalendar(){
+    const box=document.getElementById("catCalendar"), title=document.getElementById("catCalTitle");
+    if(!box||!title)return;
+    const y=calDate.getFullYear(),m=calDate.getMonth();
+    title.textContent=y+"年 "+(m+1)+"月";
+    box.innerHTML=["日","月","火","水","木","金","土"].map(x=>'<div class="catDow">'+x+'</div>').join("");
+    const first=new Date(y,m,1).getDay(), last=new Date(y,m+1,0).getDate();
+    for(let i=0;i<first;i++)box.insertAdjacentHTML("beforeend",'<button class="catDay blank" type="button"></button>');
+    window.CAT_MULTI_DATES_V17=window.CAT_MULTI_DATES_V17||[];
+    for(let d=1;d<=last;d++){
+      const key=iso(y,m,d), b=document.createElement("button");
+      b.type="button"; b.className="catDay"+(window.CAT_MULTI_DATES_V17.includes(key)?" sel":""); b.textContent=d;
+      b.onclick=()=>{
+        const a=window.CAT_MULTI_DATES_V17;
+        const idx=a.indexOf(key); if(idx>=0)a.splice(idx,1); else a.push(key);
+        a.sort();
+        const date=document.getElementById("date"); if(date)date.value=key;
+        if(window.CAT_RENDER_DATES_V17)window.CAT_RENDER_DATES_V17();
+        renderCalendar();
+      };
+      box.appendChild(b);
+    }
+  }
+
+  function init(){
+    if(document.body.dataset.catFixed==="1")return;
+    document.body.dataset.catFixed="1";
+
+    // Wait a little for the original cat's grouping code, then apply the new layer.
+    setTimeout(()=>{
+      hideAll();
+      filterNames();
+      renderCalendar();
+
+      document.querySelectorAll("#catModeBar button").forEach(b=>{
+        b.onclick=()=>setMode(b.dataset.catmode);
+      });
+
+      const s=document.getElementById("catNameSearch");
+      if(s)s.oninput=filterNames;
+
+      const clear=document.getElementById("catNameClear");
+      if(clear)clear.onclick=()=>{if(s){s.value="";filterNames();s.focus();}};
+
+      document.querySelectorAll(".namepick").forEach(ch=>{
+        ch.addEventListener("change",()=>{if(ch.checked&&s)s.value="";filterNames();});
+      });
+
+      const prev=document.getElementById("catCalPrev"), next=document.getElementById("catCalNext"), clearDates=document.getElementById("clearMultiDatesBtn");
+      if(prev)prev.onclick=()=>{calDate=new Date(calDate.getFullYear(),calDate.getMonth()-1,1);renderCalendar();};
+      if(next)next.onclick=()=>{calDate=new Date(calDate.getFullYear(),calDate.getMonth()+1,1);renderCalendar();};
+      if(clearDates)clearDates.onclick=()=>{window.CAT_MULTI_DATES_V17=[];if(window.CAT_RENDER_DATES_V17)window.CAT_RENDER_DATES_V17();renderCalendar();};
+    },120);
+  }
+
+  if(document.readyState==="loading"){
+    document.addEventListener("DOMContentLoaded",init,{once:true});
+  }else{
+    init();
+  }
+})();
+</script>
+
+</body></html>
