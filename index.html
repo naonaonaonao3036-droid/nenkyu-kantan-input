@@ -428,18 +428,35 @@ window.CAT_SHOW_LIST = function(){
 
 
 <style>
-.catModeBar{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin:6px 0;position:sticky;top:0;z-index:60;background:var(--bg);padding:4px 0}
-.catModeBar button{height:48px;border:2px solid var(--line);background:#fff;border-radius:10px;font-size:15px;font-weight:900}
+.catModeBar{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin:7px 0;position:sticky;top:0;z-index:80;background:var(--bg);padding:4px 0}
+.catModeBar button{height:50px;border:2px solid var(--line);border-radius:11px;background:#fff;font-size:16px;font-weight:900}
 .catModeBar button.active{background:var(--sel);border-color:#d9a697}
-.catModeHint{padding:8px;background:#fff;border:1px solid var(--line);border-radius:9px;font-weight:800;margin-bottom:5px}
-.catNameSearch{display:grid;grid-template-columns:1fr auto;gap:5px;margin:4px 0 5px}
-.catNameSearch input{width:100%;height:40px;border:1px solid var(--line);border-radius:9px;padding:0 9px;font-size:16px}
-.catCalHead{display:flex;align-items:center;justify-content:space-between;gap:5px;margin-bottom:5px}
-.catCalendar{display:grid;grid-template-columns:repeat(7,1fr);gap:3px}
+.catModeHint{background:#fff;border:1px solid var(--line);border-radius:9px;padding:8px;font-weight:900;margin:5px 0}
+.catSearchRow{display:grid;grid-template-columns:1fr auto;gap:5px;margin:5px 0}
+.catSearchRow input{height:42px;width:100%;border:1px solid var(--line);border-radius:9px;padding:0 10px;font-size:16px}
+.catCalHead{display:flex;align-items:center;justify-content:space-between;gap:6px;margin:4px 0 6px}
+.catCalendar{display:grid;grid-template-columns:repeat(7,1fr);gap:4px}
 .catDow{text-align:center;font-size:10px;font-weight:900;color:var(--muted)}
-.catDay{height:38px;border:1px solid var(--line);background:#fff;border-radius:8px;font-weight:900}
+.catDay{height:40px;border:1px solid var(--line);border-radius:8px;background:#fff;font-weight:900}
 .catDay.sel{background:var(--sel);border:2px solid #d9a697}
 .catDay.blank{visibility:hidden}
+/* その他メニューを縦並びで読みやすく */
+details[open] > summary.topbtn + div{
+  display:grid !important;
+  grid-template-columns:1fr !important;
+  gap:6px !important;
+  min-width:280px;
+  max-width:92vw !important;
+}
+details[open] > summary.topbtn + div > .topbtn,
+details[open] > summary.topbtn + div > button,
+details[open] > summary.topbtn + div > div{
+  width:100%;
+}
+details[open] > summary.topbtn + div label.topbtn{
+  width:100%;
+  justify-content:center;
+}
 </style>
 </head><body><div class="wrap">
 <div class="top"><h1>休暇・出張・予定 かんたん入力</h1><span style="font-size:11px;font-weight:800;color:#3f7a54">Excel専用／入力後修正＋横幅コンパクト v29</span><strong>日付</strong><input id="date" type="date" style="height:40px;border:2px solid #d9a697;border-radius:10px;padding:0 9px;font-size:18px;font-weight:800">
@@ -450,28 +467,34 @@ style="font-size:14px;max-width:290px">
 <button id="excelImportRunBtn" class="topbtn" type="button" onclick="window.CAT_IMPORT_EXCEL(document.getElementById('excelImportFile'))">このファイルを読み込む</button>
 </div><button id="recoverDataBtn" class="topbtn" type="button">入力済みデータを復旧</button><button id="undoChoiceBtn" class="topbtn" type="button">↩ 入力を1つ戻す</button><button id="resetInputBtn" class="topbtn" type="button">入力内容をリセット</button><button id="undoDeleteBtn" class="topbtn" type="button">↩ 直前の削除を戻す</button></div></details></div></div>
 <div id="importStatusFixed" style="display:none;position:sticky;top:0;z-index:9999;background:#fff3cc;border:2px solid #d6b85e;border-radius:10px;padding:10px;margin:6px 0;font-weight:900;font-size:15px"></div>
-
 <div id="catModeBar" class="catModeBar">
-  <button type="button" data-catmode="leave">① 休暇</button>
-  <button type="button" data-catmode="trip">② 出張</button>
-  <button type="button" data-catmode="schedule">③ 予定</button>
+  <button type="button" onclick="CAT_SET_MODE('leave')">① 休暇</button>
+  <button type="button" onclick="CAT_SET_MODE('trip')">② 出張</button>
+  <button type="button" onclick="CAT_SET_MODE('schedule')">③ 予定</button>
 </div>
 <div id="catModeHint" class="catModeHint">入力するものを選んでください</div>
 <section class="panel" id="multiDatePanel">
   <div class="title">日付（複数日はそのままタップ）</div>
   <div class="catCalHead">
-    <button id="catCalPrev" class="topbtn" type="button">◀</button>
+    <button class="topbtn" type="button" onclick="CAT_CAL_MOVE(-1)">◀</button>
     <strong id="catCalTitle"></strong>
-    <button id="catCalNext" class="topbtn" type="button">▶</button>
+    <button class="topbtn" type="button" onclick="CAT_CAL_MOVE(1)">▶</button>
   </div>
   <div id="catCalendar" class="catCalendar"></div>
   <div id="multiDateList" style="display:flex;gap:6px;flex-wrap:wrap;margin-top:7px"></div>
-  <div style="margin-top:6px"><button id="clearMultiDatesBtn" class="topbtn" type="button">日付をすべて解除</button></div>
-  <button id="addCurrentDateBtn" type="button" style="display:none">追加</button>
+  <div style="margin-top:6px">
+    <button id="clearMultiDatesBtn" class="topbtn" type="button" onclick="CAT_CLEAR_DATES()">日付をすべて解除</button>
+  </div>
+  <button id="addCurrentDateBtn" type="button" style="display:none">この日を追加</button>
 </section>
 
 <section class="panel" id="catNamePanel"><div class="title">① 名前</div>
-<div class="catNameSearch"><input id="catNameSearch" type="search" inputmode="text" autocomplete="off" placeholder="せ → 瀬尾　わ → 和田"><button type="button" id="catNameClear" class="topbtn">クリア</button></div>
+<div class="catSearchRow">
+  <input id="catNameSearch" type="search" inputmode="text" autocomplete="off"
+         placeholder="せ → 瀬尾　わ → 和田"
+         oninput="CAT_FILTER_NAMES()">
+  <button type="button" class="topbtn" onclick="CAT_CLEAR_NAME_SEARCH()">クリア</button>
+</div>
 <div class="status">わ → 和田（校長）・和田亜　／　い → 井上真・井上日・池田・石原　／　ふ → 藤江・藤田・藤本・藤井</div>
 <div class="namegrid"><input class="pick namepick" type="checkbox" id="n0" data-i="0"><label class="btnlabel" for="n0">和田（校長）</label><input class="pick namepick" type="checkbox" id="n1" data-i="1"><label class="btnlabel" for="n1">瀬尾</label><input class="pick namepick" type="checkbox" id="n2" data-i="2"><label class="btnlabel" for="n2">佐藤<span class="sub">かおり</span></label><input class="pick namepick" type="checkbox" id="n3" data-i="3"><label class="btnlabel" for="n3">岡田</label><input class="pick namepick" type="checkbox" id="n4" data-i="4"><label class="btnlabel" for="n4">兼藤</label><input class="pick namepick" type="checkbox" id="n5" data-i="5"><label class="btnlabel" for="n5">向井</label><input class="pick namepick" type="checkbox" id="n6" data-i="6"><label class="btnlabel" for="n6">井上真</label><input class="pick namepick" type="checkbox" id="n7" data-i="7"><label class="btnlabel" for="n7">池田</label><input class="pick namepick" type="checkbox" id="n8" data-i="8"><label class="btnlabel" for="n8">出口</label><input class="pick namepick" type="checkbox" id="n9" data-i="9"><label class="btnlabel" for="n9">千葉</label><input class="pick namepick" type="checkbox" id="n10" data-i="10"><label class="btnlabel" for="n10">萩原</label><input class="pick namepick" type="checkbox" id="n11" data-i="11"><label class="btnlabel" for="n11">傍田</label><input class="pick namepick" type="checkbox" id="n12" data-i="12"><label class="btnlabel" for="n12">井上日</label><input class="pick namepick" type="checkbox" id="n13" data-i="13"><label class="btnlabel" for="n13">播本</label><input class="pick namepick" type="checkbox" id="n14" data-i="14"><label class="btnlabel" for="n14">石原</label><input class="pick namepick" type="checkbox" id="n15" data-i="15"><label class="btnlabel" for="n15">緒方</label><input class="pick namepick" type="checkbox" id="n16" data-i="16"><label class="btnlabel" for="n16">清水</label><input class="pick namepick" type="checkbox" id="n17" data-i="17"><label class="btnlabel" for="n17">阿部野</label><input class="pick namepick" type="checkbox" id="n18" data-i="18"><label class="btnlabel" for="n18">浦上</label><input class="pick namepick" type="checkbox" id="n19" data-i="19"><label class="btnlabel" for="n19">藤江</label><input class="pick namepick" type="checkbox" id="n20" data-i="20"><label class="btnlabel" for="n20">藤田</label><input class="pick namepick" type="checkbox" id="n21" data-i="21"><label class="btnlabel" for="n21">丹田</label><input class="pick namepick" type="checkbox" id="n22" data-i="22"><label class="btnlabel" for="n22">矢羽々</label><input class="pick namepick" type="checkbox" id="n23" data-i="23"><label class="btnlabel" for="n23">芳賀</label><input class="pick namepick" type="checkbox" id="n24" data-i="24"><label class="btnlabel" for="n24">柳田</label><input class="pick namepick" type="checkbox" id="n25" data-i="25"><label class="btnlabel" for="n25">小田</label><input class="pick namepick" type="checkbox" id="n26" data-i="26"><label class="btnlabel" for="n26">和田亜</label><input class="pick namepick" type="checkbox" id="n27" data-i="27"><label class="btnlabel" for="n27">村上</label><input class="pick namepick" type="checkbox" id="n28" data-i="28"><label class="btnlabel" for="n28">藤本</label><input class="pick namepick" type="checkbox" id="n29" data-i="29"><label class="btnlabel" for="n29">足立</label><input class="pick namepick" type="checkbox" id="n30" data-i="30"><label class="btnlabel" for="n30">原井</label><input class="pick namepick" type="checkbox" id="n31" data-i="31"><label class="btnlabel" for="n31">大下</label><input class="pick namepick" type="checkbox" id="n32" data-i="32"><label class="btnlabel" for="n32">早瀬</label><input class="pick namepick" type="checkbox" id="n33" data-i="33"><label class="btnlabel" for="n33">西川</label><input class="pick namepick" type="checkbox" id="n34" data-i="34"><label class="btnlabel" for="n34">皿谷</label><input class="pick namepick" type="checkbox" id="n35" data-i="35"><label class="btnlabel" for="n35">岸本</label><input class="pick namepick" type="checkbox" id="n36" data-i="36"><label class="btnlabel" for="n36">山本</label><input class="pick namepick" type="checkbox" id="n37" data-i="37"><label class="btnlabel" for="n37">藤井</label><input class="pick namepick" type="checkbox" id="n38" data-i="38"><label class="btnlabel" for="n38">笠原</label><input class="pick namepick" type="checkbox" id="n39" data-i="39"><label class="btnlabel" for="n39">佐藤<span class="sub">裕子</span></label><input class="pick namepick" type="checkbox" id="n40" data-i="40"><label class="btnlabel" for="n40">羽原</label><input class="pick namepick" type="checkbox" id="n41" data-i="41"><label class="btnlabel" for="n41">谷</label><input class="pick namepick" type="checkbox" id="n42" data-i="42"><label class="btnlabel" for="n42">金森</label><input class="pick namepick" type="checkbox" id="n43" data-i="43"><label class="btnlabel" for="n43">松下</label><input class="pick namepick" type="checkbox" id="n44" data-i="44"><label class="btnlabel" for="n44">岡野</label></div>
 <div style="display:flex;gap:6px;margin-top:5px"><button id="all" class="topbtn" type="button">全員選択</button><button id="clear" class="topbtn" type="button">選択解除</button></div></section>
@@ -2686,7 +2709,7 @@ window.addEventListener('load',()=>window.CAT_GROUP_STAFF_V23());
 
 <script>
 (function(){
-  const alias={
+  const ALIAS={
     0:["わ","わだ","こうちょう"],1:["せ","せお","なおみ"],2:["さ","さとう","かおり"],3:["お","おかだ","まお"],4:["か","かねとう","かな"],5:["む","むかい","あんぬ"],
     6:["い","いのうえ","まい"],7:["い","いけだ","まな"],8:["で","でぐち","ともこ"],9:["ち","ちば","つきの"],10:["は","はぎわら","ゆう"],11:["そ","そばた","みか"],
     12:["い","いのうえ","ひなこ"],13:["は","はりもと","たいへい"],14:["い","いしはら","まゆこ"],15:["お","おがた","かおり"],16:["し","しみず","はると"],
@@ -2697,103 +2720,107 @@ window.addEventListener('load',()=>window.CAT_GROUP_STAFF_V23());
     37:["ふ","ふじい","まりこ"],38:["か","かさはら","なつえ"],39:["さ","さとう","ゆうこ"],40:["は","はばら","かずこ"],41:["た","たに","なつこ"],
     42:["か","かなもり","のりこ"],43:["ま","まつした","ゆか"],44:["お","おかの"]
   };
-
   const norm=s=>(s||"").toString().trim().replace(/\s+/g,"").toLowerCase()
     .replace(/[ァ-ヶ]/g,ch=>String.fromCharCode(ch.charCodeAt(0)-0x60));
 
-  const ids=["multiDatePanel","catNamePanel","catTimePanel","catLeavePanel","catTripPanel","catSchedulePanel"];
-  const hideAll=()=>ids.forEach(id=>{const e=document.getElementById(id);if(e)e.style.display="none";});
-  const show=id=>{const e=document.getElementById(id);if(e)e.style.display="block";};
+  let calDate=new Date();
 
-  function filterNames(){
-    const s=document.getElementById("catNameSearch"); if(!s)return;
+  function el(id){return document.getElementById(id)}
+  function hide(id){const e=el(id);if(e)e.style.display="none"}
+  function show(id){const e=el(id);if(e)e.style.display="block"}
+
+  window.CAT_SET_MODE=function(mode){
+    ["multiDatePanel","catNamePanel","catTimePanel","catLeavePanel","catTripPanel","catSchedulePanel"].forEach(hide);
+    document.querySelectorAll("#catModeBar button").forEach((b,i)=>{
+      const m=["leave","trip","schedule"][i];
+      b.classList.toggle("active",m===mode);
+    });
+    const hint=el("catModeHint"); if(hint)hint.style.display="none";
+
+    if(mode==="leave"){
+      show("multiDatePanel");show("catNamePanel");show("catTimePanel");show("catLeavePanel");
+      CAT_RENDER_CAL();
+      CAT_FILTER_NAMES();
+    }else if(mode==="trip"){
+      show("catNamePanel");show("catTimePanel");show("catTripPanel");
+      CAT_FILTER_NAMES();
+    }else{
+      show("catSchedulePanel");
+    }
+  };
+
+  window.CAT_FILTER_NAMES=function(){
+    const s=el("catNameSearch"); if(!s)return;
     const q=norm(s.value);
     document.querySelectorAll(".namepick").forEach(ch=>{
       const lab=document.querySelector('label[for="'+ch.id+'"]'); if(!lab)return;
       const i=Number(ch.dataset.i);
       const full=(window.CAT_STAFF_V13&&window.CAT_STAFF_V13[i])||"";
-      const vals=[lab.textContent||"",full].concat(alias[i]||[]).map(norm);
-      const visible=!!ch.checked || (!!q && vals.some(v=>v.includes(q)));
+      const vals=[lab.textContent||"",full].concat(ALIAS[i]||[]).map(norm);
+      const visible=ch.checked || (!!q && vals.some(v=>v.includes(q)));
       ch.style.display=visible?"":"none";
       lab.style.display=visible?"":"none";
     });
-  }
+  };
 
-  function setMode(mode){
-    hideAll();
-    document.querySelectorAll("#catModeBar button").forEach(b=>b.classList.toggle("active",b.dataset.catmode===mode));
-    const h=document.getElementById("catModeHint"); if(h)h.style.display="none";
+  window.CAT_CLEAR_NAME_SEARCH=function(){
+    const s=el("catNameSearch");
+    if(s){s.value="";CAT_FILTER_NAMES();s.focus();}
+  };
 
-    if(mode==="leave"){show("multiDatePanel");show("catNamePanel");show("catTimePanel");show("catLeavePanel");}
-    if(mode==="trip"){show("catNamePanel");show("catTimePanel");show("catTripPanel");}
-    if(mode==="schedule"){show("catSchedulePanel");}
-
-    const s=document.getElementById("catNameSearch");
-    if(s && mode!=="schedule"){s.value="";filterNames();setTimeout(()=>s.focus(),20);}
-  }
-
-  let calDate=new Date();
-  function iso(y,m,d){return y+"-"+String(m+1).padStart(2,"0")+"-"+String(d).padStart(2,"0");}
-  function renderCalendar(){
-    const box=document.getElementById("catCalendar"), title=document.getElementById("catCalTitle");
+  window.CAT_RENDER_CAL=function(){
+    const box=el("catCalendar"),title=el("catCalTitle");
     if(!box||!title)return;
     const y=calDate.getFullYear(),m=calDate.getMonth();
     title.textContent=y+"年 "+(m+1)+"月";
     box.innerHTML=["日","月","火","水","木","金","土"].map(x=>'<div class="catDow">'+x+'</div>').join("");
-    const first=new Date(y,m,1).getDay(), last=new Date(y,m+1,0).getDate();
+    const first=new Date(y,m,1).getDay(),last=new Date(y,m+1,0).getDate();
     for(let i=0;i<first;i++)box.insertAdjacentHTML("beforeend",'<button class="catDay blank" type="button"></button>');
     window.CAT_MULTI_DATES_V17=window.CAT_MULTI_DATES_V17||[];
     for(let d=1;d<=last;d++){
-      const key=iso(y,m,d), b=document.createElement("button");
+      const key=y+"-"+String(m+1).padStart(2,"0")+"-"+String(d).padStart(2,"0");
+      const b=document.createElement("button");
       b.type="button"; b.className="catDay"+(window.CAT_MULTI_DATES_V17.includes(key)?" sel":""); b.textContent=d;
-      b.onclick=()=>{
+      b.onclick=function(){
         const a=window.CAT_MULTI_DATES_V17;
-        const idx=a.indexOf(key); if(idx>=0)a.splice(idx,1); else a.push(key);
+        const idx=a.indexOf(key); if(idx>=0)a.splice(idx,1);else a.push(key);
         a.sort();
-        const date=document.getElementById("date"); if(date)date.value=key;
+        const date=el("date");if(date)date.value=key;
         if(window.CAT_RENDER_DATES_V17)window.CAT_RENDER_DATES_V17();
-        renderCalendar();
+        CAT_RENDER_CAL();
       };
       box.appendChild(b);
     }
-  }
+  };
+
+  window.CAT_CAL_MOVE=function(delta){
+    calDate=new Date(calDate.getFullYear(),calDate.getMonth()+delta,1);
+    CAT_RENDER_CAL();
+  };
+  window.CAT_CLEAR_DATES=function(){
+    window.CAT_MULTI_DATES_V17=[];
+    if(window.CAT_RENDER_DATES_V17)window.CAT_RENDER_DATES_V17();
+    CAT_RENDER_CAL();
+  };
 
   function init(){
-    if(document.body.dataset.catFixed==="1")return;
-    document.body.dataset.catFixed="1";
+    // Keep original cat storage/buttons untouched; just control visibility and search/calendar.
+    ["multiDatePanel","catNamePanel","catTimePanel","catLeavePanel","catTripPanel","catSchedulePanel"].forEach(hide);
+    const hint=el("catModeHint");if(hint)hint.style.display="block";
+    const s=el("catNameSearch");if(s)s.value="";
+    CAT_FILTER_NAMES();
+    CAT_RENDER_CAL();
 
-    // Wait a little for the original cat's grouping code, then apply the new layer.
-    setTimeout(()=>{
-      hideAll();
-      filterNames();
-      renderCalendar();
-
-      document.querySelectorAll("#catModeBar button").forEach(b=>{
-        b.onclick=()=>setMode(b.dataset.catmode);
+    document.querySelectorAll(".namepick").forEach(ch=>{
+      ch.addEventListener("change",function(){
+        const s=el("catNameSearch");
+        if(this.checked&&s)s.value="";
+        CAT_FILTER_NAMES();
       });
-
-      const s=document.getElementById("catNameSearch");
-      if(s)s.oninput=filterNames;
-
-      const clear=document.getElementById("catNameClear");
-      if(clear)clear.onclick=()=>{if(s){s.value="";filterNames();s.focus();}};
-
-      document.querySelectorAll(".namepick").forEach(ch=>{
-        ch.addEventListener("change",()=>{if(ch.checked&&s)s.value="";filterNames();});
-      });
-
-      const prev=document.getElementById("catCalPrev"), next=document.getElementById("catCalNext"), clearDates=document.getElementById("clearMultiDatesBtn");
-      if(prev)prev.onclick=()=>{calDate=new Date(calDate.getFullYear(),calDate.getMonth()-1,1);renderCalendar();};
-      if(next)next.onclick=()=>{calDate=new Date(calDate.getFullYear(),calDate.getMonth()+1,1);renderCalendar();};
-      if(clearDates)clearDates.onclick=()=>{window.CAT_MULTI_DATES_V17=[];if(window.CAT_RENDER_DATES_V17)window.CAT_RENDER_DATES_V17();renderCalendar();};
-    },120);
+    });
   }
-
-  if(document.readyState==="loading"){
-    document.addEventListener("DOMContentLoaded",init,{once:true});
-  }else{
-    init();
-  }
+  if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",()=>setTimeout(init,100),{once:true});
+  else setTimeout(init,100);
 })();
 </script>
 
